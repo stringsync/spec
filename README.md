@@ -16,12 +16,8 @@ const examplesMd = markdown({
 });
 
 export const spec = new Spec({
-  foo: it
-    .must('do foo')
-    .example(examplesMd.subheading('foo-example-1'));
-  bar: it
-    .must.not('import bar')
-    .example(examplesMd.subheading('bar-example-2'));
+  foo: it.must('do foo').example(examplesMd.subheading('foo-example-1')),
+  bar: it.must.not('import bar').example(examplesMd.subheading('bar-example-2')),
 });
 ```
 
