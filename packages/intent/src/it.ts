@@ -1,5 +1,7 @@
-import { Imperative, type ImperativeInput } from './imperative';
-import { RequirementLevel } from './types';
+import { Imperative } from './imperative';
+import { StringReader } from './reader/string-reader';
+import { RequirementLevel, type Readable } from './types';
+import type { Reader } from './reader/types';
 
 /**
  * A static class that provides imperatives for expressing intent specifications.
@@ -11,27 +13,35 @@ export class it {
     throw new Error('it is a static class and cannot be instantiated');
   }
 
-  static MUST(input: ImperativeInput) {
-    return this.imperative(RequirementLevel.Must, input);
+  static MUST(readable: Readable) {
+    return imperative(RequirementLevel.Must, readable);
   }
 
-  static MUST_NOT(input: ImperativeInput) {
-    return this.imperative(RequirementLevel.MustNot, input);
+  static MUST_NOT(readable: Readable) {
+    return imperative(RequirementLevel.MustNot, readable);
   }
 
-  static SHOULD(input: ImperativeInput) {
-    return this.imperative(RequirementLevel.Should, input);
+  static SHOULD(readable: Readable) {
+    return imperative(RequirementLevel.Should, readable);
   }
 
-  static SHOULD_NOT(input: ImperativeInput) {
-    return this.imperative(RequirementLevel.ShouldNot, input);
+  static SHOULD_NOT(readable: Readable) {
+    return imperative(RequirementLevel.ShouldNot, readable);
   }
 
-  static MAY(input: ImperativeInput) {
-    return this.imperative(RequirementLevel.May, input);
+  static MAY(readable: Readable) {
+    return imperative(RequirementLevel.May, readable);
   }
+}
 
-  private static imperative(level: RequirementLevel, input: ImperativeInput) {
-    return new Imperative(level, input);
+function imperative(level: RequirementLevel, readable: Readable) {
+  let reader: Reader;
+  if (typeof readable === 'string') {
+    reader = new StringReader(readable);
+  } else if (typeof readable.read === 'function') {
+    reader = readable;
+  } else {
+    throw new Error('Input must be a string or an instance of Reader');
   }
+  return new Imperative(level, reader);
 }
