@@ -4,10 +4,11 @@ import type { Reader } from './types';
 export class SelectorReader implements Reader {
   constructor(
     private selector: Selector,
-    private content: string,
+    private reader: Reader,
   ) {}
 
-  read(): Promise<string> {
-    return this.selector.select(this.content);
+  async read(): Promise<string> {
+    const content = await this.reader.read();
+    return this.selector.select(content);
   }
 }
