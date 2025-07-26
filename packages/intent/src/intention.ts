@@ -39,7 +39,11 @@ export class NegatableIntention implements Reader {
   constructor(
     private level: RequirementLevel,
     private reader: Reader,
-  ) {}
+  ) {
+    if (![RequirementLevel.Must, RequirementLevel.Should].includes(level)) {
+      throw new Error(`Negation is only applicable for MUST and SHOULD levels, not ${level}`);
+    }
+  }
 
   not(): Intention {
     switch (this.level) {
