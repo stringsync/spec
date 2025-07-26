@@ -6,7 +6,7 @@ export class MarkdownSelector implements Selector {
   static Builder = class MarkdownSelectorBuilder {
     private selectors = new Array<Selector>();
 
-    withinSubheading(subheading: string): this {
+    subheading(subheading: string): this {
       this.selectors.push(new SubheadingSectionSelector(subheading));
       return this;
     }
