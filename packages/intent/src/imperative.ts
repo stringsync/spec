@@ -33,3 +33,26 @@ export class Imperative implements Reader {
     }
   }
 }
+
+export class NegatableImperative implements Reader {
+  constructor(
+    private level: RequirementLevel,
+    private reader: Reader,
+  ) {}
+
+  not(): Imperative {
+    switch (this.level) {
+      case RequirementLevel.Must:
+        return new Imperative(RequirementLevel.MustNot, this.reader);
+      case RequirementLevel.Should:
+        return new Imperative(RequirementLevel.ShouldNot, this.reader);
+      default:
+        throw new Error(`Negation is not applicable for: ${this.level}`);
+    }
+  }
+
+  async read(): Promise<string> {
+    const imperative = new Imperative(this.level, this.reader);
+    return imperative.read();
+  }
+}
