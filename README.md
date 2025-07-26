@@ -1,2 +1,3 @@
-# intent
+# @stringsync/intent
+
 Map intention to implementation
