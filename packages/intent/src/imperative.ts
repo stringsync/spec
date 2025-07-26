@@ -1,6 +1,6 @@
 import { RequirementLevel } from './types';
-import { PrefixlessReader } from './reader/prefixless-reader';
 import type { Reader } from './reader/types';
+import { PrefixTrimSelector } from './selector/prefix-trim-selector';
 
 export class Imperative implements Reader {
   constructor(
@@ -11,8 +11,9 @@ export class Imperative implements Reader {
   async read(): Promise<string> {
     const level = this.getHumanReadableLevel();
     const prefix = `it ${level} `;
-    const reader = new PrefixlessReader(prefix, this.reader);
-    const description = await reader.read();
+    const content = await this.reader.read();
+    const selector = new PrefixTrimSelector(prefix);
+    const description = await selector.select(content);
     return `${prefix} ${description}`;
   }
 
