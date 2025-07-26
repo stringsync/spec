@@ -22,7 +22,7 @@ class Markdown {
   constructor(private reader: Reader) {}
 
   subheading(subheading: string): Reader {
-    const selector = new MarkdownSelector.builder().withinSubheading(subheading).build();
+    const selector = new MarkdownSelector.Builder().withinSubheading(subheading).build();
     return new SelectorReader(selector, this.reader);
   }
 }

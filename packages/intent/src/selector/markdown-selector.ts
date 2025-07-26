@@ -3,7 +3,7 @@ import type { Selector } from './types';
 export class MarkdownSelector implements Selector {
   private constructor(private selectors: Selector[]) {}
 
-  static builder = class MarkdownSelectorBuilder {
+  static Builder = class MarkdownSelectorBuilder {
     private selectors = new Array<Selector>();
 
     withinSubheading(subheading: string): this {
