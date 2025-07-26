@@ -1,3 +1,6 @@
+import { Imperative, type ImperativeInput } from './imperative';
+import { RequirementLevel } from './types';
+
 /**
  * A static class that provides imperatives for expressing intent specifications.
  *
@@ -8,23 +11,27 @@ export class it {
     throw new Error('it is a static class and cannot be instantiated');
   }
 
-  static must() {
-    // TODO
+  static MUST(input: ImperativeInput) {
+    return this.imperative(RequirementLevel.Must, input);
   }
 
-  static mustNot() {
-    // TODO
+  static MUST_NOT(input: ImperativeInput) {
+    return this.imperative(RequirementLevel.MustNot, input);
   }
 
-  static should() {
-    // TODO
+  static SHOULD(input: ImperativeInput) {
+    return this.imperative(RequirementLevel.Should, input);
   }
 
-  static shouldNot() {
-    // TODO
+  static SHOULD_NOT(input: ImperativeInput) {
+    return this.imperative(RequirementLevel.ShouldNot, input);
   }
 
-  static may() {
-    // TODO
+  static MAY(input: ImperativeInput) {
+    return this.imperative(RequirementLevel.May, input);
+  }
+
+  private static imperative(level: RequirementLevel, input: ImperativeInput) {
+    return new Imperative(level, input);
   }
 }
