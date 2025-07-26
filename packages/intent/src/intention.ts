@@ -2,7 +2,7 @@ import { RequirementLevel } from './types';
 import type { Reader } from './reader/types';
 import { PrefixTrimSelector } from './selector/prefix-trim-selector';
 
-export class Imperative implements Reader {
+export class Intention implements Reader {
   constructor(
     private level: RequirementLevel,
     private reader: Reader,
@@ -41,19 +41,19 @@ export class NegatableImperative implements Reader {
     private reader: Reader,
   ) {}
 
-  not(): Imperative {
+  not(): Intention {
     switch (this.level) {
       case RequirementLevel.Must:
-        return new Imperative(RequirementLevel.MustNot, this.reader);
+        return new Intention(RequirementLevel.MustNot, this.reader);
       case RequirementLevel.Should:
-        return new Imperative(RequirementLevel.ShouldNot, this.reader);
+        return new Intention(RequirementLevel.ShouldNot, this.reader);
       default:
         throw new Error(`Negation is not applicable for: ${this.level}`);
     }
   }
 
   async read(): Promise<string> {
-    const imperative = new Imperative(this.level, this.reader);
+    const imperative = new Intention(this.level, this.reader);
     return imperative.read();
   }
 }

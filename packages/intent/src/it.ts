@@ -1,4 +1,4 @@
-import { Imperative, NegatableImperative } from './imperative';
+import { Intention, NegatableImperative } from './intention';
 import { StringReader } from './reader/string-reader';
 import { RequirementLevel, type Readable } from './types';
 import type { Reader } from './reader/types';
@@ -14,19 +14,19 @@ export class it {
   }
 
   static must(readable: Readable) {
-    return imperative(RequirementLevel.Must, readable);
+    return intention(RequirementLevel.Must, readable);
   }
 
   static should(readable: Readable) {
-    return imperative(RequirementLevel.Should, readable);
+    return intention(RequirementLevel.Should, readable);
   }
 
   static may(readable: Readable) {
-    return imperative(RequirementLevel.May, readable);
+    return intention(RequirementLevel.May, readable);
   }
 }
 
-function imperative(level: RequirementLevel, readable: Readable) {
+function intention(level: RequirementLevel, readable: Readable) {
   let reader: Reader;
   if (typeof readable === 'string') {
     reader = new StringReader(readable);
@@ -40,13 +40,13 @@ function imperative(level: RequirementLevel, readable: Readable) {
     case RequirementLevel.Must:
       return new NegatableImperative(RequirementLevel.Must, reader);
     case RequirementLevel.MustNot:
-      return new Imperative(RequirementLevel.MustNot, reader);
+      return new Intention(RequirementLevel.MustNot, reader);
     case RequirementLevel.Should:
       return new NegatableImperative(RequirementLevel.Should, reader);
     case RequirementLevel.ShouldNot:
-      return new Imperative(RequirementLevel.ShouldNot, reader);
+      return new Intention(RequirementLevel.ShouldNot, reader);
     case RequirementLevel.May:
-      return new Imperative(RequirementLevel.May, reader);
+      return new Intention(RequirementLevel.May, reader);
     default:
       throw new Error(`Unknown requirement level: ${level}`);
   }
