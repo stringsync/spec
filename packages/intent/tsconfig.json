@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "lib": ["es2021", "es2022.error", "dom"],
     "rootDir": "src",
     "outDir": "build"
   },
