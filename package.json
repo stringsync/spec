@@ -7,6 +7,7 @@
     "@types/bun": "latest",
     "eslint": "^9.32.0",
     "jiti": "^2.5.1",
+    "prettier": "3.6.2",
     "typescript-eslint": "^8.38.0"
   },
   "peerDependencies": {
