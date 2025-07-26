@@ -1,4 +1,4 @@
-import { Intention, NegatableImperative } from './intention';
+import { Intention, NegatableIntention } from './intention';
 import { StringReader } from './reader/string-reader';
 import { RequirementLevel, type Readable } from './types';
 import type { Reader } from './reader/types';
@@ -38,11 +38,11 @@ function intention(level: RequirementLevel, readable: Readable) {
 
   switch (level) {
     case RequirementLevel.Must:
-      return new NegatableImperative(RequirementLevel.Must, reader);
+      return new NegatableIntention(RequirementLevel.Must, reader);
     case RequirementLevel.MustNot:
       return new Intention(RequirementLevel.MustNot, reader);
     case RequirementLevel.Should:
-      return new NegatableImperative(RequirementLevel.Should, reader);
+      return new NegatableIntention(RequirementLevel.Should, reader);
     case RequirementLevel.ShouldNot:
       return new Intention(RequirementLevel.ShouldNot, reader);
     case RequirementLevel.May:

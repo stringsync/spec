@@ -35,7 +35,7 @@ export class Intention implements Reader {
   }
 }
 
-export class NegatableImperative implements Reader {
+export class NegatableIntention implements Reader {
   constructor(
     private level: RequirementLevel,
     private reader: Reader,
