@@ -11,7 +11,7 @@ export class Imperative implements Reader {
   async read(): Promise<string> {
     const level = this.getHumanReadableLevel();
     const prefix = `it ${level} `;
-    const reader = new PrefixlessReader(prefix, false, this.reader);
+    const reader = new PrefixlessReader(prefix, this.reader);
     const description = await reader.read();
     return `${prefix} ${description}`;
   }
