@@ -4,32 +4,48 @@ Map intention to implementation
 
 ## Example (WIP)
 
-First, declare a spec.
+Declare the spec.
 
 _spec.ts_
 
 ```ts
-import { Spec, it, markdown } from '@stringsync/intent';
-
-const examplesMd = markdown({
-  path: 'path/to/examples.md',
-});
-
 export const spec = new Spec({
-  foo: it.must('do foo').example(examplesMd.subheading('foo-example-1')),
-  bar: it.must.not('import bar').example(examplesMd.subheading('bar-example-2')),
+  foo: it.must('log the string "foo"').example('new Foo().foo(); // logs "foo"'),
 });
 ```
 
-Next, reference the spec within the implementation and tests.
+Reference the spec.
 
 _foo.ts_
 
 ```ts
-import { spec } from './spec.ts';
-
 class Foo {
   @spec.impl('foo')
-  foo() {}
+  foo() {
+    console.log('foo');
+  }
 }
+```
+
+Search for the spec.
+
+```shell
+bunx @stringsync/intentx coverage
+[
+  {
+    "path": "full/path/to/spec.ts",
+    "unimplemented": {
+      "count": 0,
+      "ids": [],
+      "locations": {}
+    },
+    "implemented": {
+      "count": 1,
+      "ids": ["foo"],
+      "locations": {
+        "foo": ["full/path/to/foo.ts"]
+      }
+    }
+  }
+]
 ```
