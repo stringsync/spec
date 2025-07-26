@@ -1,7 +1,10 @@
 {
   "name": "@stringsync/intent-monorepo",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/bun": "latest",
