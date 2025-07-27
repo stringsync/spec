@@ -1,10 +1,13 @@
-import fs from 'fs/promises';
 import type { Reader } from './types';
+import type { FileSystem } from '../file-system/types';
 
 export class FileReader implements Reader {
-  constructor(private filePath: string) {}
+  constructor(
+    private fileSystem: FileSystem,
+    private filePath: string,
+  ) {}
 
   async read(): Promise<string> {
-    return fs.readFile(this.filePath, 'utf-8');
+    return this.fileSystem.read(this.filePath);
   }
 }
