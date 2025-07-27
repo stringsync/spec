@@ -1,8 +1,8 @@
-import { SelectorReader } from './reader/selector-reader';
-import type { Reader } from './reader/types';
-import { FileReader } from './reader/file-reader';
-import { MarkdownSelector } from './selector/markdown-selector';
-import { StringReader } from './reader/string-reader';
+import { FileReader } from '@stringsync/core/reader/file-reader';
+import { StringReader } from '@stringsync/core/reader/string-reader';
+import type { Reader } from '@stringsync/core/reader/types';
+import { MarkdownSelector } from '@stringsync/core/selector/markdown-selector';
+import { SelectorReader } from '@stringsync/core/reader/selector-reader';
 
 export type MarkdownInput = { path: string } | { content: string };
 

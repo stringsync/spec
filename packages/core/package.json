@@ -1,4 +1,5 @@
 {
-  "name": "@stringsync/intent-core",
-  "version": "0.0.0"
+  "name": "@stringsync/core",
+  "version": "0.0.0",
+  "private": true
 }

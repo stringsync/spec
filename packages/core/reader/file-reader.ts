@@ -1,5 +1,5 @@
-import type { Reader } from './types';
 import fs from 'fs/promises';
+import type { Reader } from './types';
 
 export class FileReader implements Reader {
   constructor(private filePath: string) {}

@@ -1,7 +1,7 @@
+import type { Reader } from '@stringsync/core/reader/types';
+import { StringReader } from '@stringsync/core/reader/string-reader';
 import { Intention, NegatableIntention } from './intention';
-import { StringReader } from './reader/string-reader';
 import { RequirementLevel, type Readable } from './types';
-import type { Reader } from './reader/types';
 
 /**
  * A static class that provides imperatives for expressing intent specifications.
