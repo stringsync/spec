@@ -1,0 +1,15 @@
+{
+  "Bun test scaffold": {
+    "prefix": "test",
+    "body": [
+      "import { describe, it, expect } from 'bun:test';",
+      "",
+      "describe('$1', () => {",
+      "  it('$2', () => {",
+      "    $3",
+      "  });",
+      "});",
+    ],
+    "description": "Create a describe block with bun:test imports and a sample test.",
+  },
+}
