@@ -1,4 +1,4 @@
-import type { Reader } from '@stringsync/core/reader/types';
+import type { Reader } from '@stringsync/core/src/reader/types';
 
 export enum RequirementLevel {
   Must = 'must',

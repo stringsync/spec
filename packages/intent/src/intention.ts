@@ -1,6 +1,6 @@
 import { RequirementLevel } from './types';
-import type { Reader } from '@stringsync/core/reader/types';
-import { PrefixTrimSelector } from '@stringsync/core/selector/prefix-trim-selector';
+import type { Reader } from '@stringsync/core/src/reader/types';
+import { PrefixTrimSelector } from '@stringsync/core/src/selector/prefix-trim-selector';
 
 export class Intention implements Reader {
   constructor(

@@ -1,5 +1,5 @@
-import type { Reader } from '@stringsync/core/reader/types';
-import { StringReader } from '@stringsync/core/reader/string-reader';
+import type { Reader } from '@stringsync/core/src/reader/types';
+import { StringReader } from '@stringsync/core/src/reader/string-reader';
 import { Intention, NegatableIntention } from './intention';
 import { RequirementLevel, type Readable } from './types';
 
