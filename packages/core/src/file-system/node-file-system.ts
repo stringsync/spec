@@ -1,4 +1,4 @@
-import type { FileSystem } from './file-system';
+import type { FileSystem } from './types';
 import fs from 'fs/promises';
 
 export class NodeFileSystem implements FileSystem {

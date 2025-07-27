@@ -1,4 +1,4 @@
-import type { FileSystem } from './file-system';
+import type { FileSystem } from './types';
 
 export class FakeFileSystem implements FileSystem {
   private files: Map<string, string> = new Map();
