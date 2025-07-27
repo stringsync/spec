@@ -3,12 +3,15 @@ import { StringReader } from '@stringsync/core/src/reader/string-reader';
 import type { Reader } from '@stringsync/core/src/reader/types';
 import { MarkdownSelector } from '@stringsync/core/src/selector/markdown-selector';
 import { SelectorReader } from '@stringsync/core/src/reader/selector-reader';
+import { NodeFileSystem } from '@stringsync/core/src/file-system/node-file-system';
 
 export type MarkdownInput = { path: string } | { content: string };
 
 export function markdown(input: MarkdownInput): Markdown {
   if ('path' in input) {
-    return new Markdown(new FileReader(input.path));
+    const fileSystem = new NodeFileSystem();
+    const reader = new FileReader(fileSystem, input.path);
+    return new Markdown(reader);
   }
 
   if ('content' in input) {
