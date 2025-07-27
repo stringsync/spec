@@ -1,6 +1,6 @@
 import type { Reader } from '@stringsync/core/src/reader/types';
 import { StringReader } from '@stringsync/core/src/reader/string-reader';
-import { Intention, NegatableIntention } from './intention';
+import { Intention } from './intention';
 import { RequirementLevel, type Readable } from './types';
 
 /**
@@ -13,17 +13,11 @@ export class it {
     throw new Error('it is a static class and cannot be instantiated');
   }
 
-  static must(readable: Readable) {
-    return intention(RequirementLevel.Must, readable);
-  }
+  static must = must;
 
-  static should(readable: Readable) {
-    return intention(RequirementLevel.Should, readable);
-  }
+  static should = should;
 
-  static may(readable: Readable) {
-    return intention(RequirementLevel.May, readable);
-  }
+  static may = may;
 }
 
 function intention(level: RequirementLevel, readable: Readable) {
@@ -35,19 +29,25 @@ function intention(level: RequirementLevel, readable: Readable) {
   } else {
     throw new Error('Input must be a string or an instance of Reader');
   }
+  return new Intention(level, reader);
+}
 
-  switch (level) {
-    case RequirementLevel.Must:
-      return new NegatableIntention(RequirementLevel.Must, reader);
-    case RequirementLevel.MustNot:
-      return new Intention(RequirementLevel.MustNot, reader);
-    case RequirementLevel.Should:
-      return new NegatableIntention(RequirementLevel.Should, reader);
-    case RequirementLevel.ShouldNot:
-      return new Intention(RequirementLevel.ShouldNot, reader);
-    case RequirementLevel.May:
-      return new Intention(RequirementLevel.May, reader);
-    default:
-      throw new Error(`Unknown requirement level: ${level}`);
-  }
+function should(readable: Readable) {
+  return intention(RequirementLevel.Should, readable);
+}
+
+should.not = function (readable: Readable) {
+  return intention(RequirementLevel.ShouldNot, readable);
+};
+
+function must(readable: Readable) {
+  return intention(RequirementLevel.Must, readable);
+}
+
+must.not = function (readable: Readable) {
+  return intention(RequirementLevel.MustNot, readable);
+};
+
+function may(readable: Readable) {
+  return intention(RequirementLevel.May, readable);
 }
