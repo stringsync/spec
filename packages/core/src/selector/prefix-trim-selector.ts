@@ -22,7 +22,7 @@ export class PrefixTrimSelector implements Selector {
     const prefix = content.slice(0, this.prefix.length);
     if (this.options.caseSensitive && prefix === this.prefix) {
       return content.slice(this.prefix.length).trimStart();
-    } else if (prefix.toLowerCase() === this.prefix.toLowerCase()) {
+    } else if (!this.options.caseSensitive && prefix.toLowerCase() === this.prefix.toLowerCase()) {
       return content.slice(this.prefix.length).trimStart();
     } else {
       return content;
