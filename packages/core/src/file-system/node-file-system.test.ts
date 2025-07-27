@@ -27,6 +27,6 @@ describe('NodeFileSystem', () => {
   });
 
   it('should throw an error when reading a non-existent file', async () => {
-    await expect(fileSystem.read('non-existent.txt')).rejects.toThrow();
+    expect(fileSystem.read('non-existent.txt')).rejects.toThrow();
   });
 });

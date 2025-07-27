@@ -32,7 +32,7 @@ This is the conclusion section.
   it('should throw an error if the subheading does not exist', async () => {
     const selector = new MarkdownSelector.Builder().subheading('Nonexistent').build();
 
-    await expect(selector.select(markdownContent)).rejects.toThrow(
+    expect(selector.select(markdownContent)).rejects.toThrow(
       'Subheading "## Nonexistent" not found',
     );
   });
@@ -51,8 +51,6 @@ This is the conclusion section.
       .build();
 
     // Since the second 'Usage' doesn't exist in the result, it should throw
-    await expect(selector.select(markdownContent)).rejects.toThrow(
-      'Subheading "## Usage" not found',
-    );
+    expect(selector.select(markdownContent)).rejects.toThrow('Subheading "## Usage" not found');
   });
 });

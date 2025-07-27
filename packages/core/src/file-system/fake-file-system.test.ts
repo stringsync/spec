@@ -19,9 +19,7 @@ describe('FakeFileSystem', () => {
 
   it('should throw an error when reading a non-existent file', async () => {
     const fs = new FakeFileSystem();
-    await expect(fs.read('/does-not-exist.txt')).rejects.toThrow(
-      'File not found: /does-not-exist.txt',
-    );
+    expect(fs.read('/does-not-exist.txt')).rejects.toThrow('File not found: /does-not-exist.txt');
   });
 
   it('should handle multiple files independently', async () => {
