@@ -7,7 +7,7 @@ describe('Spec', () => {
     const spec = Spec.of({ foo: 'bar', baz: 'qux' });
     expect(spec).toBeInstanceOf(Spec);
 
-    const ids = spec.ids();
+    const ids = spec.getIds();
     expect(ids).toContain('foo');
     expect(ids).toContain('baz');
 
@@ -22,23 +22,37 @@ describe('Spec', () => {
     const reader = new StringReader('hello');
     const spec = Spec.of({ greet: reader });
 
-    expect(await spec.read('greet')).toBe('hello');
+    expect(spec.read('greet')).resolves.toBe('hello');
   });
 
   it('should reject when reading a non-existent id', async () => {
     const spec = Spec.of({ foo: 'bar' });
-    await expect(spec.read('missing')).rejects.toThrow('No reader found for id: missing');
-  });
-
-  it('impl and ref should be callable', () => {
-    const spec = Spec.of({ foo: 'bar' });
-    expect(typeof spec.impl('foo')).toBe('function');
-    expect(typeof spec.ref('foo')).toBe('function');
+    expect(spec.read('missing')).rejects.toThrow('No reader found for id: missing');
   });
 
   it('ids should return all keys', () => {
     const spec = Spec.of({ a: '1', b: '2' });
-    const ids = spec.ids();
+    const ids = spec.getIds();
     expect(ids).toEqual(expect.arrayContaining(['a', 'b']));
+  });
+
+  it('should track impl callsites', () => {
+    const spec = Spec.of({ a: '1', b: '2' });
+
+    spec.impl('a');
+
+    const callsites = spec.getCallsites();
+    expect(callsites.impl['a']).toHaveLength(1);
+    expect(callsites.impl['a'][0]).toContain('spec.test.ts');
+  });
+
+  it('should track todo callsites', () => {
+    const spec = Spec.of({ a: '1', b: '2' });
+
+    spec.todo('b');
+
+    const callsites = spec.getCallsites();
+    expect(callsites.todo['b']).toHaveLength(1);
+    expect(callsites.todo['b'][0]).toContain('spec.test.ts');
   });
 });
