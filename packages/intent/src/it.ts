@@ -1,5 +1,6 @@
 import type { Reader } from '@stringsync/core/src/reader/types';
 import { StringReader } from '@stringsync/core/src/reader/string-reader';
+import { MultiReader } from '@stringsync/core/src/reader/multi-reader';
 import { Intent } from './intent';
 import { RequirementLevel, type Readable } from './types';
 
@@ -18,6 +19,20 @@ export class it {
   static should = should;
 
   static may = may;
+
+  static multi(...readables: Readable[]) {
+    return new MultiReader(
+      readables.map((readable) => {
+        if (typeof readable === 'string') {
+          return new StringReader(readable);
+        } else if (typeof readable.read === 'function') {
+          return readable;
+        } else {
+          throw new Error('Input must be a string or an instance of Reader');
+        }
+      }),
+    );
+  }
 }
 
 function intent(level: RequirementLevel, readable: Readable) {
