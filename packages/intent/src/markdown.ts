@@ -1,15 +1,21 @@
 import { FileReader } from '@stringsync/core/src/reader/file-reader';
+import type { FileSystem } from '@stringsync/core/src/file-system/types';
 import { StringReader } from '@stringsync/core/src/reader/string-reader';
 import type { Reader } from '@stringsync/core/src/reader/types';
 import { MarkdownSelector } from '@stringsync/core/src/selector/markdown-selector';
 import { SelectorReader } from '@stringsync/core/src/reader/selector-reader';
 import { NodeFileSystem } from '@stringsync/core/src/file-system/node-file-system';
 
-export type MarkdownInput = { path: string } | { content: string };
+export type MarkdownInput =
+  | {
+      path: string;
+      fileSystem?: FileSystem;
+    }
+  | { content: string };
 
 export function markdown(input: MarkdownInput): Markdown {
   if ('path' in input) {
-    const fileSystem = new NodeFileSystem();
+    const fileSystem = input.fileSystem ?? new NodeFileSystem();
     const reader = new FileReader(fileSystem, input.path);
     return new Markdown(reader);
   }
