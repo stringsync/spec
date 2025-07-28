@@ -1,6 +1,6 @@
 import type { Reader } from '@stringsync/core/src/reader/types';
 import { StringReader } from '@stringsync/core/src/reader/string-reader';
-import { Intention } from './intention';
+import { Intent } from './intent';
 import { RequirementLevel, type Readable } from './types';
 
 /**
@@ -20,7 +20,7 @@ export class it {
   static may = may;
 }
 
-function intention(level: RequirementLevel, readable: Readable) {
+function intent(level: RequirementLevel, readable: Readable) {
   let reader: Reader;
   if (typeof readable === 'string') {
     reader = new StringReader(readable);
@@ -29,25 +29,25 @@ function intention(level: RequirementLevel, readable: Readable) {
   } else {
     throw new Error('Input must be a string or an instance of Reader');
   }
-  return new Intention(level, reader);
+  return new Intent(level, reader);
 }
 
 function should(readable: Readable) {
-  return intention(RequirementLevel.Should, readable);
+  return intent(RequirementLevel.Should, readable);
 }
 
 should.not = function (readable: Readable) {
-  return intention(RequirementLevel.ShouldNot, readable);
+  return intent(RequirementLevel.ShouldNot, readable);
 };
 
 function must(readable: Readable) {
-  return intention(RequirementLevel.Must, readable);
+  return intent(RequirementLevel.Must, readable);
 }
 
 must.not = function (readable: Readable) {
-  return intention(RequirementLevel.MustNot, readable);
+  return intent(RequirementLevel.MustNot, readable);
 };
 
 function may(readable: Readable) {
-  return intention(RequirementLevel.May, readable);
+  return intent(RequirementLevel.May, readable);
 }

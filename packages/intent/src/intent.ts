@@ -2,7 +2,7 @@ import { RequirementLevel } from './types';
 import type { Reader } from '@stringsync/core/src/reader/types';
 import { PrefixTrimSelector } from '@stringsync/core/src/selector/prefix-trim-selector';
 
-export class Intention implements Reader {
+export class Intent implements Reader {
   constructor(
     private level: RequirementLevel,
     private reader: Reader,
