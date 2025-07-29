@@ -1,6 +1,8 @@
 import type { Reader } from '@stringsync/core/src/reader/types';
-import type { Readable } from './types';
+import { type Readable } from './types';
 import { StringReader } from '@stringsync/core/src/reader/string-reader';
+import { NoopTracker } from './tracker/noop-tracker';
+import { CallType, type Tracker } from './tracker/types';
 import { StackProbe } from './stack-probe';
 
 export type SpecInput = {
@@ -11,16 +13,10 @@ export type SpecMap = {
   [id: string]: Reader;
 };
 
-export type CallsiteMap<T extends SpecMap> = {
-  impl: { [K in keyof T]: string[] };
-  todo: { [K in keyof T]: string[] };
-};
-
 export class Spec<T extends SpecMap> {
-  private constructor(
-    private specs: T,
-    private callsites: CallsiteMap<T>,
-  ) {}
+  private tracker: Tracker = new NoopTracker();
+
+  private constructor(private specs: T) {}
 
   static of<I extends SpecInput>(input: I) {
     const ids = Object.keys(input);
@@ -31,30 +27,34 @@ export class Spec<T extends SpecMap> {
       specs[id] = typeof value === 'string' ? new StringReader(value) : value;
     }
 
-    const callsites: CallsiteMap<SpecMap> = { impl: {}, todo: {} };
-    for (const id of ids) {
-      callsites.impl[id] = [];
-      callsites.todo[id] = [];
-    }
-
-    return new Spec<{ [K in keyof typeof specs]: Reader }>(specs, callsites);
+    return new Spec<{ [K in keyof typeof specs]: Reader }>(specs);
   }
 
+  setTracker(tracker: Tracker) {
+    this.tracker = tracker;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   impl(id: keyof T) {
-    this.trackImpl(id, new StackProbe({ depth: 2 }));
+    this.tracker.track(CallType.Impl, String(id), new StackProbe().getCallsite());
     return () => {};
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   todo(id: keyof T) {
-    this.trackTodo(id, new StackProbe({ depth: 2 }));
+    this.tracker.track(CallType.Todo, String(id), new StackProbe().getCallsite());
     return () => {};
   }
 
   ref(id: keyof T) {
     return new SpecRef(
       this.specs[id],
-      () => this.trackImpl(id, new StackProbe()),
-      () => this.trackTodo(id, new StackProbe()),
+      () => {
+        this.tracker.track(CallType.Impl, String(id), new StackProbe({ depth: 1 }).getCallsite());
+      },
+      () => {
+        this.tracker.track(CallType.Todo, String(id), new StackProbe().getCallsite());
+      },
     );
   }
 
@@ -68,24 +68,6 @@ export class Spec<T extends SpecMap> {
 
   getIds() {
     return Object.keys(this.specs) as (keyof T)[];
-  }
-
-  getCallsites() {
-    return this.callsites;
-  }
-
-  private trackImpl(id: keyof T, stackProbe: StackProbe) {
-    const caller = stackProbe.getCaller();
-    if (!this.callsites.impl[id].includes(caller)) {
-      this.callsites.impl[id].push(caller);
-    }
-  }
-
-  private trackTodo(id: keyof T, stackProbe: StackProbe) {
-    const caller = stackProbe.getCaller();
-    if (!this.callsites.todo[id].includes(caller)) {
-      this.callsites.todo[id].push(caller);
-    }
   }
 }
 

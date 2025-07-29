@@ -35,24 +35,4 @@ describe('Spec', () => {
     const ids = spec.getIds();
     expect(ids).toEqual(expect.arrayContaining(['a', 'b']));
   });
-
-  it('should track impl callsites', () => {
-    const spec = Spec.of({ a: '1', b: '2' });
-
-    spec.impl('a');
-
-    const callsites = spec.getCallsites();
-    expect(callsites.impl['a']).toHaveLength(1);
-    expect(callsites.impl['a'][0]).toContain('spec.test.ts');
-  });
-
-  it('should track todo callsites', () => {
-    const spec = Spec.of({ a: '1', b: '2' });
-
-    spec.todo('b');
-
-    const callsites = spec.getCallsites();
-    expect(callsites.todo['b']).toHaveLength(1);
-    expect(callsites.todo['b'][0]).toContain('spec.test.ts');
-  });
 });

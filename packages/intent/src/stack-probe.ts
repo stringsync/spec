@@ -13,7 +13,7 @@ export class StackProbe {
     this.options = { ...DEFAULT_OPTIONS, ...options };
   }
 
-  getCaller() {
+  getCallsite() {
     const err = new Error();
     const stack = err.stack?.split('\n')[2 + this.options.depth]?.trim();
     const match = stack?.match(/\/(?:[^:\n]+\.ts):\d+:\d+/);
