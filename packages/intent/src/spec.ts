@@ -34,7 +34,6 @@ export class Spec<T extends SpecMap> {
     this.tracker = tracker;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   impl(id: keyof T) {
     this.tracker.track(CallType.Impl, String(id), new StackProbe().getCallsite());
     return () => {};
@@ -53,7 +52,7 @@ export class Spec<T extends SpecMap> {
         this.tracker.track(CallType.Impl, String(id), new StackProbe({ depth: 1 }).getCallsite());
       },
       () => {
-        this.tracker.track(CallType.Todo, String(id), new StackProbe().getCallsite());
+        this.tracker.track(CallType.Todo, String(id), new StackProbe({ depth: 1 }).getCallsite());
       },
     );
   }
