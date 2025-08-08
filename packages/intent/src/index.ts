@@ -1,3 +1,3 @@
 export * from './it';
 export * from './markdown';
-export * from './spec';
+export * from './intent-sdk';

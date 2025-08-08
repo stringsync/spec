@@ -1,94 +1,81 @@
-import type { Reader } from '@stringsync/core/src/reader/types';
-import { type Readable } from './types';
-import { StringReader } from '@stringsync/core/src/reader/string-reader';
-import { NoopTracker } from './tracker/noop-tracker';
-import { CallType } from './tracker/types';
+import type { Transport } from './transport/types';
+import type { Readable } from './types';
 import { StackProbe } from './stack-probe';
+import type { IntentEvent } from '@stringsync/core/src/events/types';
 
-export type SpecInput = {
-  [id: string]: Readable;
+export type IntentMap = {
+  [intentId: string]: Readable;
 };
 
-export type SpecMap = {
-  [id: string]: Reader;
-};
+export class Spec<T extends IntentMap> {
+  private stackProbe = new StackProbe();
 
-export class Spec<T extends SpecMap> {
-  private constructor(private specs: T) {}
+  constructor(
+    private id: string,
+    private intents: T,
+    private transport: Transport,
+  ) {}
 
-  static of<I extends SpecInput>(input: I) {
-    const ids = Object.keys(input);
-
-    const specs: SpecMap = {};
-    for (const id of ids) {
-      const value = input[id];
-      specs[id] = typeof value === 'string' ? new StringReader(value) : value;
-    }
-
-    return new Spec<{ [K in keyof typeof specs]: Reader }>(specs);
-  }
-
-  impl(id: keyof T) {
-    new NoopTracker().track(CallType.Impl, String(id), new StackProbe().getCallsite());
+  impl(intentId: keyof T) {
+    this.emit('impl', String(intentId));
     return () => {};
   }
 
-  todo(id: keyof T) {
-    new NoopTracker().track(CallType.Todo, String(id), new StackProbe().getCallsite());
+  todo(intentId: keyof T) {
+    this.emit('todo', String(intentId));
     return () => {};
   }
 
-  ref(id: keyof T) {
-    return new SpecRef(
-      this.specs[id],
-      () => {
-        new NoopTracker().track(
-          CallType.Impl,
-          String(id),
-          new StackProbe({ depth: 1 }).getCallsite(),
-        );
-      },
-      () => {
-        new NoopTracker().track(
-          CallType.Todo,
-          String(id),
-          new StackProbe({ depth: 1 }).getCallsite(),
-        );
-      },
-    );
+  ref(intentId: keyof T) {
+    return new Ref(String(intentId), this.transport);
   }
 
-  read(id: keyof T): Promise<string> {
-    const reader = this.specs[id];
-    if (!reader) {
-      return Promise.reject(new Error(`No reader found for id: ${String(id)}`));
-    }
-    return reader.read();
+  read(intentId: keyof T): Readable {
+    return this.intents[intentId] as Readable;
   }
 
-  getIds() {
-    return Object.keys(this.specs) as (keyof T)[];
+  private emit(type: IntentEvent['type'], intentId: string) {
+    const event: IntentEvent = {
+      type,
+      specId: this.id,
+      intentId: intentId,
+      callsite: this.stackProbe.getCallsite(),
+    };
+
+    this.transport.send(event).catch((error) => {
+      console.error(`Failed to send event for intent ${intentId}:`, error);
+    });
   }
 }
 
-class SpecRef {
+class Ref {
+  private stackProbe = new StackProbe();
+
   constructor(
-    private reader: Reader,
-    private onImpl: () => void,
-    private onTodo: () => void,
+    private intentId: string,
+    private transport: Transport,
   ) {}
 
   todo() {
-    this.onTodo();
+    this.emit('todo');
     return () => {};
   }
 
   impl() {
-    this.onImpl();
+    this.emit('impl');
     return () => {};
   }
 
-  read() {
-    return this.reader.read();
+  private emit(type: IntentEvent['type']) {
+    const event: IntentEvent = {
+      type,
+      specId: this.intentId,
+      intentId: this.intentId,
+      callsite: this.stackProbe.getCallsite(),
+    };
+
+    this.transport.send(event).catch((error) => {
+      console.error(`Failed to send event for ref ${this.intentId}:`, error);
+    });
   }
 }
