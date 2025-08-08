@@ -27,8 +27,11 @@ Declare the spec.
 _calculator.spec.ts_
 
 ```ts
+// prettier-ignore
 export const spec = sdk.spec('calculator', {
-  add: it.must('add two numbers').example('calculator.add(2, 2) // returns 4'),
+  add: it
+    .must('add two numbers')
+    .example('calculator.add(2, 2) // returns 4'),
 });
 ```
 
