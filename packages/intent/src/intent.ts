@@ -1,7 +1,6 @@
 import { MultiReader } from '@stringsync/core/src/reader/multi-reader';
 import { RequirementLevel } from './types';
 import type { Readable, Reader } from '@stringsync/core/src/reader/types';
-import { PrefixTrimSelector } from '@stringsync/core/src/selector/prefix-trim-selector';
 import { StringReader } from '@stringsync/core/src/reader/string-reader';
 import { readers } from '@stringsync/core/src/reader/readers';
 
@@ -15,9 +14,7 @@ export class Intent implements Reader {
     const level = this.getHumanReadableLevel();
     const prefix = `it ${level}`;
     const content = await this.reader.read();
-    const selector = new PrefixTrimSelector(prefix);
-    const description = await selector.select(content);
-    return `${prefix} ${description}`;
+    return `${prefix} ${content}`;
   }
 
   example(readable: Readable): Intent {
