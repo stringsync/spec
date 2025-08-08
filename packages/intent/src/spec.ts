@@ -2,7 +2,7 @@ import type { Reader } from '@stringsync/core/src/reader/types';
 import { type Readable } from './types';
 import { StringReader } from '@stringsync/core/src/reader/string-reader';
 import { NoopTracker } from './tracker/noop-tracker';
-import { CallType, type Tracker } from './tracker/types';
+import { CallType } from './tracker/types';
 import { StackProbe } from './stack-probe';
 
 export type SpecInput = {
@@ -14,8 +14,6 @@ export type SpecMap = {
 };
 
 export class Spec<T extends SpecMap> {
-  private tracker: Tracker = new NoopTracker();
-
   private constructor(private specs: T) {}
 
   static of<I extends SpecInput>(input: I) {
@@ -30,18 +28,13 @@ export class Spec<T extends SpecMap> {
     return new Spec<{ [K in keyof typeof specs]: Reader }>(specs);
   }
 
-  setTracker(tracker: Tracker) {
-    this.tracker = tracker;
-  }
-
   impl(id: keyof T) {
-    this.tracker.track(CallType.Impl, String(id), new StackProbe().getCallsite());
+    new NoopTracker().track(CallType.Impl, String(id), new StackProbe().getCallsite());
     return () => {};
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   todo(id: keyof T) {
-    this.tracker.track(CallType.Todo, String(id), new StackProbe().getCallsite());
+    new NoopTracker().track(CallType.Todo, String(id), new StackProbe().getCallsite());
     return () => {};
   }
 
@@ -49,10 +42,18 @@ export class Spec<T extends SpecMap> {
     return new SpecRef(
       this.specs[id],
       () => {
-        this.tracker.track(CallType.Impl, String(id), new StackProbe({ depth: 1 }).getCallsite());
+        new NoopTracker().track(
+          CallType.Impl,
+          String(id),
+          new StackProbe({ depth: 1 }).getCallsite(),
+        );
       },
       () => {
-        this.tracker.track(CallType.Todo, String(id), new StackProbe({ depth: 1 }).getCallsite());
+        new NoopTracker().track(
+          CallType.Todo,
+          String(id),
+          new StackProbe({ depth: 1 }).getCallsite(),
+        );
       },
     );
   }
