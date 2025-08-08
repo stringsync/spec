@@ -1,5 +1,3 @@
-import type { Reader } from '@stringsync/core/src/reader/types';
-
 export enum RequirementLevel {
   Must = 'must',
   MustNot = 'mustNot',
@@ -8,4 +6,22 @@ export enum RequirementLevel {
   May = 'may',
 }
 
-export type Readable = string | Reader;
+export interface Transport {
+  send(event: IntentEvent): Promise<void>;
+}
+
+export type IntentEvent = ImplEvent | TodoEvent;
+
+export type ImplEvent = {
+  type: 'impl';
+  specId: string;
+  intentId: string;
+  callsite: string;
+};
+
+export type TodoEvent = {
+  type: 'todo';
+  specId: string;
+  intentId: string;
+  callsite: string;
+};

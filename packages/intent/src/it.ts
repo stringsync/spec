@@ -1,8 +1,8 @@
-import type { Reader } from '@stringsync/core/src/reader/types';
-import { StringReader } from '@stringsync/core/src/reader/string-reader';
+import type { Readable } from '@stringsync/core/src/reader/types';
 import { MultiReader } from '@stringsync/core/src/reader/multi-reader';
 import { Intent } from './intent';
-import { RequirementLevel, type Readable } from './types';
+import { RequirementLevel } from './types';
+import { readers } from '@stringsync/core/src/reader/readers';
 
 /**
  * A static class that provides imperatives for expressing intent specifications.
@@ -21,29 +21,16 @@ export class it {
   static may = may;
 
   static multi(...readables: Readable[]) {
-    return new MultiReader(
-      readables.map((readable) => {
-        if (typeof readable === 'string') {
-          return new StringReader(readable);
-        } else if (typeof readable.read === 'function') {
-          return readable;
-        } else {
-          throw new Error('Input must be a string or an instance of Reader');
-        }
-      }),
-    );
+    return new MultiReader(readables.map(readers.toReader));
+  }
+
+  static raw(readable: Readable) {
+    return readers.toReader(readable);
   }
 }
 
 function intent(level: RequirementLevel, readable: Readable) {
-  let reader: Reader;
-  if (typeof readable === 'string') {
-    reader = new StringReader(readable);
-  } else if (typeof readable.read === 'function') {
-    reader = readable;
-  } else {
-    throw new Error('Input must be a string or an instance of Reader');
-  }
+  const reader = readers.toReader(readable);
   return new Intent(level, reader);
 }
 

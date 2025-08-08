@@ -1,7 +1,9 @@
-import type { Transport } from './transport/types';
-import type { Readable } from './types';
+import type { IntentEvent, Transport } from './types';
 import { StackProbe } from './stack-probe';
-import type { IntentEvent } from '@stringsync/core/src/events/types';
+import { readers } from '@stringsync/core/src/reader/readers';
+import type { Readable } from '@stringsync/core/src/reader/types';
+
+const TS_DECORATOR_ADAPTER = () => {};
 
 export type IntentMap = {
   [intentId: string]: Readable;
@@ -16,22 +18,55 @@ export class Spec<T extends IntentMap> {
     private transport: Transport,
   ) {}
 
+  getSpecId(): string {
+    return this.id;
+  }
+
+  getIntentIds() {
+    return Object.keys(this.intents) as (keyof T)[];
+  }
+
   impl(intentId: keyof T) {
     this.emit('impl', String(intentId));
-    return () => {};
+    return TS_DECORATOR_ADAPTER;
   }
 
   todo(intentId: keyof T) {
     this.emit('todo', String(intentId));
-    return () => {};
+    return TS_DECORATOR_ADAPTER;
   }
 
   ref(intentId: keyof T) {
     return new Ref(String(intentId), this.transport);
   }
 
-  read(intentId: keyof T): Readable {
-    return this.intents[intentId] as Readable;
+  read(intentId: keyof T) {
+    return readers.read(this.intents[intentId]);
+  }
+
+  async toMarkdown(): Promise<string> {
+    const header = `# ${this.id}`;
+
+    const sections = await Promise.all([
+      ...this.getIntentIds().map(async (intentId) => {
+        const intent = this.intents[intentId];
+
+        let content: string;
+        if (typeof intent === 'string') {
+          content = intent;
+        } else if (readers.isReader(intent)) {
+          content = await intent.read();
+        } else if (typeof intent === 'undefined') {
+          content = '[ERROR: Intent does not exist]';
+        } else {
+          content = '[ERROR: Intent is not readable]';
+        }
+
+        return `## ${String(intentId)}\n\n${content}`;
+      }),
+    ]);
+
+    return [header, ...sections].join('\n\n');
   }
 
   private emit(type: IntentEvent['type'], intentId: string) {
@@ -58,12 +93,12 @@ class Ref {
 
   todo() {
     this.emit('todo');
-    return () => {};
+    return TS_DECORATOR_ADAPTER;
   }
 
   impl() {
     this.emit('impl');
-    return () => {};
+    return TS_DECORATOR_ADAPTER;
   }
 
   private emit(type: IntentEvent['type']) {
