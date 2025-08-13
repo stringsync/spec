@@ -17,9 +17,7 @@ _intent.config.ts_
 ```ts
 import { Sdk, HttpTransport } from '@stringsync/intent';
 
-export const sdk = new Sdk({
-  transport: HttpTransport.localhost(3000),
-});
+export const sdk = Sdk.standard();
 ```
 
 Declare the spec.
