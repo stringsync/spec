@@ -1,7 +1,8 @@
-import type { Transport } from './types';
+import type { IntentEvent, Transport } from './types';
 
 export class NoopTransport implements Transport {
-  async send() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async send(event: IntentEvent) {
     // noop
   }
 }
