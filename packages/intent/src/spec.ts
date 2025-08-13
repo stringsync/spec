@@ -2,6 +2,7 @@ import type { IntentEvent, Transport } from './types';
 import { StackProbe } from './stack-probe';
 import { readers } from '@stringsync/core/src/reader/readers';
 import type { Readable } from '@stringsync/core/src/reader/types';
+import { assert } from '@stringsync/core/src/assert/assert';
 
 const TS_DECORATOR_ADAPTER = () => {};
 
@@ -16,7 +17,13 @@ export class Spec<T extends IntentMap> {
     private id: string,
     private intents: T,
     private transport: Transport,
-  ) {}
+  ) {
+    assert.validId(this.id);
+
+    for (const intentId of Object.keys(intents)) {
+      assert.validId(intentId);
+    }
+  }
 
   getSpecId(): string {
     return this.id;
