@@ -1,4 +1,6 @@
 import { program } from 'commander';
+import { coverage } from './coverage';
+import { markdown } from './markdown';
 
 program.name('intentx').description('CLI for managing intents');
 
@@ -7,7 +9,8 @@ program
   .description('Run a command and track intent events')
   .argument('[args...]', 'The command to run')
   .action(async (args: string[]) => {
-    console.log('[UNIMPLEMENTED] got args:', args);
+    console.warn('[UNIMPLEMENTED] got args:', args);
+    await coverage();
   });
 
 program
@@ -15,7 +18,8 @@ program
   .description('View a spec as markdown')
   .argument('[paths...]', 'The paths of the spec files (which can take globs)')
   .action(async (paths: string[]) => {
-    console.log('[UNIMPLEMENTED] got paths:', paths);
+    console.warn('[UNIMPLEMENTED] got paths:', paths);
+    await markdown();
   });
 
 program.parse();
