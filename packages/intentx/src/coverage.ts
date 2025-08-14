@@ -20,10 +20,12 @@ export async function coverage(args: string[]) {
   try {
     await intentServer.start(DEFAULT_INTENT_PORT);
     await command.run();
-    console.log(await intentService.getAllIntentEvents());
   } finally {
     await intentServer.stop();
   }
+
+  const events = await intentService.getAllIntentEvents();
+  console.log(JSON.stringify(events, null, 2));
 
   process.exit();
 }
