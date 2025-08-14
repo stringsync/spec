@@ -30,6 +30,7 @@
       "name": "@stringsync/intentx",
       "version": "0.0.0",
       "dependencies": {
+        "@stringsync/core": "workspace:*",
         "commander": "^14.0.0",
       },
     },

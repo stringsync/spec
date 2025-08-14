@@ -1,5 +1,5 @@
 import type { IntentEvent, Transport } from './types';
-import { StackProbe } from './stack-probe';
+import { CallsiteLocator } from './callsite-locator';
 import { readers } from '@stringsync/core/src/reader/readers';
 import type { Readable } from '@stringsync/core/src/reader/types';
 import { assert } from '@stringsync/core/src/assert/assert';
@@ -11,7 +11,7 @@ export type IntentMap = {
 };
 
 export class Spec<T extends IntentMap> {
-  private stackProbe = new StackProbe();
+  private callsiteLocator = new CallsiteLocator();
 
   constructor(
     private id: string,
@@ -81,7 +81,7 @@ export class Spec<T extends IntentMap> {
       type,
       specId: this.id,
       intentId: intentId,
-      callsite: this.stackProbe.getCallsite(),
+      callsite: this.callsiteLocator.locate(),
     };
 
     this.transport.send(event).catch((error) => {
@@ -91,7 +91,7 @@ export class Spec<T extends IntentMap> {
 }
 
 class Ref {
-  private stackProbe = new StackProbe();
+  private callsiteLocator = new CallsiteLocator();
 
   constructor(
     private intentId: string,
@@ -113,7 +113,7 @@ class Ref {
       type,
       specId: this.intentId,
       intentId: this.intentId,
-      callsite: this.stackProbe.getCallsite(),
+      callsite: this.callsiteLocator.locate(),
     };
 
     this.transport.send(event).catch((error) => {
