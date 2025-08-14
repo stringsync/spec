@@ -3,7 +3,7 @@ import { NoopTransport } from './noop-transport';
 import { Spec, type IntentMap } from './spec';
 import type { Transport } from './types';
 
-const DEFAULT_INTENT_PORT = 4321;
+export const DEFAULT_INTENT_PORT = 4321;
 
 export type SdkOptions = {
   transport: Transport;

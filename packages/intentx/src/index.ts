@@ -8,8 +8,7 @@ program
   .command('coverage')
   .description('Run a command and track intent events')
   .argument('[args...]', 'The command to run')
-  .action(async (args: string[]) => {
-    console.warn('[UNIMPLEMENTED] got args:', args);
+  .action(async () => {
     await coverage();
   });
 
