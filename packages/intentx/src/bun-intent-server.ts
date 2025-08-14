@@ -4,7 +4,6 @@ import type { IntentService } from './intent-service';
 
 export class BunIntentServer implements IntentServer {
   private server: Server | null = null;
-  private stopResolvers = Promise.withResolvers<void>();
 
   constructor(private intentService: IntentService) {}
 
@@ -38,9 +37,7 @@ export class BunIntentServer implements IntentServer {
       },
     });
 
-    console.log(`Listening for events on port ${port}`);
-
-    return this.stopResolvers.promise;
+    console.log(`intent server started on port ${port}`);
   }
 
   async stop(): Promise<void> {
@@ -49,7 +46,6 @@ export class BunIntentServer implements IntentServer {
     }
     await this.server.stop();
     this.server = null;
-    this.stopResolvers.resolve();
-    this.stopResolvers = Promise.withResolvers();
+    console.log('intent server stopped');
   }
 }

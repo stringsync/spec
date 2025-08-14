@@ -8,8 +8,8 @@ program
   .command('coverage')
   .description('Run a command and track intent events')
   .argument('[args...]', 'The command to run')
-  .action(async () => {
-    await coverage();
+  .action(async (args: string[]) => {
+    await coverage(args);
   });
 
 program
