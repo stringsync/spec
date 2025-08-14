@@ -13,17 +13,17 @@ export class Sdk {
   constructor(private options: SdkOptions) {}
 
   static standard(env: Dict<string> = process.env): Sdk {
-    const nodeEnv = env.NODE_ENV;
+    const intentRole = env.INTENT_ROLE;
     const intentPort = env.INTENT_PORT ?? DEFAULT_INTENT_PORT.toString();
 
-    if (nodeEnv === 'production') {
-      return Sdk.noop();
-    } else {
+    if (intentRole === 'coverage') {
       let port = parseInt(intentPort);
       if (isNaN(port)) {
         port = DEFAULT_INTENT_PORT;
       }
       return Sdk.port(port);
+    } else {
+      return Sdk.noop();
     }
   }
 

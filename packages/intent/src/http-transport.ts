@@ -18,7 +18,7 @@ export class HttpTransport implements Transport {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(event),
+      body: JSON.stringify({ events: [event] }),
     });
   }
 }

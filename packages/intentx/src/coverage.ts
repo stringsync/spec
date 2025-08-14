@@ -9,11 +9,18 @@ export async function coverage(args: string[]) {
   const intentService = new IntentService(intentStorage);
   const intentServer = new BunIntentServer(intentService);
 
-  const command = new BunCommand({ cmd: args });
+  const command = new BunCommand({
+    cmd: args,
+    env: {
+      ...process.env,
+      INTENT_ROLE: 'coverage',
+    },
+  });
 
   try {
     await intentServer.start(DEFAULT_INTENT_PORT);
     await command.run();
+    console.log(await intentService.getAllIntentEvents());
   } finally {
     await intentServer.stop();
   }

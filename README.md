@@ -15,7 +15,7 @@ Configure the SDK.
 _intent.config.ts_
 
 ```ts
-import { Sdk, HttpTransport } from '@stringsync/intent';
+import { Sdk } from '@stringsync/intent';
 
 export const sdk = Sdk.standard();
 ```

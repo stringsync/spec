@@ -2,6 +2,7 @@ import type { Command } from './types';
 
 export type BunCommandInit = {
   cmd: string[];
+  env?: Dict<string>;
 };
 
 export class BunCommand implements Command {
@@ -13,6 +14,7 @@ export class BunCommand implements Command {
       stdin: 'ignore',
       stdout: 'ignore',
       stderr: 'ignore',
+      env: this.init.env,
     });
 
     return subprocess.exited;

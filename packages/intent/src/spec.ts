@@ -4,14 +4,15 @@ import { readers } from '@stringsync/core/src/reader/readers';
 import type { Readable } from '@stringsync/core/src/reader/types';
 import { assert } from '@stringsync/core/src/assert/assert';
 
-const TS_DECORATOR_ADAPTER = () => {};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const TS_DECORATOR_ADAPTER = (...args: unknown[]) => {};
 
 export type IntentMap = {
   [intentId: string]: Readable;
 };
 
 export class Spec<T extends IntentMap> {
-  private callsiteLocator = new CallsiteLocator();
+  private callsiteLocator = new CallsiteLocator({ depth: 2 });
 
   constructor(
     private id: string,
@@ -91,7 +92,7 @@ export class Spec<T extends IntentMap> {
 }
 
 class Ref {
-  private callsiteLocator = new CallsiteLocator();
+  private callsiteLocator = new CallsiteLocator({ depth: 2 });
 
   constructor(
     private intentId: string,
