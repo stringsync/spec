@@ -4,8 +4,14 @@ Map intention to implementation
 
 ## Dev
 
+First, install bun at https://bun.sh/.
+
+🚨 TEMPORARY DX 🚨
+
+To run the dev example, run the following command.
+
 ```sh
-bun run packages/intentx/src/index.ts coverage -- bun test examples/calculator
+bun run packages/intentx/src/index.ts coverage -- bun test --preload ./examples/calculator/test.setup.ts examples/calculator
 ```
 
 ## Getting Started

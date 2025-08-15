@@ -1,5 +1,6 @@
 import { HttpTransport } from './http-transport';
 import { NoopTransport } from './noop-transport';
+import { SettlingTransport } from './settling-transport';
 import { Spec, type IntentMap } from './spec';
 import type { Transport } from './types';
 
@@ -10,7 +11,11 @@ export type SdkOptions = {
 };
 
 export class Sdk {
-  constructor(private options: SdkOptions) {}
+  private transport: SettlingTransport;
+
+  constructor(options: SdkOptions) {
+    this.transport = new SettlingTransport(options.transport);
+  }
 
   static standard(env: Dict<string> = process.env): Sdk {
     const intentRole = env.INTENT_ROLE;
@@ -36,6 +41,10 @@ export class Sdk {
   }
 
   spec<T extends IntentMap>(specId: string, intents: T) {
-    return new Spec(specId, intents, this.options.transport);
+    return new Spec(specId, intents, this.transport);
+  }
+
+  async settle() {
+    await this.transport.settle();
   }
 }

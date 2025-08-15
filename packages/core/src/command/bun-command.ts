@@ -11,9 +11,6 @@ export class BunCommand implements Command {
   async run() {
     const subprocess = Bun.spawn({
       cmd: this.init.cmd,
-      stdin: 'ignore',
-      stdout: 'ignore',
-      stderr: 'ignore',
       env: this.init.env,
     });
 
