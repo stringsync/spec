@@ -2,6 +2,12 @@
 
 Map intention to implementation
 
+## Dev
+
+```sh
+bun run packages/intentx/src/index.ts coverage -- bun test examples/calculator
+```
+
 ## Getting Started
 
 Install the library.
