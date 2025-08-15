@@ -8,7 +8,7 @@ First, install bun at https://bun.sh/.
 
 🚨 TEMPORARY DX 🚨
 
-To run the dev example, run the following command.
+To run the dev example, run the following command from the root of the project.
 
 ```sh
 bun run packages/intentx/src/index.ts coverage -- bun test --preload ./examples/calculator/test.setup.ts examples/calculator
