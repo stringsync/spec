@@ -36,10 +36,10 @@ program
 program
   .command('markdown')
   .description('View a spec as markdown')
-  .argument('[paths...]', 'The paths of the spec files (which can take globs)')
-  .action(async (paths: string[]) => {
-    console.warn('[UNIMPLEMENTED] got paths:', paths);
-    await markdown();
+  .argument('path', 'The spec file path')
+  .option('-v, --var <name>', 'The variable name of the exported spec, default: "spec"', 'spec')
+  .action(async (path: string, opts: { var: string }) => {
+    await markdown({ path, exportedVariableName: opts.var });
   });
 
 program.parse();
