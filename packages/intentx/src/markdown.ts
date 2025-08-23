@@ -15,7 +15,9 @@ export async function markdown(input: { path: string; exportedVariableName: stri
   }
 
   if (!(value instanceof Spec)) {
-    throw new Error(`Exported variable '${input.exportedVariableName}' must be a Spec object`);
+    throw new Error(
+      `variable '${input.exportedVariableName}' must be a Spec, got: ${value.constructor.name}`,
+    );
   }
 
   console.log(await value.toMarkdown());
