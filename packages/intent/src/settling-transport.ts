@@ -19,4 +19,8 @@ export class SettlingTransport implements Transport {
   async settle() {
     await Promise.allSettled(this.sends);
   }
+
+  getUnsettledCount() {
+    return this.sends.size;
+  }
 }
