@@ -1,5 +1,5 @@
 import { DEFAULT_INTENT_PORT } from '@stringsync/intent/src/sdk';
-import type { IntentServer } from './intent-server';
+import type { IntentServer } from '../intent-server/types';
 import type { Command } from '@stringsync/core/src/command/types';
 
 export async function coverage({

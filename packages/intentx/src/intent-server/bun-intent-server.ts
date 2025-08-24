@@ -1,6 +1,6 @@
 import type { BunRequest, Server } from 'bun';
-import type { IntentServer } from './intent-server';
-import type { IntentService } from './intent-service';
+import type { IntentService } from '../intent-service';
+import type { IntentServer } from './types';
 
 export class BunIntentServer implements IntentServer {
   private server: Server | null = null;

@@ -1,5 +1,5 @@
 import type { ImplEvent, IntentEvent, TodoEvent } from '@stringsync/intent/src/types';
-import type { IntentStorage } from './intent-storage';
+import type { IntentStorage } from './intent-storage/types';
 
 export class IntentService {
   constructor(private intentStorage: IntentStorage) {}

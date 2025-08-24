@@ -1,9 +1,9 @@
 import { program } from 'commander';
-import { coverage } from './coverage';
-import { markdown } from './markdown';
+import { coverage } from './actions/coverage';
+import { markdown } from './actions/markdown';
 import { InMemoryIntentStorage } from './in-memory-intent-storage';
 import { IntentService } from './intent-service';
-import { BunIntentServer } from './bun-intent-server';
+import { BunIntentServer } from './intent-server/bun-intent-server';
 import { BunCommand } from '@stringsync/core/src/command/bun-command';
 
 program.name('intentx').description('CLI for managing intents');
@@ -39,7 +39,11 @@ program
   .argument('path', 'The spec file path')
   .option('-v, --var <name>', 'The variable name of the exported spec, default: "spec"', 'spec')
   .action(async (path: string, opts: { var: string }) => {
-    await markdown({ path, exportedVariableName: opts.var });
+    const md = await markdown({ path, exportedVariableName: opts.var });
+
+    console.log(md);
+
+    process.exit();
   });
 
 program.parse();
