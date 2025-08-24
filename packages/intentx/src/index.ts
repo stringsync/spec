@@ -1,7 +1,7 @@
 import { program } from 'commander';
 import { coverage } from './actions/coverage';
 import { markdown } from './actions/markdown';
-import { InMemoryIntentStorage } from './in-memory-intent-storage';
+import { InMemoryIntentStorage } from './intent-storage/in-memory-intent-storage';
 import { IntentService } from './intent-service';
 import { BunIntentServer } from './intent-server/bun-intent-server';
 import { BunCommand } from '@stringsync/core/src/command/bun-command';
