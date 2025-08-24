@@ -5,6 +5,6 @@ describe('CallsiteLocator', () => {
   it('should return the caller file and line for direct call', () => {
     const probe = new CallsiteLocator();
     const caller = probe.locate();
-    expect(caller).toContain('stack-probe.test.ts');
+    expect(caller).toContain('callsite-locator.test.ts');
   });
 });
