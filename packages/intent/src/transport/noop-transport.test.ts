@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 import { NoopTransport } from './noop-transport';
-import type { IntentEvent } from './types';
+import type { IntentEvent } from '../types';
 
 describe('NoopTransport', () => {
   it('should not throw', async () => {

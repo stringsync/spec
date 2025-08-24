@@ -6,10 +6,6 @@ export enum RequirementLevel {
   May = 'may',
 }
 
-export interface Transport {
-  send(event: IntentEvent): Promise<void>;
-}
-
 export type IntentEvent = ImplEvent | TodoEvent;
 
 export type ImplEvent = {

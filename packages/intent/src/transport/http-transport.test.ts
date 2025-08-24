@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { FakeHttpClient } from '@stringsync/core/src/http/fake-http-client';
 import { HttpTransport } from './http-transport';
-import type { IntentEvent } from './types';
+import type { IntentEvent } from '../types';
 
 describe('HttpTransport', () => {
   let fakeHttpClient: FakeHttpClient;

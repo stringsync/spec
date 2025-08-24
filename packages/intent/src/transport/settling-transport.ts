@@ -1,4 +1,5 @@
-import type { IntentEvent, Transport } from './types';
+import type { IntentEvent } from '../types';
+import type { Transport } from './types';
 
 export class SettlingTransport implements Transport {
   private sends = new Set<Promise<void>>();
