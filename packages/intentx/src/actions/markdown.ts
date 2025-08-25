@@ -1,7 +1,10 @@
-import { Spec } from '@stringsync/intent/src/spec';
+import { Spec } from '@stringsync/intent';
 import * as path from 'path';
 
-export async function markdown(input: { path: string; exportedVariableName: string }) {
+export async function markdown(input: {
+  path: string;
+  exportedVariableName: string;
+}): Promise<string> {
   const module = await import(path.resolve(process.cwd(), input.path));
 
   const value = module[input.exportedVariableName];
@@ -20,5 +23,5 @@ export async function markdown(input: { path: string; exportedVariableName: stri
     );
   }
 
-  console.log(await value.toMarkdown());
+  return await value.toMarkdown();
 }

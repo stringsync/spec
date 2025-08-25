@@ -1,5 +1,13 @@
-import { describe, it } from 'bun:test';
+import { describe, it, expect } from 'bun:test';
+import { Sdk } from './sdk';
+import { Spec } from './spec';
 
 describe('Sdk', () => {
-  it.todo('creates specs');
+  it('creates specs', () => {
+    const sdk = Sdk.standard();
+
+    const spec = sdk.spec('foo', { bar: 'baz' });
+
+    expect(spec).toBeInstanceOf(Spec);
+  });
 });

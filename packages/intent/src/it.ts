@@ -1,8 +1,6 @@
-import type { Readable } from '@stringsync/core/src/reader/types';
-import { MultiReader } from '@stringsync/core/src/reader/multi-reader';
+import { MultiReader, readers, type Readable } from '@stringsync/core';
 import { Intent } from './intent';
 import { RequirementLevel } from './types';
-import { readers } from '@stringsync/core/src/reader/readers';
 
 /**
  * A static class that provides imperatives for expressing intent specifications.

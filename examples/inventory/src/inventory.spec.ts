@@ -1,4 +1,4 @@
-import { it } from '../intent';
+import { it } from '@stringsync/intent';
 import { sdk } from './intent.config';
 
 export const spec = sdk.spec('inventory', {
@@ -7,5 +7,3 @@ export const spec = sdk.spec('inventory', {
   updateCard: it.must('update card details and adjust quantity'),
   removeCard: it.must('remove a card or decrement quantity to zero'),
 });
-
-

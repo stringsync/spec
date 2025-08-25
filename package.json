@@ -3,13 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
+  "scripts": {
+    "setup": "bun link --cwd ./packages/intentx",
+    "teardown": "bun unlink --cwd ./packages/intentx"
+  },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/bun": "latest",
     "eslint": "^9.32.0",
-    "jiti": "^2.5.1",
     "prettier": "3.6.2",
     "typescript-eslint": "^8.38.0"
   },

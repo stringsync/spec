@@ -7,12 +7,25 @@
         "@eslint/js": "^9.32.0",
         "@types/bun": "latest",
         "eslint": "^9.32.0",
-        "jiti": "^2.5.1",
         "prettier": "3.6.2",
         "typescript-eslint": "^8.38.0",
       },
       "peerDependencies": {
         "typescript": "^5.8.3",
+      },
+    },
+    "examples/calculator": {
+      "name": "@stringsync/intent-examples-calculator",
+      "version": "0.0.0",
+      "dependencies": {
+        "@stringsync/intent": "workspace:*",
+      },
+    },
+    "examples/inventory": {
+      "name": "@stringsync/intent-examples-inventory",
+      "version": "0.0.0",
+      "dependencies": {
+        "@stringsync/intent": "workspace:*",
       },
     },
     "packages/core": {
@@ -72,6 +85,10 @@
     "@stringsync/core": ["@stringsync/core@workspace:packages/core"],
 
     "@stringsync/intent": ["@stringsync/intent@workspace:packages/intent"],
+
+    "@stringsync/intent-examples-calculator": ["@stringsync/intent-examples-calculator@workspace:examples/calculator"],
+
+    "@stringsync/intent-examples-inventory": ["@stringsync/intent-examples-inventory@workspace:examples/inventory"],
 
     "@stringsync/intentx": ["@stringsync/intentx@workspace:packages/intentx"],
 

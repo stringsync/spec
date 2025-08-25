@@ -1,8 +1,7 @@
-import type { IntentEvent, Transport } from './types';
+import type { Transport } from './transport/types';
 import { CallsiteLocator } from './callsite-locator';
-import { readers } from '@stringsync/core/src/reader/readers';
-import type { Readable } from '@stringsync/core/src/reader/types';
-import { assert } from '@stringsync/core/src/assert/assert';
+import { readers, assert, type Readable } from '@stringsync/core';
+import type { IntentEvent } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TS_DECORATOR_ADAPTER = (...args: unknown[]) => {};
@@ -45,7 +44,7 @@ export class Spec<T extends IntentMap> {
   }
 
   ref(intentId: keyof T) {
-    return new Ref(String(intentId), this.transport);
+    return new Ref(this.id, String(intentId), this.transport);
   }
 
   read(intentId: keyof T) {
@@ -95,6 +94,7 @@ class Ref {
   private callsiteLocator = new CallsiteLocator({ depth: 2 });
 
   constructor(
+    private specId: string,
     private intentId: string,
     private transport: Transport,
   ) {}
@@ -112,7 +112,7 @@ class Ref {
   private emit(type: IntentEvent['type']) {
     const event: IntentEvent = {
       type,
-      specId: this.intentId,
+      specId: this.specId,
       intentId: this.intentId,
       callsite: this.callsiteLocator.locate(),
     };

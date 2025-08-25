@@ -1,8 +1,8 @@
-import { HttpTransport } from './http-transport';
-import { NoopTransport } from './noop-transport';
-import { SettlingTransport } from './settling-transport';
+import { HttpTransport } from './transport/http-transport';
+import { NoopTransport } from './transport/noop-transport';
 import { Spec, type IntentMap } from './spec';
-import type { Transport } from './types';
+import { SettlingTransport } from './transport/settling-transport';
+import type { Transport } from './transport/types';
 
 export const DEFAULT_INTENT_PORT = 4321;
 

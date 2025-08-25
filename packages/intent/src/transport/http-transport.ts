@@ -1,6 +1,6 @@
-import type { IntentEvent, Transport } from './types';
-import type { HttpClient } from '@stringsync/core/src/http/types';
-import { FetchHttpClient } from '@stringsync/core/src/http/fetch-http-client';
+import type { Transport } from './types';
+import { FetchHttpClient, type HttpClient } from '@stringsync/core';
+import type { IntentEvent } from '../types';
 
 export class HttpTransport implements Transport {
   constructor(
