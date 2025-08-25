@@ -1,4 +1,4 @@
-import { Spec } from '@stringsync/intent/src/spec';
+import { Spec } from '@stringsync/intent';
 import * as path from 'path';
 
 export async function markdown(input: {

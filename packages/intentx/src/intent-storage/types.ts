@@ -1,4 +1,4 @@
-import type { IntentEvent } from '@stringsync/intent/src/types';
+import type { IntentEvent } from '@stringsync/intent';
 
 export interface IntentStorage {
   addIntentEvents(intentEvents: IntentEvent[]): Promise<void>;

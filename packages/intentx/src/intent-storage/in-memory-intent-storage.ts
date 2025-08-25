@@ -1,4 +1,4 @@
-import type { IntentEvent } from '@stringsync/intent/src/types';
+import type { IntentEvent } from '@stringsync/intent';
 import type { IntentStorage } from './types';
 
 export class InMemoryIntentStorage implements IntentStorage {

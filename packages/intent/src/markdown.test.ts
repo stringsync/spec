@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { FakeFileSystem } from '@stringsync/core/src/file-system/fake-file-system';
+import { FakeFileSystem } from '@stringsync/core';
 import { Markdown } from './markdown';
 
 describe('markdown', () => {

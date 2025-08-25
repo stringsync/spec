@@ -1,4 +1,4 @@
-import type { ImplEvent, IntentEvent, TodoEvent } from '@stringsync/intent/src/types';
+import type { ImplEvent, IntentEvent, TodoEvent } from '@stringsync/intent';
 import type { IntentStorage } from './intent-storage/types';
 
 export class IntentService {

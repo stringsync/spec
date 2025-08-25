@@ -1,8 +1,6 @@
 import type { Transport } from './transport/types';
 import { CallsiteLocator } from './callsite-locator';
-import { readers } from '@stringsync/core/src/reader/readers';
-import type { Readable } from '@stringsync/core/src/reader/types';
-import { assert } from '@stringsync/core/src/assert/assert';
+import { readers, assert, type Readable } from '@stringsync/core';
 import type { IntentEvent } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

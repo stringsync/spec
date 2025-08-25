@@ -5,7 +5,7 @@ import { markdown } from './actions/markdown';
 import { InMemoryIntentStorage } from './intent-storage/in-memory-intent-storage';
 import { IntentService } from './intent-service';
 import { BunIntentServer } from './intent-server/bun-intent-server';
-import { BunCommand } from '@stringsync/core/src/command/bun-command';
+import { BunCommand } from '@stringsync/core';
 
 program.name('intentx').description('CLI for managing intents');
 

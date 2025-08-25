@@ -1,4 +1,4 @@
-import { it } from '@stringsync/intent/src';
+import { it } from '@stringsync/intent';
 import { sdk } from './intent.config';
 
 // Parent orchestrator spec: defines the only public intents

@@ -1,8 +1,7 @@
-import { MultiReader } from '@stringsync/core/src/reader/multi-reader';
 import { RequirementLevel } from './types';
-import type { Readable, Reader } from '@stringsync/core/src/reader/types';
-import { StringReader } from '@stringsync/core/src/reader/string-reader';
-import { readers } from '@stringsync/core/src/reader/readers';
+import { MultiReader, type Readable, type Reader } from '@stringsync/core';
+import { StringReader } from '@stringsync/core';
+import { readers } from '@stringsync/core';
 
 export class Intent implements Reader {
   constructor(

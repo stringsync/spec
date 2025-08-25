@@ -1,10 +1,12 @@
-import { FileReader } from '@stringsync/core/src/reader/file-reader';
-import type { FileSystem } from '@stringsync/core/src/file-system/types';
-import { StringReader } from '@stringsync/core/src/reader/string-reader';
-import type { Reader } from '@stringsync/core/src/reader/types';
-import { MarkdownSelector } from '@stringsync/core/src/selector/markdown-selector';
-import { SelectorReader } from '@stringsync/core/src/reader/selector-reader';
-import { NodeFileSystem } from '@stringsync/core/src/file-system/node-file-system';
+import {
+  FileReader,
+  StringReader,
+  MarkdownSelector,
+  SelectorReader,
+  NodeFileSystem,
+  type FileSystem,
+  type Reader,
+} from '@stringsync/core';
 
 export type MarkdownInput =
   | {

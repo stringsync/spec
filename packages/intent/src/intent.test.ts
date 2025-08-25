@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'bun:test';
 import { Intent } from './intent';
 import { RequirementLevel } from './types';
-import { StringReader } from '@stringsync/core/src/reader/string-reader';
+import { StringReader } from '@stringsync/core';
 
 describe('Intent', () => {
   it('should create a human-readable intention string', async () => {
