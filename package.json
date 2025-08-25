@@ -6,6 +6,10 @@
     "packages/*",
     "examples/*"
   ],
+  "scripts": {
+    "setup": "bun link --cwd ./packages/intentx",
+    "teardown": "bun unlink --cwd ./packages/intentx"
+  },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/bun": "latest",

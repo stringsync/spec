@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { program } from 'commander';
 import { coverage } from './actions/coverage';
 import { markdown } from './actions/markdown';
@@ -10,8 +11,8 @@ program.name('intentx').description('CLI for managing intents');
 
 program
   .command('coverage')
-  .description('Run a command and track intent events')
-  .argument('[args...]', 'The command to run')
+  .description('run a command and track intent events')
+  .argument('[args...]', 'the command to run')
   .action(async (args: string[]) => {
     const intentStorage = new InMemoryIntentStorage();
     const intentService = new IntentService(intentStorage);
@@ -35,9 +36,9 @@ program
 
 program
   .command('markdown')
-  .description('View a spec as markdown')
-  .argument('path', 'The spec file path')
-  .option('-v, --var <name>', 'The variable name of the exported spec, default: "spec"', 'spec')
+  .description('view a spec as markdown')
+  .argument('path', 'the spec file path')
+  .option('-v, --var <name>', 'the variable name of the exported spec, default: "spec"', 'spec')
   .action(async (path: string, opts: { var: string }) => {
     const md = await markdown({ path, exportedVariableName: opts.var });
 
