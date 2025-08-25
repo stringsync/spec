@@ -20,7 +20,7 @@ export class Intent implements Reader {
   example(readable: Readable): Intent {
     const reader = new MultiReader([
       this.reader,
-      new StringReader('\nFor example,\n'),
+      new StringReader('\nFor example, '),
       readers.toReader(readable),
     ]);
     return new Intent(this.level, reader);
