@@ -1,4 +1,4 @@
-import { it } from '../intent';
+import { it } from '@stringsync/intent/src';
 import { sdk } from './intent.config';
 
 // Parent orchestrator spec: defines the only public intents
@@ -15,5 +15,3 @@ export const writerSpec = sdk.spec('inventory.graph.writer', {
 export const readerSpec = sdk.spec('inventory.graph.reader', {
   queryCards: it.must('filter cards by name and set'),
 });
-
-
