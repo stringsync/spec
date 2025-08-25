@@ -44,7 +44,7 @@ export class Spec<T extends IntentMap> {
   }
 
   ref(intentId: keyof T) {
-    return new Ref(String(intentId), this.transport);
+    return new Ref(this.id, String(intentId), this.transport);
   }
 
   read(intentId: keyof T) {
@@ -94,6 +94,7 @@ class Ref {
   private callsiteLocator = new CallsiteLocator({ depth: 2 });
 
   constructor(
+    private specId: string,
     private intentId: string,
     private transport: Transport,
   ) {}
@@ -111,7 +112,7 @@ class Ref {
   private emit(type: IntentEvent['type']) {
     const event: IntentEvent = {
       type,
-      specId: this.intentId,
+      specId: this.specId,
       intentId: this.intentId,
       callsite: this.callsiteLocator.locate(),
     };
