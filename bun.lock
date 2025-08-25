@@ -15,6 +15,13 @@
         "typescript": "^5.8.3",
       },
     },
+    "examples/calculator": {
+      "name": "@stringsync/intent-examples-calculator",
+      "version": "0.0.0",
+      "dependencies": {
+        "@stringsync/intent": "workspace:*",
+      },
+    },
     "packages/core": {
       "name": "@stringsync/core",
       "version": "0.0.0",
@@ -72,6 +79,8 @@
     "@stringsync/core": ["@stringsync/core@workspace:packages/core"],
 
     "@stringsync/intent": ["@stringsync/intent@workspace:packages/intent"],
+
+    "@stringsync/intent-examples-calculator": ["@stringsync/intent-examples-calculator@workspace:examples/calculator"],
 
     "@stringsync/intentx": ["@stringsync/intentx@workspace:packages/intentx"],
 
