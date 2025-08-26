@@ -1,7 +1,7 @@
 import { it } from '@stringsync/intent';
 import { sdk } from './intent.config';
 
-export const spec = sdk.spec('data', {
+export const data = sdk.spec('data', {
   // ——————————————————————————————————————————————————————————————
   // Identity, Time, and Scoping
   // ——————————————————————————————————————————————————————————————

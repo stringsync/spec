@@ -1,7 +1,7 @@
 import { it } from '@stringsync/intent';
 import { sdk } from './intent.config';
 
-export const appSpec = sdk.spec('app', {
+export const cujs = sdk.spec('cujs', {
   // ————————————————————————————————————————————————————————————————————————
   // User Onboarding / Identity
   // ————————————————————————————————————————————————————————————————————————
