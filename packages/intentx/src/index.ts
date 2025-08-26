@@ -38,8 +38,8 @@ program
   .command('markdown')
   .description('view a spec as markdown')
   .argument('path', 'the spec file path')
-  .option('-v, --var <name>', 'the variable name of the exported spec, default: "spec"', 'spec')
-  .action(async (path: string, opts: { var: string }) => {
+  .option('-v, --var <name>', 'the variable name of the exported spec')
+  .action(async (path: string, opts: { var?: string }) => {
     const md = await markdown({ path, exportedVariableName: opts.var });
 
     console.log(md);
