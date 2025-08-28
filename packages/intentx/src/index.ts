@@ -6,6 +6,7 @@ import { InMemoryIntentStorage } from './intent-storage/in-memory-intent-storage
 import { IntentService } from './intent-service';
 import { BunIntentServer } from './intent-server/bun-intent-server';
 import { BunCommand } from '@stringsync/core';
+import { scan } from './actions/scan';
 
 program.name('intentx').description('CLI for managing intents');
 
@@ -27,6 +28,22 @@ program
     });
 
     await coverage({ intentServer, command });
+
+    const events = await intentService.getAllIntentEvents();
+    console.log(events);
+
+    process.exit();
+  });
+
+program
+  .command('scan')
+  .description('best effort attempt to detect intents in code')
+  .argument('path', 'the path to the file or dir')
+  .action(async (path: string) => {
+    const intentStorage = new InMemoryIntentStorage();
+    const intentService = new IntentService(intentStorage);
+
+    await scan({ intentService, path });
 
     const events = await intentService.getAllIntentEvents();
     console.log(events);
