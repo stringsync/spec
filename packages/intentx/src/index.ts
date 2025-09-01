@@ -5,7 +5,7 @@ import { markdown } from './actions/markdown';
 import { InMemoryIntentStorage } from './intent-storage/in-memory-intent-storage';
 import { IntentService } from './intent-service';
 import { BunIntentServer } from './intent-server/bun-intent-server';
-import { BunCommand } from '@stringsync/core';
+import { BunCommand, NodeFileSystem } from '@stringsync/core';
 import { scan } from './actions/scan';
 
 program.name('intentx').description('CLI for managing intents');
@@ -38,26 +38,13 @@ program
 program
   .command('scan')
   .description('best effort attempt to detect intents in code')
-  .argument('[patterns...]', 'glob patterns to scan (defaults to common TypeScript patterns)')
-  .action(async (patterns: string[]) => {
-    const defaultPatterns = ['**/*.ts', '**/*.tsx'];
-    const scanPatterns = patterns.length > 0 ? patterns : defaultPatterns;
+  .argument('path', 'path to the tsconfig file')
+  .action(async (path: string) => {
+    const fileSystem = new NodeFileSystem();
 
-    const events = await scan(scanPatterns);
+    const events = await scan({ tsConfigPath: path, fileSystem });
 
-    // Output the results using the new ScanEvent format
-    for (const event of events) {
-      const argInfo = event.firstArg
-        ? `(${event.firstArg.kind}: ${event.firstArg.value}, ...)`
-        : '()';
-      console.log(
-        `${event.target.className}#${event.target.methodName}${argInfo}: ${event.callsite}`,
-      );
-    }
-
-    if (events.length === 0) {
-      console.log('No Spec#impl, Spec#todo, or Sdk#spec calls found.');
-    }
+    console.log(events);
 
     process.exit();
   });

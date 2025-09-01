@@ -1,7 +1,7 @@
 import ts from 'typescript';
-import { glob } from 'glob';
-import { Spec } from './spec';
-import { Sdk } from './sdk';
+import type { IntentEvent } from './types';
+import type { FileSystem } from '@stringsync/core';
+import * as path from 'path';
 
 export type ScanTarget = {
   className: string;
@@ -9,202 +9,201 @@ export type ScanTarget = {
   moduleFileHint: string;
 };
 
-export type ScanEvent = {
-  target: ScanTarget;
-  callsite: string;
-  firstArg: { kind: string; value: string } | null;
-};
-
 const SCAN_TARGETS = [
   {
-    className: Spec.name,
+    className: 'Spec',
     methodName: 'impl',
     moduleFileHint: 'intent',
   },
   {
-    className: Spec.name,
+    className: 'Spec',
     methodName: 'todo',
     moduleFileHint: 'intent',
   },
   {
-    className: Sdk.name,
+    className: 'Sdk',
     methodName: 'spec',
     moduleFileHint: 'intent',
   },
 ] as const;
 
 export class Scanner {
-  private readonly targets = SCAN_TARGETS;
-
   constructor(
-    private configs: Array<{ configPath: string; parsed: ts.ParsedCommandLine }>,
-    private globPatterns: string[] = [],
+    private tsConfigPath: string,
+    private fileSystem: FileSystem,
   ) {}
 
-  async scan(): Promise<ScanEvent[]> {
-    const events: ScanEvent[] = [];
+  async scan() {
+    const events = new Array<IntentEvent>();
 
-    // Get all files matching the glob patterns if provided
-    let matchingFiles: Set<string> | null = null;
-    if (this.globPatterns.length > 0) {
-      matchingFiles = new Set<string>();
-      for (const pattern of this.globPatterns) {
-        const files = await glob(pattern, { absolute: true });
-        files.forEach((file: string) => matchingFiles!.add(file));
+    const content = await this.fileSystem.read(this.tsConfigPath);
+    const json = JSON.parse(content);
+    const tsConfig = ts.parseJsonConfigFileContent(
+      json,
+      ts.sys,
+      path.dirname(this.tsConfigPath),
+      undefined,
+    );
+
+    const program = ts.createProgram({
+      rootNames: tsConfig.fileNames,
+      options: tsConfig.options,
+    });
+
+    for (const sourceFile of program.getSourceFiles()) {
+      if (sourceFile.isDeclarationFile) {
+        continue;
       }
-    }
 
-    for (const { parsed } of this.configs) {
-      const program = ts.createProgram({
-        rootNames: parsed.fileNames,
-        options: parsed.options,
-      });
-      const checker = program.getTypeChecker();
-
-      for (const sf of program.getSourceFiles()) {
-        if (sf.isDeclarationFile) continue;
-
-        // Filter files based on glob patterns if provided
-        if (matchingFiles && !matchingFiles.has(sf.fileName)) {
-          continue;
-        }
-
-        const visit = (node: ts.Node) => {
-          if (this.isOptionalCall(node) || ts.isCallExpression(node)) {
-            const call = node as ts.CallExpression;
-
-            for (const target of this.targets) {
-              if (this.isTargetCall(checker, call, target)) {
-                const event = this.createEventFromCall(call, sf, target);
-                if (event) {
-                  events.push(event);
-                }
-              }
+      const dfs = (node: ts.Node) => {
+        if (ts.isCallExpression(node)) {
+          for (const target of SCAN_TARGETS) {
+            if (this.isTargetCall(program, node, target)) {
+              const event = this.toIntentEvent(node, sourceFile, target);
+              events.push(event);
             }
           }
-          ts.forEachChild(node, visit);
-        };
+        }
+        ts.forEachChild(node, dfs);
+      };
 
-        visit(sf);
-      }
+      dfs(sourceFile);
     }
 
     return events;
   }
 
-  private createEventFromCall(
-    call: ts.CallExpression,
-    sf: ts.SourceFile,
-    target: ScanTarget,
-  ): ScanEvent | null {
-    const { line, character } = ts.getLineAndCharacterOfPosition(sf, call.getStart());
-    const callsite = `${sf.fileName}:${line + 1}:${character + 1}`;
-    const firstArg = this.extractFirstArgText(call.arguments[0], sf);
+  private isTargetCall(program: ts.Program, call: ts.CallExpression, target: ScanTarget) {
+    if (ts.isPropertyAccessExpression(call.expression)) {
+      return this.isTargetPropertyAccessExpression(program, call.expression, target);
+    }
 
-    return {
-      target,
-      callsite,
-      firstArg,
-    };
+    if (ts.isElementAccessExpression(call.expression)) {
+      return this.isTargetElementAccessExpression(program, call.expression, target);
+    }
+
+    return false;
   }
 
-  private isOptionalCall(node: ts.Node): node is ts.CallExpression {
-    return ts.isCallExpression(node);
-  }
-
-  private getPropertyAccessFromCall(
-    expr: ts.LeftHandSideExpression,
-  ): ts.PropertyAccessExpression | ts.ElementAccessExpression | null {
-    if (ts.isPropertyAccessExpression(expr)) return expr;
-    if (ts.isElementAccessExpression(expr)) return expr;
-    return null;
-  }
-
-  private isTargetCall(
-    checker: ts.TypeChecker,
-    call: ts.CallExpression,
+  private isTargetPropertyAccessExpression(
+    program: ts.Program,
+    propertyAccess: ts.PropertyAccessExpression,
     target: ScanTarget,
   ): boolean {
-    const callee = call.expression;
-    const pa = this.getPropertyAccessFromCall(callee);
-    if (!pa) return false;
-
-    // Ensure property name matches the target method name
-    const propName = ts.isPropertyAccessExpression(pa)
-      ? pa.name.text
-      : ts.isElementAccessExpression(pa) && ts.isStringLiteral(pa.argumentExpression)
-        ? pa.argumentExpression.text
-        : null;
-
-    if (propName !== target.methodName) return false;
-
-    // Resolve the property symbol
-    const propSym = this.deAlias(
-      checker,
-      checker.getSymbolAtLocation(
-        ts.isPropertyAccessExpression(pa) ? pa.name : (pa.argumentExpression as ts.Expression),
-      ),
+    return (
+      propertyAccess.name.text === target.methodName &&
+      this.isTargetReceiver(program, propertyAccess.expression, target)
     );
-    if (!propSym) return false;
+  }
 
-    // Sanity: declaration must live in our module
-    const propDecls = propSym.getDeclarations() ?? [];
-    if (target.moduleFileHint && !this.sameFileAsLib(propDecls, target.moduleFileHint)) {
+  private isTargetElementAccessExpression(
+    program: ts.Program,
+    elementAccess: ts.ElementAccessExpression,
+    target: ScanTarget,
+  ): boolean {
+    return (
+      elementAccess.argumentExpression?.getText() === target.methodName &&
+      this.isTargetReceiver(program, elementAccess.expression, target)
+    );
+  }
+
+  private isTargetReceiver(program: ts.Program, expression: ts.Expression, target: ScanTarget) {
+    const receiverType = program.getTypeChecker().getTypeAtLocation(expression);
+    if (!receiverType) {
       return false;
     }
 
-    // Confirm the member lives on the target class
-    const recvType = checker.getTypeAtLocation(pa.expression);
-    if (!recvType) return false;
-
-    // Try property lookup on the receiver type
-    const lookedUp = checker.getPropertyOfType(recvType, target.methodName);
-    const lookedUpDecls = lookedUp?.getDeclarations() ?? [];
-
-    // Check: the defining class name and file hint
-    const definesOnTargetClass = lookedUpDecls.some((d) => {
-      const parent = d.parent;
-      const isMethod =
-        ts.isMethodDeclaration(d) || (ts.isCallSignatureDeclaration(d) && ts.isClassLike(parent));
-      if (!isMethod) return false;
-
-      const parentClass = parent as ts.ClassLikeDeclaration;
-      const className = parentClass.name?.getText() ?? '';
-      const fileOk = target.moduleFileHint
-        ? d.getSourceFile().fileName.includes(target.moduleFileHint)
-        : true;
-      return className === target.className && fileOk;
-    });
-
-    return !!definesOnTargetClass;
+    return this.isTargetClass(program, receiverType, target);
   }
 
-  private deAlias(checker: ts.TypeChecker, sym?: ts.Symbol) {
-    if (!sym) return sym;
-    return sym.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(sym) : sym;
+  private isTargetClass(program: ts.Program, type: ts.Type, target: ScanTarget) {
+    const declarations = program
+      .getTypeChecker()
+      .getPropertyOfType(type, target.methodName)
+      ?.getDeclarations();
+    if (!declarations) {
+      return false;
+    }
+
+    return declarations
+      .filter((d) => ts.isClassLike(d.parent))
+      .some((d) => {
+        const parent = d.parent as ts.ClassLikeDeclaration;
+        return (
+          parent.name?.getText() === target.className &&
+          // Check class module
+          d.getSourceFile().fileName.includes(target.moduleFileHint)
+        );
+      });
   }
 
-  private sameFileAsLib(decls: readonly ts.Declaration[] | undefined, hint: string) {
-    return !!decls?.some((d) => d.getSourceFile().fileName.includes(hint));
+  private toIntentEvent(
+    call: ts.CallExpression,
+    sourceFile: ts.SourceFile,
+    target: ScanTarget,
+  ): IntentEvent {
+    const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, call.getStart());
+    const callsite = `${sourceFile.fileName}:${line + 1}:${character + 1}`;
+    const firstArg = this.extractFirstArgText(call.arguments[0], sourceFile);
+
+    if (target.className === 'Spec' && target.methodName === 'impl') {
+      return {
+        type: 'impl',
+        callsite,
+        intentId: firstArg,
+        specId: '<todo>',
+      };
+    }
+
+    if (target.className === 'Spec' && target.methodName === 'todo') {
+      return {
+        type: 'todo',
+        callsite,
+        intentId: firstArg,
+        specId: '<todo>',
+      };
+    }
+
+    if (target.className === 'Sdk' && target.methodName === 'spec') {
+      return {
+        type: 'spec',
+        callsite,
+        specId: '<todo>',
+      };
+    }
+
+    throw new Error(`Unhandled target: ${target.className}.${target.methodName}`);
   }
 
-  private extractFirstArgText(
-    arg: ts.Expression | undefined,
-    sf: ts.SourceFile,
-  ): { kind: string; value: string } | null {
-    if (!arg) return null;
+  private extractFirstArgText(arg: ts.Expression | undefined, sourceFile: ts.SourceFile): string {
+    if (!arg) {
+      return '<none>';
+    }
 
     if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
-      return { kind: 'string', value: arg.text };
+      return arg.text;
     }
-    if (ts.isTemplateExpression(arg) && arg.templateSpans.length === 0) {
-      return { kind: 'string', value: arg.head.text };
-    }
-    if (ts.isNumericLiteral(arg)) return { kind: 'number', value: arg.text };
-    if (arg.kind === ts.SyntaxKind.TrueKeyword) return { kind: 'boolean', value: 'true' };
-    if (arg.kind === ts.SyntaxKind.FalseKeyword) return { kind: 'boolean', value: 'false' };
-    if (arg.kind === ts.SyntaxKind.NullKeyword) return { kind: 'null', value: 'null' };
 
-    return { kind: 'expr', value: arg.getText(sf) };
+    if (ts.isTemplateExpression(arg) && arg.templateSpans.length === 0) {
+      return arg.head.text;
+    }
+
+    if (ts.isNumericLiteral(arg)) {
+      return arg.text;
+    }
+
+    if (arg.kind === ts.SyntaxKind.TrueKeyword) {
+      return 'true';
+    }
+
+    if (arg.kind === ts.SyntaxKind.FalseKeyword) {
+      return 'false';
+    }
+
+    if (arg.kind === ts.SyntaxKind.NullKeyword) {
+      return 'null';
+    }
+
+    return arg.getText(sourceFile);
   }
 }
