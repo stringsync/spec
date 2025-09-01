@@ -40,16 +40,24 @@ program
   .description('best effort attempt to detect intents in code')
   .argument('[patterns...]', 'glob patterns to scan (defaults to common TypeScript patterns)')
   .action(async (patterns: string[]) => {
-    const intentStorage = new InMemoryIntentStorage();
-    const intentService = new IntentService(intentStorage);
-
     const defaultPatterns = ['**/*.ts', '**/*.tsx'];
     const scanPatterns = patterns.length > 0 ? patterns : defaultPatterns;
 
-    await scan({ intentService, patterns: scanPatterns });
+    const events = await scan(scanPatterns);
 
-    const events = await intentService.getAllIntentEvents();
-    console.log(events);
+    // Output the results using the new ScanEvent format
+    for (const event of events) {
+      const argInfo = event.firstArg
+        ? `(${event.firstArg.kind}: ${event.firstArg.value}, ...)`
+        : '()';
+      console.log(
+        `${event.target.className}#${event.target.methodName}${argInfo}: ${event.callsite}`,
+      );
+    }
+
+    if (events.length === 0) {
+      console.log('No Spec#impl, Spec#todo, or Sdk#spec calls found.');
+    }
 
     process.exit();
   });

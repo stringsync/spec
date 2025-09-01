@@ -1,13 +1,18 @@
-import type { IntentEvent, SpecEvent, ImplEvent, TodoEvent } from './types';
 import ts from 'typescript';
 import { glob } from 'glob';
 import { Spec } from './spec';
 import { Sdk } from './sdk';
 
-type ScanTarget = {
+export type ScanTarget = {
   className: string;
   methodName: string;
   moduleFileHint: string;
+};
+
+export type ScanEvent = {
+  target: ScanTarget;
+  callsite: string;
+  firstArg: { kind: string; value: string } | null;
 };
 
 const SCAN_TARGETS = [
@@ -36,8 +41,8 @@ export class Scanner {
     private globPatterns: string[] = [],
   ) {}
 
-  async scan(): Promise<IntentEvent[]> {
-    const events: IntentEvent[] = [];
+  async scan(): Promise<ScanEvent[]> {
+    const events: ScanEvent[] = [];
 
     // Get all files matching the glob patterns if provided
     let matchingFiles: Set<string> | null = null;
@@ -91,44 +96,16 @@ export class Scanner {
     call: ts.CallExpression,
     sf: ts.SourceFile,
     target: ScanTarget,
-  ): IntentEvent | null {
-    const firstArg = this.extractFirstArgText(call.arguments[0], sf);
+  ): ScanEvent | null {
     const { line, character } = ts.getLineAndCharacterOfPosition(sf, call.getStart());
     const callsite = `${sf.fileName}:${line + 1}:${character + 1}`;
+    const firstArg = this.extractFirstArgText(call.arguments[0], sf);
 
-    // Extract the first argument as specId or intentId
-    const argValue = firstArg?.value || '';
-
-    // Map method names to event types
-    switch (target.methodName) {
-      case 'spec':
-        return {
-          type: 'spec',
-          specId: argValue,
-          callsite,
-        } as SpecEvent;
-
-      case 'impl':
-        // For impl events, we need both specId and intentId
-        // Assuming the first arg is specId and we need to extract intentId from context
-        return {
-          type: 'impl',
-          specId: argValue,
-          intentId: argValue, // This might need more sophisticated extraction
-          callsite,
-        } as ImplEvent;
-
-      case 'todo':
-        return {
-          type: 'todo',
-          specId: argValue,
-          intentId: argValue, // This might need more sophisticated extraction
-          callsite,
-        } as TodoEvent;
-
-      default:
-        return null;
-    }
+    return {
+      target,
+      callsite,
+      firstArg,
+    };
   }
 
   private isOptionalCall(node: ts.Node): node is ts.CallExpression {
