@@ -1,9 +1,11 @@
 import type { IntentService } from '../intent-service';
 import { Scanner, TsConfigCollector } from '@stringsync/intent';
+import { NodeFileSystem } from '@stringsync/core';
 
 export async function scan(input: { intentService: IntentService; patterns: string[] }) {
-  const collector = new TsConfigCollector(['**/*.ts']);
-  const configs = collector.collectTsConfigs();
+  const fileSystem = new NodeFileSystem();
+  const collector = new TsConfigCollector(['**/*.ts'], fileSystem);
+  const configs = await collector.collectTsConfigs();
 
   const scanner = new Scanner(configs, input.patterns);
   const events = await scanner.scan();

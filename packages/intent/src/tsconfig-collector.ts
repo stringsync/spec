@@ -1,22 +1,33 @@
 import ts from 'typescript';
 import * as path from 'path';
-import * as fs from 'fs';
+import type { FileSystem } from '@stringsync/core';
 
 export class TsConfigCollector {
-  constructor(private globPatterns: string[]) {}
+  constructor(
+    private globPatterns: string[],
+    private fileSystem: FileSystem,
+  ) {}
 
-  collectTsConfigs(): Array<{ configPath: string; parsed: ts.ParsedCommandLine }> {
+  async collectTsConfigs(): Promise<Array<{ configPath: string; parsed: ts.ParsedCommandLine }>> {
     const configs: Array<{ configPath: string; parsed: ts.ParsedCommandLine }> = [];
 
     for (const pattern of this.globPatterns) {
       // For now, we'll look for tsconfig.json files in the pattern directories
       // This is a simplified implementation - in a full implementation you'd use a proper glob library
-      const configPath = this.findTsConfigInPattern(pattern);
+      const configPath = await this.findTsConfigInPattern(pattern);
       if (configPath) {
-        const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+        const configContent = await this.fileSystem.read(configPath);
+        const configFile = { config: JSON.parse(configContent), error: undefined };
         const parsed = ts.parseJsonConfigFileContent(
           configFile.config,
-          ts.sys,
+          {
+            ...ts.sys,
+            readFile: (path: string) => {
+              // We'll need to handle this synchronously for TypeScript's API
+              // For now, we'll fall back to ts.sys.readFile
+              return ts.sys.readFile(path);
+            },
+          },
           path.dirname(configPath),
           undefined,
           configPath,
@@ -28,12 +39,12 @@ export class TsConfigCollector {
     return configs;
   }
 
-  private findTsConfigInPattern(pattern: string): string | null {
+  private async findTsConfigInPattern(pattern: string): Promise<string | null> {
     // Simplified pattern matching - look for tsconfig.json in the pattern directory
     const dir = path.dirname(pattern);
     const configPath = path.resolve(dir, 'tsconfig.json');
 
-    if (fs.existsSync(configPath)) {
+    if (await this.fileSystem.exists(configPath)) {
       return configPath;
     }
 
