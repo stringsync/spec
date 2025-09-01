@@ -1,9 +1,11 @@
 import type { IntentService } from '../intent-service';
-import { Scanner } from '@stringsync/intent';
+import { Scanner, TsConfigCollector } from '@stringsync/intent';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function scan(_input: { intentService: IntentService; path: string }) {
-  const scanner = new Scanner();
+export async function scan(input: { intentService: IntentService; patterns: string[] }) {
+  const collector = new TsConfigCollector(['**/*.ts']);
+  const configs = collector.collectTsConfigs();
+
+  const scanner = new Scanner(configs, input.patterns);
   const events = await scanner.scan();
 
   // Output the results in the same format as before for compatibility

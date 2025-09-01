@@ -22,9 +22,9 @@ export class Sdk {
     const intentPort = env.INTENT_PORT ?? DEFAULT_INTENT_PORT.toString();
 
     if (intentRole === 'coverage') {
-      let port = parseInt(intentPort);
+      const port = parseInt(intentPort);
       if (isNaN(port)) {
-        port = DEFAULT_INTENT_PORT;
+        throw new Error('Invalid INTENT_PORT');
       }
       return Sdk.port(port);
     } else {

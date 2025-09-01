@@ -38,12 +38,15 @@ program
 program
   .command('scan')
   .description('best effort attempt to detect intents in code')
-  .argument('path', 'the path to the file or dir')
-  .action(async (path: string) => {
+  .argument('[patterns...]', 'glob patterns to scan (defaults to common TypeScript patterns)')
+  .action(async (patterns: string[]) => {
     const intentStorage = new InMemoryIntentStorage();
     const intentService = new IntentService(intentStorage);
 
-    await scan({ intentService, path });
+    const defaultPatterns = ['**/*.ts', '**/*.tsx'];
+    const scanPatterns = patterns.length > 0 ? patterns : defaultPatterns;
+
+    await scan({ intentService, patterns: scanPatterns });
 
     const events = await intentService.getAllIntentEvents();
     console.log(events);

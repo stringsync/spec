@@ -1,7 +1,6 @@
 import type { IntentEvent, SpecEvent, ImplEvent, TodoEvent } from './types';
 import ts from 'typescript';
-import * as path from 'path';
-import * as fs from 'fs';
+import { glob } from 'glob';
 import { Spec } from './spec';
 import { Sdk } from './sdk';
 
@@ -32,14 +31,25 @@ const SCAN_TARGETS = [
 export class Scanner {
   private readonly targets = SCAN_TARGETS;
 
-  async scan(): Promise<IntentEvent[]> {
-    // For now, use a default glob pattern - this could be made configurable
-    const collector = new TsConfigCollector(['**/*.ts']);
-    const configs = collector.collectTsConfigs();
+  constructor(
+    private configs: Array<{ configPath: string; parsed: ts.ParsedCommandLine }>,
+    private globPatterns: string[] = [],
+  ) {}
 
+  async scan(): Promise<IntentEvent[]> {
     const events: IntentEvent[] = [];
 
-    for (const { parsed } of configs) {
+    // Get all files matching the glob patterns if provided
+    let matchingFiles: Set<string> | null = null;
+    if (this.globPatterns.length > 0) {
+      matchingFiles = new Set<string>();
+      for (const pattern of this.globPatterns) {
+        const files = await glob(pattern, { absolute: true });
+        files.forEach((file: string) => matchingFiles!.add(file));
+      }
+    }
+
+    for (const { parsed } of this.configs) {
       const program = ts.createProgram({
         rootNames: parsed.fileNames,
         options: parsed.options,
@@ -48,6 +58,11 @@ export class Scanner {
 
       for (const sf of program.getSourceFiles()) {
         if (sf.isDeclarationFile) continue;
+
+        // Filter files based on glob patterns if provided
+        if (matchingFiles && !matchingFiles.has(sf.fileName)) {
+          continue;
+        }
 
         const visit = (node: ts.Node) => {
           if (this.isOptionalCall(node) || ts.isCallExpression(node)) {
@@ -214,46 +229,5 @@ export class Scanner {
     if (arg.kind === ts.SyntaxKind.NullKeyword) return { kind: 'null', value: 'null' };
 
     return { kind: 'expr', value: arg.getText(sf) };
-  }
-}
-
-class TsConfigCollector {
-  constructor(private globPatterns: string[]) {}
-
-  collectTsConfigs(): Array<{ configPath: string; parsed: ts.ParsedCommandLine }> {
-    const configs: Array<{ configPath: string; parsed: ts.ParsedCommandLine }> = [];
-
-    for (const pattern of this.globPatterns) {
-      // For now, we'll look for tsconfig.json files in the pattern directories
-      // This is a simplified implementation - in a full implementation you'd use a proper glob library
-      const configPath = this.findTsConfigInPattern(pattern);
-      if (configPath) {
-        const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
-        const parsed = ts.parseJsonConfigFileContent(
-          configFile.config,
-          ts.sys,
-          path.dirname(configPath),
-          undefined,
-          configPath,
-        );
-        configs.push({ configPath, parsed });
-      }
-    }
-
-    return configs;
-  }
-
-  private findTsConfigInPattern(pattern: string): string | null {
-    // Simplified pattern matching - look for tsconfig.json in the pattern directory
-    const dir = path.dirname(pattern);
-    const configPath = path.resolve(dir, 'tsconfig.json');
-
-    if (fs.existsSync(configPath)) {
-      return configPath;
-    }
-
-    // Also try looking in the current working directory
-    const cwdConfigPath = ts.findConfigFile(process.cwd(), ts.sys.fileExists, 'tsconfig.json');
-    return cwdConfigPath || null;
   }
 }
