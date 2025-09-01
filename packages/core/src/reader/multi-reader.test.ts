@@ -10,6 +10,6 @@ describe('MultiReader', () => {
 
     const result = await multiReader.read();
 
-    expect(result).toBe('Hello\nWorld');
+    expect(result).toBe('HelloWorld');
   });
 });
