@@ -244,23 +244,27 @@ function traceIdentifierManually(identifier: ts.Identifier, program: ts.Program)
   const identifierName = identifier.text;
 
   // Look for import declarations in the same file
-  let importDeclaration: ts.ImportDeclaration | null = null;
-
-  const findImport = (node: ts.Node) => {
+  const findImportDeclaration = (node: ts.Node): ts.ImportDeclaration | null => {
     if (ts.isImportDeclaration(node) && node.importClause?.namedBindings) {
       if (ts.isNamedImports(node.importClause.namedBindings)) {
         for (const element of node.importClause.namedBindings.elements) {
           if (element.name.text === identifierName) {
-            importDeclaration = node;
-            return;
+            return node;
           }
         }
       }
     }
-    ts.forEachChild(node, findImport);
+
+    let result: ts.ImportDeclaration | null = null;
+    ts.forEachChild(node, (child) => {
+      if (!result) {
+        result = findImportDeclaration(child);
+      }
+    });
+    return result;
   };
 
-  findImport(sourceFile);
+  const importDeclaration = findImportDeclaration(sourceFile);
 
   if (!importDeclaration) {
     return '<error: no import found>';
