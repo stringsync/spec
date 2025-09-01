@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { IntentService } from '../intent-service';
 import ts from 'typescript';
 import * as path from 'path';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function scan(input: { intentService: IntentService; path: string }) {
   const configPath = ts.findConfigFile(process.cwd(), ts.sys.fileExists, projectTsconfig);
   if (!configPath) {

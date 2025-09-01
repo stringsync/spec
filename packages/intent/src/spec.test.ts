@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Sdk } from './sdk';
 import { TestTransport } from './transport/test-transport';
+import type { ImplEvent } from './types';
 
 describe('Spec', () => {
   let testTransport: TestTransport;
@@ -56,7 +57,7 @@ describe('Spec', () => {
     expect(events.length).toBe(1);
     expect(events[0].type).toBe('impl');
     expect(events[0].specId).toBe('foo');
-    expect(events[0].intentId).toBe('bar');
+    expect((events[0] as ImplEvent).intentId).toBe('bar');
   });
 
   it('can be read', async () => {
