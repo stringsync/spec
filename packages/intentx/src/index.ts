@@ -1,39 +1,10 @@
 #!/usr/bin/env bun
 import { program } from 'commander';
-import { coverage } from './actions/coverage';
 import { markdown } from './actions/markdown';
-import { InMemoryIntentStorage } from './intent-storage/in-memory-intent-storage';
-import { IntentService } from './intent-service';
-import { BunIntentServer } from './intent-server/bun-intent-server';
-import { BunCommand, NodeFileSystem } from '@stringsync/core';
+import { NodeFileSystem } from '@stringsync/core';
 import { scan } from './actions/scan';
 
 program.name('intentx').description('CLI for managing intents');
-
-program
-  .command('coverage')
-  .description('run a command and track intent events')
-  .argument('[args...]', 'the command to run')
-  .action(async (args: string[]) => {
-    const intentStorage = new InMemoryIntentStorage();
-    const intentService = new IntentService(intentStorage);
-    const intentServer = new BunIntentServer(intentService);
-
-    const command = new BunCommand({
-      cmd: args,
-      env: {
-        ...process.env,
-        INTENT_ROLE: 'coverage',
-      },
-    });
-
-    await coverage({ intentServer, command });
-
-    const events = await intentService.getAllIntentEvents();
-    console.log(events);
-
-    process.exit();
-  });
 
 program
   .command('scan')
