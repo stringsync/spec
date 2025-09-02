@@ -54,9 +54,8 @@ async function fileTypeErrors(filePath: string) {
     return [`path is not a file: ${filePath}`];
   }
 
-  const ext = path.extname(filePath);
-  if (ext !== '.md') {
-    return [`file must have .md extension, but got: '${ext}'`];
+  if (!filePath.endsWith('.spec.md')) {
+    return [`file must have '.spec.md' extension, but got: '${filePath}'`];
   }
 
   return [];

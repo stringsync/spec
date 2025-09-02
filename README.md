@@ -8,7 +8,7 @@ Install `bun` at https://bun.sh/.
 
 Declare a spec.
 
-_calculator.md_
+_calculator.spec.md_
 
 ```md
 # calculator
