@@ -11,7 +11,7 @@ Install `bun` at https://bun.sh/.
 
 Declare a spec.
 
-_calculator.spec.md_
+_calculator.md_
 
 ```md
 # calculator
@@ -24,7 +24,7 @@ It adds two numbers.
 Validate the spec.
 
 ```
-bunx @stringsync/spec validate calculator.spec.md
+bunx @stringsync/spec validate calculator.md
 ```
 
 Reference the spec.
