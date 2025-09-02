@@ -32,9 +32,10 @@ class ReaderNode {
   query(filter?: { name?: string; set?: string }): Card[] {
     const all = this.getCards();
     if (!filter) return all;
-    return all.filter((c) =>
-      (filter.name ? c.name.toLowerCase().includes(filter.name.toLowerCase()) : true) &&
-      (filter.set ? (c.set ?? '').toLowerCase().includes(filter.set.toLowerCase()) : true),
+    return all.filter(
+      (c) =>
+        (filter.name ? c.name.toLowerCase().includes(filter.name.toLowerCase()) : true) &&
+        (filter.set ? (c.set ?? '').toLowerCase().includes(filter.set.toLowerCase()) : true),
     );
   }
 }
@@ -57,5 +58,3 @@ export class InventoryGraph {
     return this.reader.query(filter);
   }
 }
-
-

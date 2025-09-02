@@ -5,6 +5,6 @@ export class MultiReader implements Reader {
 
   async read(): Promise<string> {
     const results = await Promise.all(this.readers.map((reader) => reader.read()));
-    return results.join('\n');
+    return results.join('');
   }
 }

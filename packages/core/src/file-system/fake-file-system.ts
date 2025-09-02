@@ -13,4 +13,8 @@ export class FakeFileSystem implements FileSystem {
   async write(path: string, content: string): Promise<void> {
     this.files.set(path, content);
   }
+
+  async exists(path: string): Promise<boolean> {
+    return this.files.has(path);
+  }
 }

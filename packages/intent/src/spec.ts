@@ -1,9 +1,6 @@
-import type { Transport } from './transport/types';
-import { CallsiteLocator } from './callsite-locator';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { readers, assert, type Readable } from '@stringsync/core';
-import type { IntentEvent } from './types';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TS_DECORATOR_ADAPTER = (...args: unknown[]) => {};
 
 export type IntentMap = {
@@ -11,12 +8,9 @@ export type IntentMap = {
 };
 
 export class Spec<T extends IntentMap> {
-  private callsiteLocator = new CallsiteLocator({ depth: 2 });
-
   constructor(
     private id: string,
     private intents: T,
-    private transport: Transport,
   ) {
     assert.validId(this.id);
 
@@ -33,18 +27,12 @@ export class Spec<T extends IntentMap> {
     return Object.keys(this.intents) as (keyof T)[];
   }
 
-  impl(intentId: keyof T) {
-    this.emit('impl', String(intentId));
+  impl(intentId: keyof T, meta?: { note?: string }) {
     return TS_DECORATOR_ADAPTER;
   }
 
-  todo(intentId: keyof T) {
-    this.emit('todo', String(intentId));
+  todo(intentId: keyof T, meta?: { note?: string }) {
     return TS_DECORATOR_ADAPTER;
-  }
-
-  ref(intentId: keyof T) {
-    return new Ref(this.id, String(intentId), this.transport);
   }
 
   read(intentId: keyof T) {
@@ -74,51 +62,5 @@ export class Spec<T extends IntentMap> {
     ]);
 
     return [header, ...sections].join('\n\n');
-  }
-
-  private emit(type: IntentEvent['type'], intentId: string) {
-    const event: IntentEvent = {
-      type,
-      specId: this.id,
-      intentId: intentId,
-      callsite: this.callsiteLocator.locate(),
-    };
-
-    this.transport.send(event).catch((error) => {
-      console.error(`Failed to send event for intent ${intentId}:`, error);
-    });
-  }
-}
-
-class Ref {
-  private callsiteLocator = new CallsiteLocator({ depth: 2 });
-
-  constructor(
-    private specId: string,
-    private intentId: string,
-    private transport: Transport,
-  ) {}
-
-  todo() {
-    this.emit('todo');
-    return TS_DECORATOR_ADAPTER;
-  }
-
-  impl() {
-    this.emit('impl');
-    return TS_DECORATOR_ADAPTER;
-  }
-
-  private emit(type: IntentEvent['type']) {
-    const event: IntentEvent = {
-      type,
-      specId: this.specId,
-      intentId: this.intentId,
-      callsite: this.callsiteLocator.locate(),
-    };
-
-    this.transport.send(event).catch((error) => {
-      console.error(`Failed to send event for ref ${this.intentId}:`, error);
-    });
   }
 }

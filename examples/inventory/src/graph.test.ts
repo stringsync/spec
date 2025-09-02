@@ -1,13 +1,8 @@
-import { expect, describe, test, afterAll } from 'bun:test';
+import { expect, describe, test } from 'bun:test';
 import { parentSpec } from './graph.spec';
 import { InventoryGraph } from './graph';
-import { sdk } from './intent.config';
 
 describe('InventoryGraph', async () => {
-  afterAll(async () => {
-    await sdk.settle();
-  });
-
   const addFlow = await parentSpec.read('addCardFlow');
   const listFlow = await parentSpec.read('listCardsFlow');
 

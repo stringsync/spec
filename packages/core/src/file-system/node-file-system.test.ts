@@ -29,4 +29,21 @@ describe('NodeFileSystem', () => {
   it('should throw an error when reading a non-existent file', async () => {
     expect(fileSystem.read('non-existent.txt')).rejects.toThrow();
   });
+
+  it('should return true when file exists', async () => {
+    await fs.writeFile(testFile, 'test content', 'utf8');
+    const exists = await fileSystem.exists(testFile);
+    expect(exists).toBe(true);
+  });
+
+  it('should return false when file does not exist', async () => {
+    const exists = await fileSystem.exists('non-existent-file.txt');
+    expect(exists).toBe(false);
+  });
+
+  it('should return true for file created by write method', async () => {
+    await fileSystem.write(testFile, 'written content');
+    const exists = await fileSystem.exists(testFile);
+    expect(exists).toBe(true);
+  });
 });
