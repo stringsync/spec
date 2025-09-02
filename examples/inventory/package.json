@@ -1,7 +1,0 @@
-{
-  "name": "@stringsync/intent-examples-inventory",
-  "version": "0.0.0",
-  "dependencies": {
-    "@stringsync/intent": "workspace:*"
-  }
-}

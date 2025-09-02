@@ -1,23 +1,17 @@
 {
-  "name": "@stringsync/intent-monorepo",
+  "name": "@stringsync/intent",
   "version": "0.0.0",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "examples/*"
-  ],
   "scripts": {
-    "setup": "bun link --cwd ./packages/intentx",
-    "teardown": "bun unlink --cwd ./packages/intentx"
+    "setup": "bun link",
+    "teardown": "bun unlink"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/bun": "latest",
     "eslint": "^9.32.0",
     "prettier": "3.6.2",
+    "typescript": "^5.9.2",
     "typescript-eslint": "^8.38.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.8.3"
   }
 }

@@ -1,70 +1,30 @@
-# @stringsync/intent
+# @stringsync/spec
 
-Map intention to implementation
-
-## Dev
-
-Install `bun` at https://bun.sh/.
-
-To install the project dependencies, run:
-
-```sh
-bun install
-```
-
-To install the `intentx` CLI, run:
-
-```sh
-bun setup
-```
-
-To verify the installation status, run:
-
-```sh
-intentx
-```
-
-To uninstall `intentx`, run:
-
-```sh
-bun teardown
-```
-
-To run a coverage example, run:
-
-```sh
-intentx coverage -- bun test examples/calculator
-```
+Spec-Driven Development
 
 ## Getting Started
 
-Install the library.
+Install `bun` at https://bun.sh/.
 
-```shell
-bun add @stringsync/intent
+> [!NOTE]  
+> You can use `npx` instead of `bunx`.
+
+Declare a spec.
+
+_calculator.spec.md_
+
+```md
+# calculator
+
+## add
+
+It adds two numbers.
 ```
 
-Configure the SDK.
+Validate the spec.
 
-_intent.config.ts_
-
-```ts
-import { Sdk } from '@stringsync/intent';
-
-export const sdk = Sdk.standard();
 ```
-
-Declare the spec.
-
-_calculator.spec.ts_
-
-```ts
-// prettier-ignore
-export const spec = sdk.spec('calculator', {
-  add: it
-    .must('add two numbers')
-    .example('calculator.add(2, 2) // returns 4'),
-});
+bunx @stringsync/spec validate calculator.spec.md
 ```
 
 Reference the spec.
@@ -72,39 +32,48 @@ Reference the spec.
 _calculator.ts_
 
 ```ts
-import { spec } from './calculator.spec';
-
 class Calculator {
-  @spec.impl('add')
+  // spec(calculator.add)
   add(a: number, b: number) {
     return a + b;
   }
 }
 ```
 
-Test the spec.
+Get spec callsites.
 
-_calculator.test.ts_
-
-```ts
-describe('Calculator', () => {
-  it('adds two numbers', () => {
-    const calculator = new Calculator();
-    expect(calculator.add(2, 2)).toBe(4);
-  });
-});
+```sh
+bunx @stringsync/spec scan
 ```
 
-View intent events.
+To see a complete list of commands, run:
 
-```shell
-bunx @stringsync/intentx coverage -- bun test calculator.test.ts
-[
-  {
-    type: 'impl',
-    specId: 'calculator',
-    intentId: 'add',
-    callsite: '/path/to/calculator.ts:4:2'
-  }
-]
+```sh
+bunx @stringsync/spec
+```
+
+## Dev
+
+To install the project dependencies, run:
+
+```sh
+bun install
+```
+
+To install the `spec` CLI, run:
+
+```sh
+bun setup
+```
+
+To verify the installation, run:
+
+```sh
+spec
+```
+
+To uninstall the `spec` CLI, run:
+
+```sh
+bun teardown
 ```
