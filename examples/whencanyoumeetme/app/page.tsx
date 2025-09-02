@@ -1,5 +1,9 @@
 import React from 'react';
 import { ArtFrameSection } from './components/ArtFrameSection';
+import CreateEventForm from './components/CreateEventForm';
+import { cujs } from '../cujs.spec';
+
+cujs.impl('createEvent');
 
 export default function Home() {
   return (
@@ -30,6 +34,10 @@ export default function Home() {
               <button className="w-full bg-transparent hover:bg-neutral-50 text-neutral-700 font-medium py-4 px-6 rounded-lg border border-neutral-200 transition-colors duration-200">
                 Create Account
               </button>
+            </div>
+
+            <div className="pt-8">
+              <CreateEventForm />
             </div>
 
             {/* Footer Text */}
