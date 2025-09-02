@@ -1,6 +1,6 @@
 # @stringsync/spec
 
-Spec-Driven Development
+spec driven development tools
 
 ## Getting Started
 

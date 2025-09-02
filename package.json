@@ -1,5 +1,6 @@
 {
   "name": "@stringsync/spec",
+  "description": "spec driven development tools",
   "version": "0.0.0",
   "private": true,
   "bin": {
