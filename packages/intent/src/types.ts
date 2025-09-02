@@ -19,6 +19,7 @@ export type ImplEvent = {
   specId: string;
   intentId: string;
   callsite: string;
+  note: string;
 };
 
 export type TodoEvent = {
@@ -26,4 +27,5 @@ export type TodoEvent = {
   specId: string;
   intentId: string;
   callsite: string;
+  note: string;
 };

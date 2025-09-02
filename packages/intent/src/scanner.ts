@@ -138,6 +138,27 @@ function isTargetClass(target: ScanTarget, program: ts.Program, type: ts.Type) {
     });
 }
 
+function extractNoteFromMetadata(call: ts.CallExpression): string {
+  const metadataArg = call.arguments.at(1);
+
+  if (!metadataArg || !ts.isObjectLiteralExpression(metadataArg)) {
+    return '';
+  }
+
+  for (const property of metadataArg.properties) {
+    if (
+      ts.isPropertyAssignment(property) &&
+      ts.isIdentifier(property.name) &&
+      property.name.text === 'note' &&
+      ts.isStringLiteral(property.initializer)
+    ) {
+      return property.initializer.text;
+    }
+  }
+
+  return '';
+}
+
 function toIntentEvent(
   target: ScanTarget,
   call: ts.CallExpression,
@@ -150,21 +171,25 @@ function toIntentEvent(
 
   if (target.className === 'Spec' && target.methodName === 'impl') {
     const specId = inferSpecId(call, program);
+    const note = extractNoteFromMetadata(call);
     return {
       type: 'impl',
       callsite,
       intentId: firstArg,
       specId,
+      note,
     };
   }
 
   if (target.className === 'Spec' && target.methodName === 'todo') {
     const specId = inferSpecId(call, program);
+    const note = extractNoteFromMetadata(call);
     return {
       type: 'todo',
       callsite,
       intentId: firstArg,
       specId,
+      note,
     };
   }
 

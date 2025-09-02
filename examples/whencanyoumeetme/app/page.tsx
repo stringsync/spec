@@ -3,7 +3,9 @@ import { ArtFrameSection } from './components/ArtFrameSection';
 import CreateEventForm from './components/CreateEventForm';
 import { cujs } from '../cujs.spec';
 
-cujs.impl('createEvent');
+cujs.impl('createEvent', {
+  note: 'The Home component contains the form that allows users to create events.',
+});
 
 export default function Home() {
   return (
