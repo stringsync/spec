@@ -2,9 +2,6 @@ import { it } from '@stringsync/intent';
 import { sdk } from './intent.config';
 
 export const cujs = sdk.spec('cujs', {
-  // ————————————————————————————————————————————————————————————————————————
-  // User Onboarding / Identity
-  // ————————————————————————————————————————————————————————————————————————
   userOnboarding: it.multi(
     it
       .should('let a new visitor start using the app with near-zero friction')
@@ -23,9 +20,6 @@ export const cujs = sdk.spec('cujs', {
       .example('Banner: “Using a temporary profile. Add an email to keep your events.”'),
   ),
 
-  // ————————————————————————————————————————————————————————————————————————
-  // Event Creation (Host flow)
-  // ————————————————————————————————————————————————————————————————————————
   createEvent: it.multi(
     it.must('allow a host to create an event'),
     it.must('allow the host to name an event').example('“Board game night”'),
@@ -44,9 +38,6 @@ export const cujs = sdk.spec('cujs', {
       .example('Auto-archive on day 181 with read-only view thereafter'),
   ),
 
-  // ————————————————————————————————————————————————————————————————————————
-  // Event Viewing (Share link)
-  // ————————————————————————————————————————————————————————————————————————
   viewEvent: it.multi(
     it
       .must('let a visitor join an event given its share link')
@@ -60,9 +51,6 @@ export const cujs = sdk.spec('cujs', {
     it.should('jump the calendar to a user’s earliest available day when clicking their badge'),
   ),
 
-  // ————————————————————————————————————————————————————————————————————————
-  // Updating Availability (Participant flow)
-  // ————————————————————————————————————————————————————————————————————————
   updateAvailability: it.multi(
     it
       .must('let users specify when they CAN meet (positive selection), not when they cannot)')
@@ -78,9 +66,6 @@ export const cujs = sdk.spec('cujs', {
     it.may('allow continuing as “Anonymous” while still saving availability to device'),
   ),
 
-  // ————————————————————————————————————————————————————————————————————————
-  // Overlap & Decision Support
-  // ————————————————————————————————————————————————————————————————————————
   overlap: it.multi(
     it.must('prominently display a list of days where everyone overlaps'),
     it
@@ -90,9 +75,6 @@ export const cujs = sdk.spec('cujs', {
     it.may('rank overlap entries by participant count, then by tightest time window'),
   ),
 
-  // ————————————————————————————————————————————————————————————————————————
-  // Share & Finalization
-  // ————————————————————————————————————————————————————————————————————————
   shareAndFinalize: it.multi(
     it.must('produce a shareable event link after creation'),
     it
@@ -102,9 +84,6 @@ export const cujs = sdk.spec('cujs', {
     it.may('notify participants when the host finalizes the event'),
   ),
 
-  // ————————————————————————————————————————————————————————————————————————
-  // Resilience, Privacy, and Abuse Resistance
-  // ————————————————————————————————————————————————————————————————————————
   resiliencePrivacy: it.multi(
     it
       .should('rate-limit event lookup to make slug brute forcing uneconomical')
