@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { readers, assert, type Readable } from '@stringsync/core';
 
-const TS_DECORATOR_ADAPTER = (...args: unknown[]) => {
-  void args;
-};
+const TS_DECORATOR_ADAPTER = (...args: unknown[]) => {};
 
 export type IntentMap = {
   [intentId: string]: Readable;
@@ -30,12 +28,10 @@ export class Spec<T extends IntentMap> {
   }
 
   impl(intentId: keyof T) {
-    void intentId;
     return TS_DECORATOR_ADAPTER;
   }
 
   todo(intentId: keyof T) {
-    void intentId;
     return TS_DECORATOR_ADAPTER;
   }
 
