@@ -82,7 +82,7 @@ function headerErrors(filePath: string, markdown: Markdown): string[] {
     );
   }
 
-  errors.push(...idErrors(header));
+  errors.push(...identifierErrors(header));
 
   return errors;
 }
@@ -105,17 +105,17 @@ function subheaderErrors(markdown: Markdown): string[] {
     }
     seen.add(subheader);
 
-    if (!subheader.startsWith(`${header}.`)) {
+    if (subheader.startsWith(`${header}.`)) {
+      errors.push(...identifierErrors(subheader.replace(`${header}.`, '')));
+    } else {
       errors.push(`all subheaders must start with '${header}.', but got: '${subheader}'`);
     }
-
-    errors.push(...idErrors(subheader.replace(`${header}.`, '')));
   }
 
   return errors;
 }
 
-function idErrors(id: string): string[] {
+function identifierErrors(id: string): string[] {
   const errors = [];
 
   if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
