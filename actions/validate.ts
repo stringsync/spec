@@ -1,4 +1,4 @@
-import { Stopwatch } from '~/lib/stopwatch';
+import { Stopwatch } from '~/util/stopwatch';
 
 export type ValidateResult =
   | {
