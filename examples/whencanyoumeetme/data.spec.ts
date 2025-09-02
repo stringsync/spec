@@ -69,6 +69,7 @@ export const data = sdk.spec('data', {
 
   portability: it.multi(
     it.should('avoid coupling the spec to a particular database, schema, or index layout'),
+    it.should('have a client that is storage agnostic and can run in various environments'),
     it.may('recommend non-binding implementation hints separately (e.g., indexes, caches)'),
   ),
 });
