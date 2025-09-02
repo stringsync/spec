@@ -6,9 +6,6 @@ Spec-Driven Development
 
 Install `bun` at https://bun.sh/.
 
-> [!NOTE]  
-> You can use `npx` instead of `bunx`.
-
 Declare a spec.
 
 _calculator.md_
