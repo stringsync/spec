@@ -17,19 +17,7 @@ export type ValidateResult =
 export async function validate(input: { path: string }): Promise<ValidateResult> {
   const stopwatch = Stopwatch.start();
 
-  const exists = await fs.promises.exists(input.path);
-  if (!exists) {
-    return error(stopwatch, [`file does not exist: ${input.path}`]);
-  }
-
-  const isFile = (await fs.promises.stat(input.path)).isFile();
-  if (!isFile) {
-    return error(stopwatch, [`path is not a file: ${input.path}`]);
-  }
-
-  const markdown = await Markdown.fromPath(input.path);
-
-  for (const errors of errorGroups(input.path, markdown)) {
+  for await (const errors of generateErrors(input.path)) {
     if (errors.length > 0) {
       return error(stopwatch, errors);
     }
@@ -46,18 +34,36 @@ function error(stopwatch: Stopwatch, errors: string[]) {
   return { type: 'error', errors, ms: stopwatch.ms() } as const;
 }
 
-function* errorGroups(path: string, markdown: Markdown) {
-  yield fileNamingErrors(path, markdown);
+async function* generateErrors(filePath: string) {
+  yield fileTypeErrors(filePath);
+
+  const markdown = await Markdown.fromPath(filePath);
+
+  yield headerErrors(filePath, markdown);
   yield subheaderErrors(markdown);
 }
 
-function fileNamingErrors(filePath: string, markdown: Markdown): string[] {
-  const errors = [];
+async function fileTypeErrors(filePath: string) {
+  const exists = await fs.promises.exists(filePath);
+  if (!exists) {
+    return [`file does not exist: ${filePath}`];
+  }
+
+  const isFile = (await fs.promises.stat(filePath)).isFile();
+  if (!isFile) {
+    return [`path is not a file: ${filePath}`];
+  }
 
   const ext = path.extname(filePath);
   if (ext !== '.md') {
-    errors.push(`file must have .md extension, but got: '${ext}'`);
+    return [`file must have .md extension, but got: '${ext}'`];
   }
+
+  return [];
+}
+
+function headerErrors(filePath: string, markdown: Markdown): string[] {
+  const errors = [];
 
   const filename = path.basename(filePath).split('.').at(0);
   if (!filename) {
