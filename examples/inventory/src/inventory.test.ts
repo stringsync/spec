@@ -1,13 +1,8 @@
-import { expect, describe, test, afterAll } from 'bun:test';
+import { expect, describe, test } from 'bun:test';
 import { spec } from './inventory.spec';
 import { InventoryStore } from './inventory';
-import { sdk } from './intent.config';
 
 describe('Inventory', async () => {
-  afterAll(async () => {
-    await sdk.settle();
-  });
-
   const addCard = await spec.read('addCard');
   const listCards = await spec.read('listCards');
   const updateCard = await spec.read('updateCard');
