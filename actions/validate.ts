@@ -1,3 +1,21 @@
-export async function validate(input: { path: string }) {
-  console.log('hello from validate');
+import { Stopwatch } from '~/lib/stopwatch';
+
+export type ValidateResult =
+  | {
+      type: 'success';
+      ms: number;
+    }
+  | {
+      type: 'error';
+      errors: string[];
+      ms: number;
+    };
+
+export async function validate(input: { path: string }): Promise<ValidateResult> {
+  const stopwatch = Stopwatch.start();
+
+  return {
+    type: 'success',
+    ms: stopwatch.ms(),
+  };
 }
