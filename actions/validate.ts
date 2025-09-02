@@ -28,13 +28,14 @@ export async function validate(input: { path: string }): Promise<ValidateResult>
   }
 
   const markdown = await Markdown.fromPath(input.path);
-  const errors = [...namingErrors(input.path, markdown), ...specErrors(markdown)];
 
-  if (errors.length > 0) {
-    return error(stopwatch, errors);
-  } else {
-    return success(stopwatch);
+  for (const errors of errorGroups(input.path, markdown)) {
+    if (errors.length > 0) {
+      return error(stopwatch, errors);
+    }
   }
+
+  return success(stopwatch);
 }
 
 function success(stopwatch: Stopwatch) {
@@ -45,7 +46,12 @@ function error(stopwatch: Stopwatch, errors: string[]) {
   return { type: 'error', errors, ms: stopwatch.ms() } as const;
 }
 
-function namingErrors(filePath: string, markdown: Markdown): string[] {
+function* errorGroups(path: string, markdown: Markdown) {
+  yield fileNamingErrors(path, markdown);
+  yield subheaderErrors(markdown);
+}
+
+function fileNamingErrors(filePath: string, markdown: Markdown): string[] {
   const errors = [];
 
   const ext = path.extname(filePath);
@@ -58,32 +64,58 @@ function namingErrors(filePath: string, markdown: Markdown): string[] {
     errors.push('file must have a name, but got none');
   }
 
-  if (markdown.getHeader().length === 0) {
+  const header = markdown.getHeader();
+  if (header.length === 0) {
     errors.push('file must have a markdown header, but got none');
   }
 
-  if (filename !== markdown.getHeader()) {
+  if (filename !== header) {
     errors.push(
       'filename and markdown header must match, but got: ' +
-        `filename '${filename}' and markdown header '${markdown.getHeader()}'`,
+        `filename '${filename}' and markdown header '${header}'`,
     );
   }
+
+  errors.push(...idErrors(header));
 
   return errors;
 }
 
-function specErrors(markdown: Markdown): string[] {
+function subheaderErrors(markdown: Markdown): string[] {
   const errors = [];
+
+  const header = markdown.getHeader();
 
   const subheaders = markdown.getSubheaders();
   if (subheaders.length === 0) {
     errors.push('file must have at least one markdown subheader, but got none');
   }
 
+  const seen = new Set<string>();
+
   for (const subheader of subheaders) {
-    if (subheader.trim().length === 0) {
-      errors.push(`all subheaders must not be empty, but got an empty subheader`);
+    if (seen.has(subheader)) {
+      errors.push(`all subheaders must be unique, but got a duplicate: '${subheader}'`);
     }
+    seen.add(subheader);
+
+    if (!subheader.startsWith(`${header}.`)) {
+      errors.push(`all subheaders must start with '${header}.', but got: '${subheader}'`);
+    }
+
+    errors.push(...idErrors(subheader.replace(`${header}.`, '')));
+  }
+
+  return errors;
+}
+
+function idErrors(id: string): string[] {
+  const errors = [];
+
+  if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+    errors.push(
+      `id must only contain alphanumeric characters, underscores, or hyphens, but got: '${id}'`,
+    );
   }
 
   return errors;

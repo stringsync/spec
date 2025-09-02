@@ -13,7 +13,7 @@ _calculator.md_
 ```md
 # calculator
 
-## add
+## calculator.add
 
 It adds two numbers.
 ```
@@ -30,7 +30,7 @@ _calculator.ts_
 
 ```ts
 class Calculator {
-  // spec(calculator.add)
+  // spec(calculator.add): Optional annotation.
   add(a: number, b: number) {
     return a + b;
   }
