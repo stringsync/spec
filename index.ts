@@ -31,7 +31,7 @@ program
           chalk.white.bold(path),
           chalk.gray(`in [${result.ms.toFixed(2)}ms]`),
         );
-        log(`${result.errors.join('\n\n')}`);
+        log(`${result.errors.join('\n')}`);
         break;
     }
   });
