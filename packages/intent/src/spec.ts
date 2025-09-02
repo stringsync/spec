@@ -27,11 +27,11 @@ export class Spec<T extends IntentMap> {
     return Object.keys(this.intents) as (keyof T)[];
   }
 
-  impl(intentId: keyof T, meta: { note?: string }) {
+  impl(intentId: keyof T, meta?: { note?: string }) {
     return TS_DECORATOR_ADAPTER;
   }
 
-  todo(intentId: keyof T, meta: { note?: string }) {
+  todo(intentId: keyof T, meta?: { note?: string }) {
     return TS_DECORATOR_ADAPTER;
   }
 
