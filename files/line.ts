@@ -12,14 +12,24 @@ export class Line {
       const start = new Position({
         line: index + 1,
         column: 1,
-        offset: text.indexOf(line),
       });
       const end = new Position({
         line: index + 1,
         column: line.length + 1,
-        offset: start.offset + line.length,
       });
       return new Line(line, start, end);
     });
+  }
+
+  slice(column: number): Line | null {
+    if (column > this.end.column) {
+      return null;
+    }
+    const start = new Position({
+      line: this.start.line,
+      column: column,
+    });
+    const text = this.text.slice(column);
+    return new Line(text, start, this.end);
   }
 }

@@ -1,19 +1,13 @@
 export class Position {
-  readonly line: number;
-  readonly column: number;
-  readonly offset: number;
+  readonly line: number; // 0-based
+  readonly column: number; // 0-based
 
-  constructor({ line, column, offset }: { line: number; column: number; offset: number }) {
+  constructor({ line, column }: { line: number; column: number }) {
     this.line = line;
     this.column = column;
-    this.offset = offset;
   }
 
-  move(offset: number): Position {
-    return new Position({
-      line: this.line,
-      column: this.column + offset,
-      offset: this.offset + offset,
-    });
+  static zero(): Position {
+    return new Position({ line: 0, column: 0 });
   }
 }

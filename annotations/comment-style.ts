@@ -1,42 +1,41 @@
 import type { File } from '~/files/file';
 
 export class CommentStyle {
-  constructor(
+  private constructor(
     readonly start: string,
-    readonly middle?: string,
-    readonly end?: string,
+    readonly middle: string | null,
+    readonly end: string,
   ) {}
 
-  static SlashSlash = new CommentStyle('//');
-  static SlashBlock = new CommentStyle('/*', '*', '*/');
-  static Hash = new CommentStyle('#');
-  static DoubleDash = new CommentStyle('--');
-  static TripleDoubleQuote = new CommentStyle(`"""`, '', `"""`);
-  static TripleSingleQuote = new CommentStyle(`'''`, '', `'''`);
+  private static single(start: string) {
+    return new CommentStyle(start, null, '\n');
+  }
+
+  private static block(start: string, middle: string, end: string) {
+    return new CommentStyle(start, middle, end);
+  }
+
+  static DoubleSlash = CommentStyle.single('//');
+  static SlashBlock = CommentStyle.block('/*', '*', '*/');
+  static Hash = CommentStyle.single('#');
+  static DoubleDash = CommentStyle.single('--');
+  static TripleDoubleQuote = CommentStyle.block(`"""`, '', `"""`);
+  static TripleSingleQuote = CommentStyle.block(`'''`, '', `'''`);
 
   static for(file: File): CommentStyle[] {
-    switch (file.getLanguage()) {
-      case 'ts':
+    switch (file.getExtension()) {
       case 'js':
-        return [CommentStyle.SlashSlash, CommentStyle.SlashBlock];
+      case 'ts':
+        return [CommentStyle.DoubleSlash, CommentStyle.SlashBlock];
+      case 'sql':
+        return [CommentStyle.DoubleDash];
+      case 'ex':
+      case 'exs':
+        return [CommentStyle.Hash, CommentStyle.TripleDoubleQuote];
+      case 'py':
+        return [CommentStyle.Hash, CommentStyle.TripleDoubleQuote, CommentStyle.TripleSingleQuote];
       default:
-        return [CommentStyle.SlashSlash, CommentStyle.SlashBlock, CommentStyle.Hash];
+        return [];
     }
-  }
-
-  isBlock() {
-    return this.middle !== undefined && this.end !== undefined;
-  }
-
-  matches(text: string) {
-    return text.trim().startsWith(this.start);
-  }
-
-  strip(text: string): string {
-    // TODO: Fix this, this is wrong.
-    return text
-      .replace(this.start, '')
-      .replace(this.end ?? '', '')
-      .replace(this.middle ?? '', '');
   }
 }

@@ -23,14 +23,30 @@ export class File {
   }
 
   getLocation(position: Position): string {
-    return `${this.path}:${position.line}:${position.column}`;
+    return `${this.path}:${position.line + 1}:${position.column + 1}`;
   }
 
-  getLine(index: number): Line | null {
-    return this.lines.at(index) ?? null;
+  getLine(position: Position): Line | null {
+    return this.lines.at(position.line)?.slice(position.column) ?? null;
   }
 
-  getLineCount(): number {
-    return this.lines.length;
+  eof(position: Position): boolean {
+    const hasLastLine = this.lines.length > 0;
+    if (!hasLastLine) {
+      return true;
+    }
+
+    const isPastLastLine = position.line >= this.lines.length;
+    if (isPastLastLine) {
+      return true;
+    }
+
+    const isOnLastLine = position.line === this.lines.length - 1;
+    if (isOnLastLine) {
+      const isPastEndOfLine = position.column > this.lines.at(-1)!.end.column;
+      return isPastEndOfLine;
+    }
+
+    return false;
   }
 }
