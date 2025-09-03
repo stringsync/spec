@@ -12,7 +12,7 @@ export class Detector {
     const cursor = new Cursor(this.file);
 
     while (cursor.hasNext()) {
-      const comments = Comment.parse(cursor);
+      const comments = Comment.parse(this.file, cursor);
       for (const comment of comments) {
         if (comment.text.startsWith(`${tag}(`)) {
           const location = this.file.getLocation(comment.start);
@@ -20,6 +20,7 @@ export class Detector {
           annotations.push(annotation);
         }
       }
+      cursor.next();
     }
 
     return annotations;
