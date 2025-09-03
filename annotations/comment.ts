@@ -12,11 +12,11 @@ export class Comment {
 
   static parse(file: File, cursor: Cursor): Comment[] {
     const styles = CommentStyle.getStyles(file);
-    return parseStyles(styles);
+    return parseStyles(styles, cursor);
   }
 }
 
-function parseStyles(styles: CommentStyle[]): Comment[] {
+function parseStyles(styles: CommentStyle[], cursor: Cursor): Comment[] {
   const comments = new Array<Comment>();
 
   for (const style of styles) {
