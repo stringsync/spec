@@ -123,17 +123,22 @@ function toAnnotation(
 }
 
 function stripCommentSymbols(text: string, style: CommentStyle): string {
-  const lines = text.split('\n').map((line) => line.trim());
+  const lines = text.split('\n');
 
   for (let index = 0; index < lines.length; index++) {
-    lines[index] = lines[index].replace(style.start, '');
-    if (style.end) {
-      lines[index] = lines[index].replace(style.end, '');
+    if (index === 0) {
+      lines[index] = lines[index].replace(style.start, '');
     }
-    if (index > 0 && style.middle) {
+    if (style.middle && index > 0 && index < lines.length - 1) {
       lines[index] = lines[index].replace(style.middle, '');
+    }
+    if (index === lines.length - 1) {
+      lines[index] = lines[index].replace(style.end, '');
     }
   }
 
-  return lines.join('\n');
+  return lines
+    .filter((line) => line.length > 0)
+    .map((line) => line.trim())
+    .join('\n');
 }

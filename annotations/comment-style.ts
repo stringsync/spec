@@ -16,7 +16,8 @@ export class CommentStyle {
   }
 
   static DoubleSlash = CommentStyle.single('//');
-  static SlashBlock = CommentStyle.block('/*', '*', '*/');
+  static SlashSingleStartBlock = CommentStyle.block('/*', '*', '*/');
+  static SlashDoubleStarBlock = CommentStyle.block('/**', '*', '*/');
   static Hash = CommentStyle.single('#');
   static DoubleDash = CommentStyle.single('--');
   static TripleDoubleQuote = CommentStyle.block(`"""`, '', `"""`);
@@ -26,7 +27,11 @@ export class CommentStyle {
     switch (file.getExtension()) {
       case 'js':
       case 'ts':
-        return [CommentStyle.DoubleSlash, CommentStyle.SlashBlock];
+        return [
+          CommentStyle.DoubleSlash,
+          CommentStyle.SlashDoubleStarBlock,
+          CommentStyle.SlashSingleStartBlock,
+        ];
       case 'sql':
         return [CommentStyle.DoubleDash];
       case 'ex':
