@@ -34,8 +34,10 @@ function getAnnotations(
       const start = cursor.getPosition();
       const location = file.getLocation(start);
       const comment = getComment(style, cursor);
-      const annotation = toAnnotation(tag, comment, style, location);
-      annotations.push(annotation);
+      const annotation = getAnnotation(tag, comment, style, location);
+      if (annotation) {
+        annotations.push(annotation);
+      }
     }
   }
 
@@ -87,23 +89,23 @@ function getComment(style: CommentStyle, cursor: Cursor): string {
   return texts.join('\n');
 }
 
-function toAnnotation(
+function getAnnotation(
   tag: string,
   comment: string,
   style: CommentStyle,
   location: string,
-): Annotation {
+): Annotation | null {
   comment = stripCommentSymbols(comment, style).trim();
 
   // Parse the ID.
   const tagEnd = comment.indexOf('(');
   const idEnd = comment.indexOf(')');
   if (tagEnd === -1 || idEnd === -1) {
-    throw new Error(`Invalid annotation format: ${comment}`);
+    return null;
   }
   const foundTag = comment.slice(0, tagEnd).trim();
   if (tag !== foundTag) {
-    throw new Error(`Tag mismatch: expected "${tag}", found "${foundTag}"`);
+    return null;
   }
   const id = comment.slice(tagEnd + 1, idEnd).trim();
 

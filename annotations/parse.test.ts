@@ -59,4 +59,12 @@ describe('parse', () => {
     expect(annotations[0].body).toBe('Hello world!\n\nThis should be included.');
     expect(annotations[0].location).toBe('test.ts:2:1');
   });
+
+  it('should ignore unrelated comments', () => {
+    const file = File.of('test.ts', '// This is a random comment but it has spec to be tricky');
+
+    const annotations = parse('spec', file);
+
+    expect(annotations).toHaveLength(0);
+  });
 });
