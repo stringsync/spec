@@ -18,7 +18,7 @@ export class Cursor {
     return line;
   }
 
-  hasNext(): boolean {
-    return this.index < this.file.getLineCount();
+  eof(): boolean {
+    return this.index >= this.file.getLineCount();
   }
 }

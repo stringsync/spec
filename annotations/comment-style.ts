@@ -14,8 +14,8 @@ export class CommentStyle {
   static TripleDoubleQuote = new CommentStyle(`"""`, '', `"""`);
   static TripleSingleQuote = new CommentStyle(`'''`, '', `'''`);
 
-  static getStyles(file: File): CommentStyle[] {
-    switch (file.getExtension()) {
+  static for(file: File): CommentStyle[] {
+    switch (file.getLanguage()) {
       case 'ts':
       case 'js':
         return [CommentStyle.SlashSlash, CommentStyle.SlashBlock];
@@ -32,23 +32,11 @@ export class CommentStyle {
     return text.trim().startsWith(this.start);
   }
 
-  sanitize(text: string) {
-    const lines = text.split('\n');
-
-    for (let index = 0; index < lines.length; index++) {
-      if (this.isBlock()) {
-        if (index === 0) {
-          lines[index] = lines[index].replace(this.start, '');
-        } else if (index === lines.length - 1) {
-          lines[index] = lines[index].replace(this.end!, '');
-        } else {
-          lines[index] = lines[index].replace(this.middle!, '');
-        }
-      } else {
-        lines[index] = lines[index].replace(this.start, '');
-      }
-    }
-
-    return lines.join('\n');
+  strip(text: string): string {
+    // TODO: Fix this, this is wrong.
+    return text
+      .replace(this.start, '')
+      .replace(this.end ?? '', '')
+      .replace(this.middle ?? '', '');
   }
 }
