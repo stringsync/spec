@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import { Position } from '~/files/position';
 
 export class File {
   constructor(
@@ -16,7 +15,17 @@ export class File {
     return this.path.split('.').at(-1) ?? '';
   }
 
-  getLocation(position: Position): string {
-    return `${this.path}:${position.line + 1}:${position.column + 1}`;
+  getLocation(index: number): string {
+    let line = 1;
+    let column = 1;
+    for (let i = 0; i < index; i++) {
+      if (this.text.charAt(i) === '\n') {
+        line++;
+        column = 0;
+      } else {
+        column++;
+      }
+    }
+    return `${this.path}:${line}:${column}`;
   }
 }
