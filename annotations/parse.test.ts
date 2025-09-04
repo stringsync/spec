@@ -4,7 +4,7 @@ import { File } from '~/files/file';
 
 describe('parse', () => {
   it('should extract double slash annotations without a body', () => {
-    const file = File.of('test.ts', '// spec(foo.bar)');
+    const file = new File('test.ts', '// spec(foo.bar)');
 
     const annotations = parse('spec', file);
 
@@ -16,7 +16,7 @@ describe('parse', () => {
   });
 
   it('should extract double slash annotations with a body', () => {
-    const file = File.of('test.ts', '// spec(foo.bar): Hello, world!');
+    const file = new File('test.ts', '// spec(foo.bar): Hello, world!');
 
     const annotations = parse('spec', file);
 
@@ -28,7 +28,7 @@ describe('parse', () => {
   });
 
   it('should extract single line slash block annotations', () => {
-    const file = File.of('test.ts', '/* spec(foo.bar): Hello, world! */');
+    const file = new File('test.ts', '/* spec(foo.bar): Hello, world! */');
 
     const annotations = parse('spec', file);
 
@@ -40,7 +40,7 @@ describe('parse', () => {
   });
 
   it('should extract multi line slash block annotations', () => {
-    const file = File.of(
+    const file = new File(
       'test.ts',
       `
 /** 
@@ -61,7 +61,7 @@ describe('parse', () => {
   });
 
   it('should ignore unrelated comments', () => {
-    const file = File.of('test.ts', '// This is a random comment but it has spec to be tricky');
+    const file = new File('test.ts', '// This is a random comment but it has spec to be tricky');
 
     const annotations = parse('spec', file);
 
@@ -69,7 +69,7 @@ describe('parse', () => {
   });
 
   it('should extract multiple annotations in one file', () => {
-    const file = File.of('test.ts', `// spec(foo.bar)\n// spec(baz.qux): Another body`);
+    const file = new File('test.ts', `// spec(foo.bar)\n// spec(baz.qux): Another body`);
 
     const annotations = parse('spec', file);
 
@@ -81,7 +81,7 @@ describe('parse', () => {
   });
 
   it('should handle annotations with extra whitespace', () => {
-    const file = File.of('test.ts', '//   spec(foo.bar)   :   Body with spaces   ');
+    const file = new File('test.ts', '//   spec(foo.bar)   :   Body with spaces   ');
 
     const annotations = parse('spec', file);
 
@@ -91,7 +91,7 @@ describe('parse', () => {
   });
 
   it('should not extract annotation if tag does not match', () => {
-    const file = File.of('test.ts', '// other(foo.bar): Should not match');
+    const file = new File('test.ts', '// other(foo.bar): Should not match');
 
     const annotations = parse('spec', file);
 
@@ -99,7 +99,7 @@ describe('parse', () => {
   });
 
   it('should extract annotation with empty body after colon', () => {
-    const file = File.of('test.ts', '// spec(foo.bar):');
+    const file = new File('test.ts', '// spec(foo.bar):');
 
     const annotations = parse('spec', file);
 
@@ -109,7 +109,7 @@ describe('parse', () => {
   });
 
   it('should extract annotation from block comment with no body', () => {
-    const file = File.of('test.ts', '/* spec(foo.bar) */');
+    const file = new File('test.ts', '/* spec(foo.bar) */');
 
     const annotations = parse('spec', file);
 
@@ -119,7 +119,7 @@ describe('parse', () => {
   });
 
   it('should ignore malformed annotation missing parentheses', () => {
-    const file = File.of('test.ts', '// spec foo.bar: Should not match');
+    const file = new File('test.ts', '// spec foo.bar: Should not match');
 
     const annotations = parse('spec', file);
 
@@ -127,7 +127,7 @@ describe('parse', () => {
   });
 
   it('should extract annotation with nested parentheses in body', () => {
-    const file = File.of('test.ts', '// spec(foo.bar): Body with (parentheses) inside');
+    const file = new File('test.ts', '// spec(foo.bar): Body with (parentheses) inside');
 
     const annotations = parse('spec', file);
 
@@ -136,12 +136,14 @@ describe('parse', () => {
   });
 
   it('should extract annotation from multi-line block comment with leading stars', () => {
-    const file = File.of(
+    const file = new File(
       'test.ts',
       `
 /**
  * spec(foo.bar): Hello
  * World!
+ * 
+ * Not this line.
  */
 `,
     );
@@ -153,7 +155,7 @@ describe('parse', () => {
   });
 
   it('should extract multiple annotations on the same line', () => {
-    const file = File.of('test.ts', `/* spec(foo.bar): Hello */ /* spec(baz.qux): World! */`);
+    const file = new File('test.ts', `/* spec(foo.bar): Hello */ /* spec(baz.qux): World! */`);
 
     const annotations = parse('spec', file);
 

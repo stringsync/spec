@@ -1,145 +1,150 @@
 import { CommentStyle } from '~/annotations/comment-style';
 import type { Annotation } from '~/annotations/types';
-import { Cursor } from '~/files/cursor';
 import type { File } from '~/files/file';
+import { Position } from '~/files/position';
+
+type Style = CommentStyle;
+
+interface CommentHit {
+  startIndex: number;
+  inner: string;
+  style: Style;
+}
 
 export function parse(tag: string, file: File): Annotation[] {
-  const annotations = new Array<Annotation>();
   const styles = CommentStyle.for(file);
-  const cursor = new Cursor(file);
-
-  while (!cursor.eof()) {
-    annotations.push(...getAnnotations(tag, file, cursor, styles));
-    cursor.incrementLine();
+  if (styles.length === 0) {
+    return [];
   }
 
-  return annotations;
+  const comments = extractComments(file.text, styles);
+
+  const results: Annotation[] = [];
+  for (const comment of comments) {
+    const normalized =
+      comment.style.type === 'block'
+        ? normalizeBlockContent(comment.inner, comment.style.middle ?? '')
+        : comment.inner;
+
+    // Find annotations in this comment. Body may span multiple lines (use [\s\S]).
+    const re = new RegExp(
+      `\\b${escapeRegex(tag)}\\s*\\(\\s*([^\\)]+?)\\s*\\)\\s*(?::\\s*([\\s\\S]*))?`,
+      'g',
+    );
+
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(normalized)) !== null) {
+      const id = (m[1] ?? '').trim();
+      let body = (m[2] ?? '').toString();
+      body = cleanBody(body);
+
+      const location = file.getLocation(indexToPosition(comment.startIndex, file.text));
+      results.push({ tag, id, body, location });
+    }
+  }
+
+  return results;
 }
 
-function getAnnotations(
-  tag: string,
-  file: File,
-  cursor: Cursor,
-  styles: CommentStyle[],
-): Annotation[] {
-  const annotations = new Array<Annotation>();
+/**
+ * Extract all comment blocks for the given styles in a single forward scan,
+ * preferring longer start tokens when multiple match at the same index (e.g., '/**' over '/*').
+ */
+function extractComments(text: string, styles: Style[]): CommentHit[] {
+  const hits: CommentHit[] = [];
+  let pos = 0;
 
-  for (const style of styles) {
-    const line = cursor.peek();
-    if (!line) {
-      break;
-    }
+  while (pos < text.length) {
+    let bestIdx = -1;
+    let bestStyle: Style | null = null;
 
-    if (line.text.includes(style.start)) {
-      const start = cursor.getPosition();
-      const location = file.getLocation(start);
-      const comment = getComment(style, cursor);
-      const annotation = parseAnnotation(tag, comment, style, location);
-      if (annotation) {
-        annotations.push(annotation);
+    for (const s of styles) {
+      const idx = text.indexOf(s.start, pos);
+      if (idx === -1) continue;
+      if (
+        bestIdx === -1 ||
+        idx < bestIdx ||
+        (idx === bestIdx && s.start.length > (bestStyle?.start.length ?? 0))
+      ) {
+        bestIdx = idx;
+        bestStyle = s;
       }
     }
+
+    if (bestIdx === -1 || !bestStyle) break;
+
+    const start = bestIdx;
+    const afterStart = start + bestStyle.start.length;
+    let end = text.indexOf(bestStyle.end, afterStart);
+
+    // For single-line comments, end token is '\n'. If not found, treat as end-of-text.
+    if (end === -1) {
+      end = text.length;
+    }
+
+    const inner = text.slice(afterStart, end);
+    hits.push({ startIndex: start, inner, style: bestStyle });
+
+    pos = end + bestStyle.end.length;
   }
 
-  return annotations;
+  return hits;
 }
 
-function getComment(style: CommentStyle, cursor: Cursor): string {
-  const line = cursor.peek();
-  if (!line) {
-    return '';
+/**
+ * Normalize the inside of block comments by removing leading "middle" characters like '*'
+ * and a following space if present (e.g., ' * ' -> '').
+ */
+function normalizeBlockContent(content: string, middle: string): string {
+  if (!middle) {
+    // For block styles without a middle (e.g., triple quotes), keep as-is.
+    return content;
   }
-
-  const startIndex = line.text.indexOf(style.start);
-  if (startIndex === -1) {
-    return '';
-  }
-
-  const endIndex = line.text.indexOf(style.end);
-  if (endIndex === -1) {
-    cursor.incrementLine();
-  } else {
-    cursor.incrementColumnBy(endIndex);
-    return line.text.slice(startIndex, endIndex + style.end.length);
-  }
-
-  const texts = [line.text];
-
-  while (!cursor.eof()) {
-    const line = cursor.peek();
-    if (!line) {
-      break;
-    }
-
-    const endIndex = line.text.indexOf(style.end);
-    if (endIndex === -1) {
-      texts.push(line.text);
-      cursor.incrementLine();
-    } else {
-      cursor.incrementColumnBy(endIndex);
-      const text = line.text.slice(0, endIndex + style.end.length);
-      texts.push(text);
-      break;
-    }
-  }
-
-  return texts.join('\n');
-}
-
-function parseAnnotation(
-  tag: string,
-  comment: string,
-  style: CommentStyle,
-  location: string,
-): Annotation | null {
-  comment = stripCommentSymbols(comment, style).trim();
-
-  // Parse the ID.
-  const tagStart = comment.indexOf(tag);
-  const tagEnd = comment.indexOf('(');
-  const idStart = tagEnd + 1;
-  const idEnd = comment.indexOf(')');
-  if (tagStart === -1 || tagEnd === -1 || idEnd === -1) {
-    return null;
-  }
-  const foundTag = comment.slice(tagStart, tagEnd).trim();
-  if (tag !== foundTag) {
-    return null;
-  }
-  const id = comment.slice(idStart, idEnd).trim();
-
-  // Parse the body, if any.
-  let body = '';
-  const colonIndex = comment.indexOf(':', idEnd + 1);
-  if (colonIndex !== -1) {
-    body = comment.slice(colonIndex + 1).trim();
-  }
-
-  return {
-    tag,
-    id,
-    body,
-    location,
-  };
-}
-
-function stripCommentSymbols(text: string, style: CommentStyle): string {
-  const lines = text.split('\n');
-
-  for (let index = 0; index < lines.length; index++) {
-    if (index === 0) {
-      lines[index] = lines[index].replace(style.start, '');
-    }
-    if (style.middle && index > 0 && index < lines.length - 1) {
-      lines[index] = lines[index].replace(style.middle, '');
-    }
-    if (index === lines.length - 1) {
-      lines[index] = lines[index].replace(style.end, '');
-    }
-  }
-
-  return lines
-    .filter((line) => line.length > 0)
-    .map((line) => line.trim())
+  const middleRe = new RegExp(`^\\s*${escapeRegex(middle)}\\s?`);
+  return content
+    .split('\n')
+    .map((line) => line.replace(middleRe, ''))
     .join('\n');
+}
+
+/**
+ * Clean body text:
+ *
+ * - Trim trailing spaces on each line
+ * - Trim leading/trailing overall whitespace
+ * - Preserve intentional blank lines
+ */
+function cleanBody(body: string): string {
+  if (!body) return '';
+  const lines = body.split('\n').map((l) => l.replace(/\s+$/g, ''));
+  return lines.join('\n').trim();
+}
+
+/**
+ * Convert a zero-based string index into a Position (zero-based line/column).
+ */
+function indexToPosition(index: number, text: string): Position {
+  let line = 0;
+  let col = 0;
+  for (let i = 0; i < index; i++) {
+    if (text.charCodeAt(i) === 10) {
+      // '\n'
+      line++;
+      col = 0;
+    } else {
+      col++;
+    }
+  }
+  return new Position({ line, column: col });
+}
+
+/**
+ * Escapes special characters in a string to be used safely within a regular expression.
+ *
+ * This function replaces characters that have special meaning in regular expressions
+ * (such as `.`, `*`, `+`, `?`, `^`, `$`, `{`, `}`, `(`, `)`, `|`, `[`, `]`, `\`)
+ * with their escaped counterparts.
+ */
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

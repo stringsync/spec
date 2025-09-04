@@ -2,17 +2,18 @@ import type { File } from '~/files/file';
 
 export class CommentStyle {
   private constructor(
+    readonly type: 'single' | 'block',
     readonly start: string,
     readonly middle: string | null,
     readonly end: string,
   ) {}
 
   private static single(start: string) {
-    return new CommentStyle(start, null, '\n');
+    return new CommentStyle('single', start, null, '\n');
   }
 
   private static block(start: string, middle: string, end: string) {
-    return new CommentStyle(start, middle, end);
+    return new CommentStyle('block', start, middle, end);
   }
 
   static DoubleSlash = CommentStyle.single('//');
