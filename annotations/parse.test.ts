@@ -249,6 +249,6 @@ describe('parse', () => {
     expect(annotations[1].tag).toBe('spec');
     expect(annotations[1].id).toBe('foo.two');
     expect(annotations[1].body).toBe('two');
-    expect(annotations[1].location).toBe('test.ts:2:26');
+    expect(annotations[1].location).toBe('test.ts:2:35');
   });
 });
