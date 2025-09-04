@@ -21,7 +21,7 @@ export class File {
     for (let i = 0; i < index; i++) {
       if (this.text.charAt(i) === '\n') {
         line++;
-        column = 0;
+        column = 1;
       } else {
         column++;
       }
