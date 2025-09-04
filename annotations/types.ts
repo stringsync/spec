@@ -11,6 +11,8 @@ export interface Annotation {
   id: string;
   body: string;
   location: string;
+  startIndex: number;
+  endIndex: number;
 }
 
 export interface Comment {

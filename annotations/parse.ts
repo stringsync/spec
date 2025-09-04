@@ -23,9 +23,9 @@ export function parse(tag: string, file: File): Annotation[] {
       index = startIndex + style.start.length;
 
       const comment = parseComment(index, file, style);
-      const location = file.getLocation(startIndex);
+      const commentStartIndex = startIndex + style.start.length;
 
-      const annotation = parseAnnotation(tag, comment.text, location);
+      const annotation = parseAnnotation(tag, comment.text, commentStartIndex, file, style);
       if (annotation) {
         annotations.push(annotation);
       }
@@ -34,7 +34,7 @@ export function parse(tag: string, file: File): Annotation[] {
     }
   }
 
-  return annotations;
+  return annotations.sort((a, b) => a.startIndex - b.startIndex);
 }
 
 function parseComment(startIndex: number, file: File, style: Style): Comment {
@@ -59,11 +59,26 @@ function parseComment(startIndex: number, file: File, style: Style): Comment {
   return { startIndex, endIndex, text };
 }
 
-function parseAnnotation(tag: string, comment: string, location: string): Annotation | null {
+function parseAnnotation(
+  tag: string,
+  comment: string,
+  startIndex: number,
+  file: File,
+  style: Style,
+): Annotation | null {
   let index = 0;
-  // Skip leading spaces
-  while (index < comment.length && comment[index] === ' ') {
+  // Skip leading whitespace
+  while (index < comment.length && /\s/.test(comment[index])) {
     index++;
+  }
+
+  // Skip middle if present
+  if (index < comment.length && comment[index] === style.middle) {
+    index++;
+    // Skip spaces after middle
+    while (index < comment.length && comment[index] === ' ') {
+      index++;
+    }
   }
 
   // Expect tag
@@ -107,5 +122,8 @@ function parseAnnotation(tag: string, comment: string, location: string): Annota
     body = comment.substring(index).trimEnd();
   }
 
-  return { tag, id, body, location };
+  const endIndex = startIndex + index;
+
+  const location = file.getLocation(startIndex + tagStartIndex);
+  return { tag, id, body, location, startIndex, endIndex };
 }
