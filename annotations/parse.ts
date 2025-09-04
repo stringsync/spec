@@ -34,7 +34,7 @@ function getAnnotations(
       const start = cursor.getPosition();
       const location = file.getLocation(start);
       const comment = getComment(style, cursor);
-      const annotation = getAnnotation(tag, comment, style, location);
+      const annotation = parseAnnotation(tag, comment, style, location);
       if (annotation) {
         annotations.push(annotation);
       }
@@ -77,9 +77,6 @@ function getComment(style: CommentStyle, cursor: Cursor): string {
       cursor.incrementLine();
     } else {
       cursor.incrementColumnBy(endIndex);
-      if (cursor.eol()) {
-        cursor.incrementLine();
-      }
       const text = line.text.slice(0, endIndex + style.end.length);
       texts.push(text);
       break;
@@ -89,7 +86,7 @@ function getComment(style: CommentStyle, cursor: Cursor): string {
   return texts.join('\n');
 }
 
-function getAnnotation(
+function parseAnnotation(
   tag: string,
   comment: string,
   style: CommentStyle,
@@ -98,16 +95,18 @@ function getAnnotation(
   comment = stripCommentSymbols(comment, style).trim();
 
   // Parse the ID.
+  const tagStart = comment.indexOf(tag);
   const tagEnd = comment.indexOf('(');
+  const idStart = tagEnd + 1;
   const idEnd = comment.indexOf(')');
-  if (tagEnd === -1 || idEnd === -1) {
+  if (tagStart === -1 || tagEnd === -1 || idEnd === -1) {
     return null;
   }
-  const foundTag = comment.slice(0, tagEnd).trim();
+  const foundTag = comment.slice(tagStart, tagEnd).trim();
   if (tag !== foundTag) {
     return null;
   }
-  const id = comment.slice(tagEnd + 1, idEnd).trim();
+  const id = comment.slice(idStart, idEnd).trim();
 
   // Parse the body, if any.
   let body = '';

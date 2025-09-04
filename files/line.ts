@@ -17,7 +17,7 @@ export class Line {
         line: index + 1,
         column: line.length + 1,
       });
-      return new Line(line, start, end);
+      return new Line(`${line}\n`, start, end);
     });
   }
 
