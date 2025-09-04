@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'bun:test';
 import { parse } from '~/annotations/parse';
 import { Style } from '~/annotations/style';
-import { File } from '~/files/file';
+import { File } from '~/util/file';
 
 describe('parse', () => {
   it('parses annotations without a body', () => {

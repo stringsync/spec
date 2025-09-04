@@ -1,4 +1,4 @@
-import type { File } from '~/files/file';
+import type { File } from '~/util/file';
 
 export class Style {
   private constructor(

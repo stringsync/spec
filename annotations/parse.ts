@@ -1,6 +1,6 @@
 import { Style } from '~/annotations/style';
 import type { Annotation, Comment } from '~/annotations/types';
-import type { File } from '~/files/file';
+import type { File } from '~/util/file';
 
 /**
  * Parse all annotations with the given tag from the file.
