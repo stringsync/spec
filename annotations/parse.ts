@@ -24,7 +24,7 @@ export function parse(tag: string, file: File): Annotation[] {
     const normalized =
       comment.style.type === 'block'
         ? normalizeBlockContent(comment.inner, comment.style.middle ?? '')
-        : comment.inner;
+        : normalizeSingleContent(comment.inner);
 
     // Find annotations in this comment. Body may span multiple lines (use [\s\S]).
     const re = new RegExp(
@@ -36,7 +36,7 @@ export function parse(tag: string, file: File): Annotation[] {
     while ((m = re.exec(normalized)) !== null) {
       const id = (m[1] ?? '').trim();
       let body = (m[2] ?? '').toString();
-      body = cleanBody(body);
+      body = cleanBody(body, comment.style);
 
       const location = file.getLocation(indexToPosition(comment.startIndex, file.text));
       results.push({ tag, id, body, location });
@@ -52,14 +52,14 @@ export function parse(tag: string, file: File): Annotation[] {
  */
 function extractComments(text: string, styles: Style[]): CommentHit[] {
   const hits: CommentHit[] = [];
-  let pos = 0;
+  let index = 0;
 
-  while (pos < text.length) {
+  while (index < text.length) {
     let bestIdx = -1;
     let bestStyle: Style | null = null;
 
     for (const s of styles) {
-      const idx = text.indexOf(s.start, pos);
+      const idx = text.indexOf(s.start, index);
       if (idx === -1) continue;
       if (
         bestIdx === -1 ||
@@ -75,17 +75,41 @@ function extractComments(text: string, styles: Style[]): CommentHit[] {
 
     const start = bestIdx;
     const afterStart = start + bestStyle.start.length;
-    let end = text.indexOf(bestStyle.end, afterStart);
+    if (bestStyle.type === 'single') {
+      // Group consecutive single-line comments of the same style into one logical comment.
+      let lineEnd = text.indexOf('\n', afterStart);
+      if (lineEnd === -1) lineEnd = text.length;
 
-    // For single-line comments, end token is '\n'. If not found, treat as end-of-text.
-    if (end === -1) {
-      end = text.length;
+      let inner = text.slice(afterStart, lineEnd);
+      let scan = lineEnd < text.length ? lineEnd + 1 : lineEnd;
+
+      const startPattern = new RegExp(`^\\s*${escapeRegex(bestStyle.start)}(.*)$`);
+
+      while (scan < text.length) {
+        let nextLineEnd = text.indexOf('\n', scan);
+        if (nextLineEnd === -1) nextLineEnd = text.length;
+
+        const line = text.slice(scan, nextLineEnd);
+        const match = line.match(startPattern);
+        if (!match) break;
+
+        inner += '\n' + match[1];
+        scan = nextLineEnd < text.length ? nextLineEnd + 1 : nextLineEnd;
+      }
+
+      hits.push({ startIndex: start, inner, style: bestStyle });
+      index = scan;
+    } else {
+      let end = text.indexOf(bestStyle.end, afterStart);
+      if (end === -1) {
+        end = text.length;
+      }
+
+      const inner = text.slice(afterStart, end);
+      hits.push({ startIndex: start, inner, style: bestStyle });
+
+      index = end + bestStyle.end.length;
     }
-
-    const inner = text.slice(afterStart, end);
-    hits.push({ startIndex: start, inner, style: bestStyle });
-
-    pos = end + bestStyle.end.length;
   }
 
   return hits;
@@ -108,16 +132,50 @@ function normalizeBlockContent(content: string, middle: string): string {
 }
 
 /**
- * Clean body text:
- *
- * - Trim trailing spaces on each line
- * - Trim leading/trailing overall whitespace
- * - Preserve intentional blank lines
+ * Normalize the inside of grouped single-line comments by removing a single leading space
+ * from each line (common style is '// ').
  */
-function cleanBody(body: string): string {
+function normalizeSingleContent(content: string): string {
+  return content
+    .split('\n')
+    .map((line) => line.replace(/^ /, ''))
+    .join('\n');
+}
+
+/**
+ * Clean body text:
+ * - Remove only the leading whitespace after the colon
+ * - Trim trailing spaces on each line
+ * - For block comments with a middle marker (e.g. '/**' '*'), stop at the first blank line
+ * - Preserve a single trailing newline for such block comments if present and not cut by a blank line
+ */
+function cleanBody(body: string, style: Style): string {
   if (!body) return '';
-  const lines = body.split('\n').map((l) => l.replace(/\s+$/g, ''));
-  return lines.join('\n').trim();
+
+  // Remove leading whitespace right after the colon but keep internal indentation/newlines.
+  const s = body.replace(/^\s*/, '');
+
+  // Right-trim each line
+  let lines = s.split('\n').map((l) => l.replace(/\s+$/g, ''));
+
+  // For JSDoc-style block comments, stop at the first blank line.
+  let cutAtBlank = false;
+  if (style.type === 'block' && !!style.middle) {
+    const firstBlank = lines.findIndex((l) => l.trim() === '');
+    if (firstBlank !== -1) {
+      lines = lines.slice(0, firstBlank);
+      cutAtBlank = true;
+    }
+  }
+
+  let result = lines.join('\n');
+
+  // Preserve a single trailing newline if it existed and we didn't cut at a blank line.
+  if (!cutAtBlank && style.type === 'block' && !!style.middle && s.endsWith('\n')) {
+    result += '\n';
+  }
+
+  return result;
 }
 
 /**
@@ -127,8 +185,7 @@ function indexToPosition(index: number, text: string): Position {
   let line = 0;
   let col = 0;
   for (let i = 0; i < index; i++) {
-    if (text.charCodeAt(i) === 10) {
-      // '\n'
+    if (text.charAt(i) === '\n') {
       line++;
       col = 0;
     } else {
