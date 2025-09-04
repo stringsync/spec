@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 import { parse } from '~/annotations/parse';
+import { Style } from '~/annotations/style';
 import { File } from '~/files/file';
 
 describe('parse', () => {
@@ -283,5 +284,215 @@ describe('parse', () => {
     expect(annotations[1].id).toBe('foo.two');
     expect(annotations[1].body).toBe('two');
     expect(annotations[1].location).toBe('test.ts:4:10');
+  });
+
+  it('ignores irrelevant comment styles', () => {
+    const file = new File(
+      'test.ts',
+      `
+      <!-- spec(foo.bar): baz -->
+      `,
+    );
+
+    const annotations = parse('spec', file);
+
+    expect(annotations).toBeEmpty();
+  });
+});
+
+describe('parse:styles', () => {
+  it('//', () => {
+    const file = new File(
+      'test.ts',
+      `
+      // spec(foo.bar): baz
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.DoubleSlash]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.ts:2:10');
+  });
+
+  it('/* */ (single line)', () => {
+    const file = new File(
+      'test.ts',
+      `
+      /* spec(foo.bar): baz */
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.SlashSingleStartBlock]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.ts:2:10');
+  });
+
+  it('/* */ (multi line)', () => {
+    const file = new File(
+      'test.ts',
+      `
+      /*
+       * spec(foo.bar): baz
+       */
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.SlashSingleStartBlock]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.ts:3:10');
+  });
+
+  it('/** */ (single line)', () => {
+    const file = new File(
+      'test.ts',
+      `
+      /** spec(foo.bar): baz */
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.SlashDoubleStarBlock]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.ts:2:11');
+  });
+
+  it('/** */ (multi line)', () => {
+    const file = new File(
+      'test.ts',
+      `
+      /**
+       * spec(foo.bar): baz
+       */
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.SlashDoubleStarBlock]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.ts:3:10');
+  });
+
+  it('#', () => {
+    const file = new File(
+      'test.py',
+      `
+      # spec(foo.bar): baz
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.Hash]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.py:2:9');
+  });
+
+  it("''' (single line)", () => {
+    const file = new File(
+      'test.py',
+      `
+      '''spec(foo.bar): baz'''
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.TripleSingleQuote]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.py:2:10');
+  });
+
+  it("''' (multi line)", () => {
+    const file = new File(
+      'test.py',
+      `
+      '''
+      spec(foo.bar): baz
+      '''
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.TripleSingleQuote]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.py:3:7');
+  });
+
+  it('""" (single line)', () => {
+    const file = new File(
+      'test.py',
+      `
+      """spec(foo.bar): baz"""
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.TripleDoubleQuote]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.py:2:10');
+  });
+
+  it('""" (multi line)', () => {
+    const file = new File(
+      'test.py',
+      `
+      """
+      spec(foo.bar): baz
+      """
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.TripleDoubleQuote]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.py:3:7');
+  });
+
+  it('--', () => {
+    const file = new File(
+      'test.sql',
+      `
+      -- spec(foo.bar): baz
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.DoubleDash]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.sql:2:10');
   });
 });
