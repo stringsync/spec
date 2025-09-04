@@ -168,17 +168,24 @@ describe('parse', () => {
     const file = new File(
       'test.ts',
       `
-      // This is a spec(foo.bar) comment.
+      // This is a spec(foo.bar) without a body comment.
+      // This is a spec(foo.baz): with a body comment.
       `,
     );
 
     const annotations = parse('spec', file);
 
-    expect(annotations).toHaveLength(1);
+    expect(annotations).toHaveLength(2);
+
     expect(annotations[0].tag).toBe('spec');
     expect(annotations[0].id).toBe('foo.bar');
     expect(annotations[0].body).toBeEmpty();
     expect(annotations[0].location).toBe('test.ts:2:20');
+
+    expect(annotations[1].tag).toBe('spec');
+    expect(annotations[1].id).toBe('foo.baz');
+    expect(annotations[1].body).toBe('with a body comment.');
+    expect(annotations[1].location).toBe('test.ts:3:20');
   });
 
   it('parses annotations with a multi line body', () => {
@@ -250,5 +257,31 @@ describe('parse', () => {
     expect(annotations[1].id).toBe('foo.two');
     expect(annotations[1].body).toBe('two');
     expect(annotations[1].location).toBe('test.ts:2:35');
+  });
+
+  it('parses multiple annotations in the same block comment', () => {
+    const file = new File(
+      'test.ts',
+      `
+      /**
+       * spec(foo.one): one
+       * spec(foo.two): two
+       */
+      `,
+    );
+
+    const annotations = parse('spec', file);
+
+    expect(annotations).toHaveLength(2);
+
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.one');
+    expect(annotations[0].body).toBe('one');
+    expect(annotations[0].location).toBe('test.ts:3:10');
+
+    expect(annotations[1].tag).toBe('spec');
+    expect(annotations[1].id).toBe('foo.two');
+    expect(annotations[1].body).toBe('two');
+    expect(annotations[1].location).toBe('test.ts:4:10');
   });
 });

@@ -35,12 +35,20 @@ export function parse(tag: string, file: File): Annotation[] {
       const comment = parseComment(index, file, style);
       const commentStartIndex = startIndex + style.start.length;
 
-      const annotation = parseAnnotation(tag, comment.text, commentStartIndex, file, style);
-      if (annotation) {
-        // Mark this position as processed
-        processedPositions.add(startIndex);
+      // Mark this position as processed to avoid duplicate processing
+      processedPositions.add(startIndex);
 
-        // Handle multi-line body for both single-line and block comments
+      // Parse all annotations in this comment
+      const commentAnnotations = parseAllAnnotations(
+        tag,
+        comment.text,
+        commentStartIndex,
+        file,
+        style,
+      );
+
+      // Handle multi-line bodies for each annotation
+      for (const annotation of commentAnnotations) {
         if (annotation.body !== '') {
           if (style.type === 'single') {
             // Handle multi-line body for single-line comments
@@ -87,14 +95,15 @@ export function parse(tag: string, file: File): Annotation[] {
             const bodyLines = [annotation.body];
             const commentLines = comment.text.split('\n');
 
-            // Find which line contains the annotation
+            // Find which line contains this specific annotation
             let annotationLineIndex = -1;
             for (let i = 0; i < commentLines.length; i++) {
               let line = commentLines[i].trim();
               if (line.startsWith(style.middle || '')) {
                 line = line.substring((style.middle || '').length).trim();
               }
-              if (parseAnnotationInLine(tag, line, 0, file)) {
+              const lineAnnotation = parseAnnotationInLine(tag, line, 0, file);
+              if (lineAnnotation && lineAnnotation.id === annotation.id) {
                 annotationLineIndex = i;
                 break;
               }
@@ -160,13 +169,15 @@ function parseComment(startIndex: number, file: File, style: Style): Comment {
   return { startIndex, endIndex, text };
 }
 
-function parseAnnotation(
+function parseAllAnnotations(
   tag: string,
   comment: string,
   startIndex: number,
   file: File,
   style: Style,
-): Annotation | null {
+): Annotation[] {
+  const annotations: Annotation[] = [];
+
   // For block comments, we need to handle multiple lines and middle characters
   if (style.type === 'block') {
     const lines = comment.split('\n');
@@ -193,21 +204,109 @@ function parseAnnotation(
       }
 
       const trimmedLine = line.substring(trimmedIndex);
-      const annotation = parseAnnotationInLine(
+
+      // Find all annotations in this line
+      const lineAnnotations = parseAllAnnotationsInLine(
         tag,
         trimmedLine,
         lineStartIndex + trimmedIndex,
         file,
       );
-      if (annotation) {
-        return annotation;
+      annotations.push(...lineAnnotations);
+    }
+  } else {
+    // Single line comment - find all annotations in the line
+    const lineAnnotations = parseAllAnnotationsInLine(tag, comment, startIndex, file);
+    annotations.push(...lineAnnotations);
+  }
+
+  return annotations;
+}
+
+function parseAllAnnotationsInLine(
+  tag: string,
+  text: string,
+  startIndex: number,
+  file: File,
+): Annotation[] {
+  const annotations: Annotation[] = [];
+  let index = 0;
+
+  // Look for all occurrences of the tag in the line
+  while (index < text.length) {
+    const tagIndex = text.indexOf(tag, index);
+    if (tagIndex === -1) {
+      break;
+    }
+
+    // Check if this is a word boundary (not part of another word)
+    if (tagIndex > 0) {
+      const prevChar = text[tagIndex - 1];
+      if (/[a-zA-Z0-9_]/.test(prevChar)) {
+        index = tagIndex + 1;
+        continue;
       }
     }
-    return null;
-  } else {
-    // Single line comment
-    return parseAnnotationInLine(tag, comment, startIndex, file);
+
+    // Check what comes after the tag
+    let afterTagIndex = tagIndex + tag.length;
+
+    // Skip whitespace after tag
+    while (afterTagIndex < text.length && /\s/.test(text[afterTagIndex])) {
+      afterTagIndex++;
+    }
+
+    // Expect open parenthesis
+    if (afterTagIndex >= text.length || text[afterTagIndex] !== '(') {
+      index = tagIndex + 1;
+      continue;
+    }
+    afterTagIndex++; // Skip opening parenthesis
+
+    // ID until closing parenthesis
+    const idStartIndex = afterTagIndex;
+    while (afterTagIndex < text.length && text[afterTagIndex] !== ')') {
+      afterTagIndex++;
+    }
+
+    if (afterTagIndex >= text.length) {
+      index = tagIndex + 1;
+      continue;
+    }
+
+    const id = text.substring(idStartIndex, afterTagIndex);
+    afterTagIndex++; // Skip closing parenthesis
+
+    // Body is optional
+    let body = '';
+    if (afterTagIndex < text.length && text[afterTagIndex] === ':') {
+      afterTagIndex++;
+
+      // Skip spaces after colon
+      while (afterTagIndex < text.length && text[afterTagIndex] === ' ') {
+        afterTagIndex++;
+      }
+      body = text.substring(afterTagIndex).trimEnd();
+    }
+
+    const annotationStartIndex = startIndex + tagIndex;
+    const annotationEndIndex = startIndex + afterTagIndex;
+    const location = file.getLocation(annotationStartIndex);
+
+    annotations.push({
+      tag,
+      id,
+      body,
+      location,
+      startIndex: annotationStartIndex,
+      endIndex: annotationEndIndex,
+    });
+
+    // Continue searching after this annotation
+    index = afterTagIndex;
   }
+
+  return annotations;
 }
 
 function parseAnnotationInLine(
