@@ -1,7 +1,7 @@
 /**
  * Represents an annotation in a file.
  *
- * For example, in the comment `// spec(calculator.add): Hello, world!`:
+ * For example, in the comment // spec(calculator.add): Hello, world!
  *  - tag:  "spec"
  *  - id:   "calculator.add"
  *  - body: "Hello, world!"

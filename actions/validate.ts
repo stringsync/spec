@@ -1,43 +1,31 @@
-import { Stopwatch } from '~/util/stopwatch';
 import fs from 'fs';
 import path from 'path';
 import { Markdown } from '~/util/markdown';
 
-export type ValidateResult =
-  | {
-      type: 'success';
-      ms: number;
-    }
-  | {
-      type: 'error';
-      errors: string[];
-      ms: number;
-    };
+export type ValidateResult = { type: 'success' } | { type: 'error'; errors: string[] };
 
 export async function validate(input: { path: string }): Promise<ValidateResult> {
-  const stopwatch = Stopwatch.start();
-
   for await (const errors of generateErrors(input.path)) {
     if (errors.length > 0) {
-      return error(stopwatch, errors);
+      return error(errors);
     }
   }
 
-  return success(stopwatch);
+  return success();
 }
 
-function success(stopwatch: Stopwatch) {
-  return { type: 'success', ms: stopwatch.ms() } as const;
+function success() {
+  return { type: 'success' } as const;
 }
 
-function error(stopwatch: Stopwatch, errors: string[]) {
-  return { type: 'error', errors, ms: stopwatch.ms() } as const;
+function error(errors: string[]) {
+  return { type: 'error', errors } as const;
 }
 
 async function* generateErrors(filePath: string) {
   yield fileTypeErrors(filePath);
 
-  const markdown = await Markdown.fromPath(filePath);
+  const markdown = await Markdown.load(filePath);
 
   yield headerErrors(filePath, markdown);
   yield subheaderErrors(markdown);

@@ -3,7 +3,7 @@ import * as fs from 'fs';
 export class Markdown {
   constructor(private content: string) {}
 
-  static async fromPath(path: string): Promise<Markdown> {
+  static async load(path: string): Promise<Markdown> {
     const content = await fs.promises.readFile(path, 'utf8');
     return new Markdown(content);
   }
