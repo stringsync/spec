@@ -169,7 +169,9 @@ describe('parse', () => {
       'test.ts',
       `
       // spec(foo.bar): Hello
-      // World!`,
+      // World!
+      // 
+      // Not this line.`,
     );
 
     const annotations = parse('spec', file);

@@ -11,39 +11,13 @@ interface CommentHit {
   style: Style;
 }
 
+/**
+ * Parse all annotations with the given tag from the file.
+ */
 export function parse(tag: string, file: File): Annotation[] {
   const styles = CommentStyle.for(file);
-  if (styles.length === 0) {
-    return [];
-  }
-
   const comments = extractComments(file.text, styles);
-
-  const results: Annotation[] = [];
-  for (const comment of comments) {
-    const normalized =
-      comment.style.type === 'block'
-        ? normalizeBlockContent(comment.inner, comment.style.middle ?? '')
-        : normalizeSingleContent(comment.inner);
-
-    // Find annotations in this comment. Body may span multiple lines (use [\s\S]).
-    const re = new RegExp(
-      `\\b${escapeRegex(tag)}\\s*\\(\\s*([^\\)]+?)\\s*\\)\\s*(?::\\s*([\\s\\S]*))?`,
-      'g',
-    );
-
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(normalized)) !== null) {
-      const id = (m[1] ?? '').trim();
-      let body = (m[2] ?? '').toString();
-      body = cleanBody(body, comment.style);
-
-      const location = file.getLocation(indexToPosition(comment.startIndex, file.text));
-      results.push({ tag, id, body, location });
-    }
-  }
-
-  return results;
+  return extractAnnotations(tag, comments, file);
 }
 
 /**
@@ -51,34 +25,44 @@ export function parse(tag: string, file: File): Annotation[] {
  * preferring longer start tokens when multiple match at the same index (e.g., '/**' over '/*').
  */
 function extractComments(text: string, styles: Style[]): CommentHit[] {
+  if (styles.length === 0) {
+    return [];
+  }
+
   const hits: CommentHit[] = [];
   let index = 0;
 
   while (index < text.length) {
-    let bestIdx = -1;
+    let bestIndex = -1;
     let bestStyle: Style | null = null;
 
-    for (const s of styles) {
-      const idx = text.indexOf(s.start, index);
-      if (idx === -1) continue;
+    for (const style of styles) {
+      const styleIndex = text.indexOf(style.start, index);
+      if (styleIndex === -1) {
+        continue;
+      }
       if (
-        bestIdx === -1 ||
-        idx < bestIdx ||
-        (idx === bestIdx && s.start.length > (bestStyle?.start.length ?? 0))
+        bestIndex === -1 ||
+        styleIndex < bestIndex ||
+        (styleIndex === bestIndex && style.start.length > (bestStyle?.start.length ?? 0))
       ) {
-        bestIdx = idx;
-        bestStyle = s;
+        bestIndex = styleIndex;
+        bestStyle = style;
       }
     }
 
-    if (bestIdx === -1 || !bestStyle) break;
+    if (bestIndex === -1 || !bestStyle) {
+      break;
+    }
 
-    const start = bestIdx;
+    const start = bestIndex;
     const afterStart = start + bestStyle.start.length;
     if (bestStyle.type === 'single') {
       // Group consecutive single-line comments of the same style into one logical comment.
       let lineEnd = text.indexOf('\n', afterStart);
-      if (lineEnd === -1) lineEnd = text.length;
+      if (lineEnd === -1) {
+        lineEnd = text.length;
+      }
 
       let inner = text.slice(afterStart, lineEnd);
       let scan = lineEnd < text.length ? lineEnd + 1 : lineEnd;
@@ -87,11 +71,15 @@ function extractComments(text: string, styles: Style[]): CommentHit[] {
 
       while (scan < text.length) {
         let nextLineEnd = text.indexOf('\n', scan);
-        if (nextLineEnd === -1) nextLineEnd = text.length;
+        if (nextLineEnd === -1) {
+          nextLineEnd = text.length;
+        }
 
         const line = text.slice(scan, nextLineEnd);
         const match = line.match(startPattern);
-        if (!match) break;
+        if (!match) {
+          break;
+        }
 
         inner += '\n' + match[1];
         scan = nextLineEnd < text.length ? nextLineEnd + 1 : nextLineEnd;
@@ -115,16 +103,54 @@ function extractComments(text: string, styles: Style[]): CommentHit[] {
   return hits;
 }
 
+function extractAnnotations(tag: string, comments: CommentHit[], file: File): Annotation[] {
+  const annotations = new Array<Annotation>();
+
+  for (const comment of comments) {
+    const normalized = normalizeContent(comment.inner, comment.style);
+
+    // Find annotations in this comment. Body may span multiple lines (use [\s\S]).
+    const re = new RegExp(
+      `\\b${escapeRegex(tag)}\\s*\\(\\s*([^\\)]+?)\\s*\\)\\s*(?::\\s*([\\s\\S]*))?`,
+      'g',
+    );
+
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(normalized)) !== null) {
+      const id = (m[1] ?? '').trim();
+      let body = (m[2] ?? '').toString();
+      body = cleanAnnotationBody(body, comment.style);
+
+      const position = toPosition(comment.startIndex, file.text);
+      const location = file.getLocation(position);
+      if (id) {
+        annotations.push({ tag, id, body, location });
+      }
+    }
+  }
+
+  return annotations;
+}
+
+function normalizeContent(content: string, style: CommentStyle): string {
+  switch (style.type) {
+    case 'block':
+      return normalizeBlockContent(content, style);
+    case 'single':
+      return normalizeSingleContent(content);
+  }
+}
+
 /**
  * Normalize the inside of block comments by removing leading "middle" characters like '*'
  * and a following space if present (e.g., ' * ' -> '').
  */
-function normalizeBlockContent(content: string, middle: string): string {
-  if (!middle) {
+function normalizeBlockContent(content: string, style: CommentStyle): string {
+  if (!style.middle) {
     // For block styles without a middle (e.g., triple quotes), keep as-is.
     return content;
   }
-  const middleRe = new RegExp(`^\\s*${escapeRegex(middle)}\\s?`);
+  const middleRe = new RegExp(`^\\s*${escapeRegex(style.middle)}\\s?`);
   return content
     .split('\n')
     .map((line) => line.replace(middleRe, ''))
@@ -149,8 +175,10 @@ function normalizeSingleContent(content: string): string {
  * - For block comments with a middle marker (e.g. '/**' '*'), stop at the first blank line
  * - Preserve a single trailing newline for such block comments if present and not cut by a blank line
  */
-function cleanBody(body: string, style: Style): string {
-  if (!body) return '';
+function cleanAnnotationBody(body: string, style: Style): string {
+  if (!body) {
+    return '';
+  }
 
   // Remove leading whitespace right after the colon but keep internal indentation/newlines.
   const s = body.replace(/^\s*/, '');
@@ -158,9 +186,11 @@ function cleanBody(body: string, style: Style): string {
   // Right-trim each line
   let lines = s.split('\n').map((l) => l.replace(/\s+$/g, ''));
 
-  // For JSDoc-style block comments, stop at the first blank line.
+  // Stop at the first blank line for:
+  // - JSDoc-style block comments (block with middle marker)
+  // - Grouped single-line comments (e.g., //)
   let cutAtBlank = false;
-  if (style.type === 'block' && !!style.middle) {
+  if ((style.type === 'block' && !!style.middle) || style.type === 'single') {
     const firstBlank = lines.findIndex((l) => l.trim() === '');
     if (firstBlank !== -1) {
       lines = lines.slice(0, firstBlank);
@@ -181,18 +211,18 @@ function cleanBody(body: string, style: Style): string {
 /**
  * Convert a zero-based string index into a Position (zero-based line/column).
  */
-function indexToPosition(index: number, text: string): Position {
+function toPosition(index: number, text: string): Position {
   let line = 0;
-  let col = 0;
+  let column = 0;
   for (let i = 0; i < index; i++) {
     if (text.charAt(i) === '\n') {
       line++;
-      col = 0;
+      column = 0;
     } else {
-      col++;
+      column++;
     }
   }
-  return new Position({ line, column: col });
+  return new Position({ line, column });
 }
 
 /**
