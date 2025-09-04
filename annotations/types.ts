@@ -12,3 +12,9 @@ export interface Annotation {
   body: string;
   location: string;
 }
+
+export interface Comment {
+  text: string;
+  startIndex: number;
+  endIndex: number;
+}

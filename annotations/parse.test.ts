@@ -61,11 +61,24 @@ describe('parse', () => {
     expect(annotations[1].location).toBe('test.ts:3:7');
   });
 
-  it('ignore non-annotations', () => {
+  it('ignores non-annotation comments', () => {
     const file = new File(
       'test.ts',
       `
       // not an annotation
+      `,
+    );
+
+    const annotations = parse('spec', file);
+
+    expect(annotations).toBeEmpty();
+  });
+
+  it('ignores annotation text that is not inside comments', () => {
+    const file = new File(
+      'test.ts',
+      `
+      spec(foo.bar)
       `,
     );
 

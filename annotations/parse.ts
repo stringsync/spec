@@ -1,5 +1,5 @@
 import { Style } from '~/annotations/style';
-import type { Annotation } from '~/annotations/types';
+import type { Annotation, Comment } from '~/annotations/types';
 import type { File } from '~/files/file';
 
 /**
@@ -23,8 +23,8 @@ export function parse(tag: string, file: File): Annotation[] {
       index = startIndex + style.start.length;
 
       const comment = parseComment(index, file, style);
-
       const location = file.getLocation(startIndex);
+
       const annotation = parseAnnotation(tag, comment.text, location);
       if (annotation) {
         annotations.push(annotation);
@@ -37,26 +37,26 @@ export function parse(tag: string, file: File): Annotation[] {
   return annotations;
 }
 
-function parseComment(index: number, file: File, style: Style): { endIndex: number; text: string } {
-  let end: number;
+function parseComment(startIndex: number, file: File, style: Style): Comment {
+  let endIndex: number;
   let text: string;
   if (style.type === 'single') {
-    end = file.text.indexOf('\n', index);
-    if (end === -1) {
-      end = file.text.length;
-    }
-    text = file.text.substring(index, end);
-  } else {
-    const endIndex = file.text.indexOf(style.end, index);
+    endIndex = file.text.indexOf('\n', startIndex);
     if (endIndex === -1) {
-      end = file.text.length;
-      text = file.text.substring(index);
+      endIndex = file.text.length;
+    }
+    text = file.text.substring(startIndex, endIndex);
+  } else {
+    const commentEndIndex = file.text.indexOf(style.end, startIndex);
+    if (commentEndIndex === -1) {
+      endIndex = file.text.length;
+      text = file.text.substring(startIndex);
     } else {
-      end = endIndex + style.end.length;
-      text = file.text.substring(index, endIndex);
+      endIndex = commentEndIndex + style.end.length;
+      text = file.text.substring(startIndex, commentEndIndex);
     }
   }
-  return { endIndex: end, text };
+  return { startIndex, endIndex, text };
 }
 
 function parseAnnotation(tag: string, comment: string, location: string): Annotation | null {
@@ -67,12 +67,12 @@ function parseAnnotation(tag: string, comment: string, location: string): Annota
   }
 
   // Expect tag
-  const startTag = index;
+  const tagStartIndex = index;
   while (index < comment.length && comment[index] !== '(' && comment[index] !== ' ') {
     index++;
   }
 
-  const foundTag = comment.substring(startTag, index);
+  const foundTag = comment.substring(tagStartIndex, index);
   if (foundTag !== tag) {
     return null;
   }
