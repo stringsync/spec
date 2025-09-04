@@ -17,18 +17,20 @@ export class Style {
   }
 
   static DoubleSlash = Style.single('//');
-  static SlashSingleStartBlock = Style.block('/*', '*', '*/');
+  static SlashSingleStarBlock = Style.block('/*', '*', '*/');
   static SlashDoubleStarBlock = Style.block('/**', '*', '*/');
   static Hash = Style.single('#');
   static DoubleDash = Style.single('--');
   static TripleDoubleQuote = Style.block(`"""`, '', `"""`);
   static TripleSingleQuote = Style.block(`'''`, '', `'''`);
+  static TripleSlash = Style.single('///');
+  static AngleBracketBlock = Style.block('<!--', '', '-->');
 
   static for(file: File): Style[] {
     switch (file.getExtension()) {
       case 'js':
       case 'ts':
-        return [Style.DoubleSlash, Style.SlashDoubleStarBlock, Style.SlashSingleStartBlock];
+        return [Style.DoubleSlash, Style.SlashDoubleStarBlock, Style.SlashSingleStarBlock];
       case 'sql':
         return [Style.DoubleDash];
       case 'ex':
@@ -36,6 +38,17 @@ export class Style {
         return [Style.Hash, Style.TripleDoubleQuote];
       case 'py':
         return [Style.Hash, Style.TripleDoubleQuote, Style.TripleSingleQuote];
+      case 'cs':
+        return [
+          Style.DoubleSlash,
+          Style.SlashDoubleStarBlock,
+          Style.SlashSingleStarBlock,
+          Style.SlashDoubleStarBlock,
+          Style.TripleSlash,
+        ];
+      case 'xml':
+      case 'html':
+        return [Style.AngleBracketBlock];
       default:
         return [];
     }

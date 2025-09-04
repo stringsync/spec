@@ -318,6 +318,23 @@ describe('parse:styles', () => {
     expect(annotations[0].location).toBe('test.ts:2:10');
   });
 
+  it('///', () => {
+    const file = new File(
+      'test.cs',
+      `
+      /// spec(foo.bar): baz
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.TripleSlash]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.cs:2:11');
+  });
+
   it('/* */ (single line)', () => {
     const file = new File(
       'test.ts',
@@ -326,7 +343,7 @@ describe('parse:styles', () => {
       `,
     );
 
-    const annotations = parse('spec', file, [Style.SlashSingleStartBlock]);
+    const annotations = parse('spec', file, [Style.SlashSingleStarBlock]);
 
     expect(annotations).toHaveLength(1);
     expect(annotations[0].tag).toBe('spec');
@@ -345,13 +362,32 @@ describe('parse:styles', () => {
       `,
     );
 
-    const annotations = parse('spec', file, [Style.SlashSingleStartBlock]);
+    const annotations = parse('spec', file, [Style.SlashSingleStarBlock]);
 
     expect(annotations).toHaveLength(1);
     expect(annotations[0].tag).toBe('spec');
     expect(annotations[0].id).toBe('foo.bar');
     expect(annotations[0].body).toBe('baz');
     expect(annotations[0].location).toBe('test.ts:3:10');
+  });
+
+  it('/* */ (multi line, no middle)', () => {
+    const file = new File(
+      'test.ts',
+      `
+      /*
+      spec(foo.bar): baz
+      */
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.SlashSingleStarBlock]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.ts:3:7');
   });
 
   it('/** */ (single line)', () => {
@@ -388,6 +424,25 @@ describe('parse:styles', () => {
     expect(annotations[0].id).toBe('foo.bar');
     expect(annotations[0].body).toBe('baz');
     expect(annotations[0].location).toBe('test.ts:3:10');
+  });
+
+  it('/** */ (multi line, no middle)', () => {
+    const file = new File(
+      'test.ts',
+      `
+      /**
+      spec(foo.bar): baz
+      */
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.SlashDoubleStarBlock]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.ts:3:7');
   });
 
   it('#', () => {
@@ -494,5 +549,41 @@ describe('parse:styles', () => {
     expect(annotations[0].id).toBe('foo.bar');
     expect(annotations[0].body).toBe('baz');
     expect(annotations[0].location).toBe('test.sql:2:10');
+  });
+
+  it('<!-- --> (single line)', () => {
+    const file = new File(
+      'test.html',
+      `
+      <!-- spec(foo.bar): baz -->
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.AngleBracketBlock]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.html:2:12');
+  });
+
+  it('<!-- --> (multi line)', () => {
+    const file = new File(
+      'test.html',
+      `
+      <!--
+       spec(foo.bar): baz
+      -->
+      `,
+    );
+
+    const annotations = parse('spec', file, [Style.AngleBracketBlock]);
+
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].tag).toBe('spec');
+    expect(annotations[0].id).toBe('foo.bar');
+    expect(annotations[0].body).toBe('baz');
+    expect(annotations[0].location).toBe('test.html:3:8');
   });
 });
