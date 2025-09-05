@@ -37,7 +37,7 @@ class Calculator {
 }
 ```
 
-Get spec callsites.
+Scan for specs..
 
 ```sh
 bunx @stringsync/spec scan
