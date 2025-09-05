@@ -2,7 +2,7 @@
 import { program } from 'commander';
 import { name, description, version } from './package.json';
 import { validate } from '~/actions/validate';
-import { scan } from '~/actions/scan';
+import { DEFAULT_IGNORE_PATTERNS, scan } from '~/actions/scan';
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
 
@@ -36,9 +36,11 @@ program
   .command('scan')
   .description('scans a directory for specs and annotations')
   .argument('[patterns...]', 'glob patterns to scan', '**/*')
-  .action(async (patterns: string[]) => {
+  .option('--ignore [patterns...]', 'glob patterns to ignore', [])
+  .action(async (patterns: string[], options: { ignore: string[] }) => {
     const stopwatch = Stopwatch.start();
-    const results = await scan({ patterns });
+    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...options.ignore];
+    const results = await scan({ patterns, ignore });
     const ms = stopwatch.ms().toFixed(2);
 
     log(
@@ -46,7 +48,6 @@ program
       chalk.white.bold(results.length.toString()),
       'items',
       chalk.gray(`in [${ms}ms]`),
-      '\n',
     );
 
     const specs = results.filter((r) => r.type === 'spec');
@@ -59,9 +60,11 @@ program
       );
     }
 
-    log();
-
     const annotations = results.filter((r) => r.type === 'annotation');
+    if (annotations.length > 0) {
+      log();
+    }
+
     for (const annotation of annotations) {
       // Show a better preview: first line, trimmed, or up to 80 chars
       const preview =
@@ -73,12 +76,10 @@ program
       log(
         chalk.magenta('annotation'),
         chalk.white.bold(annotation.id),
-        chalk.gray(`"${preview}"`),
+        preview ? chalk.gray(preview) : '',
         chalk.gray(annotation.location),
       );
     }
-
-    log();
   });
 
 program.parse();

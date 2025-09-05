@@ -151,7 +151,7 @@ function parseComment(startIndex: number, file: File, style: Style): Comment {
   let endIndex: number;
   let text: string;
   if (style.type === 'single') {
-    endIndex = file.text.indexOf('\n', startIndex);
+    endIndex = file.text.indexOf(style.end, startIndex);
     if (endIndex === -1) {
       endIndex = file.text.length;
     }

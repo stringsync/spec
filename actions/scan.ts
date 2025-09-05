@@ -19,12 +19,15 @@ export interface AnnotationResult {
   location: string;
 }
 
-const IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
+export const DEFAULT_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
-export async function scan(input: { patterns: string[] }): Promise<ScanResult[]> {
+export async function scan(input: {
+  patterns: string[];
+  ignore?: string[];
+}): Promise<ScanResult[]> {
   const paths = await glob(input.patterns, {
     absolute: true,
-    ignore: IGNORE_PATTERNS,
+    ignore: input.ignore,
     nodir: true,
   });
 
