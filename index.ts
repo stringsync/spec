@@ -35,7 +35,7 @@ program
 program
   .command('scan')
   .description('scans a directory for specs and annotations')
-  .argument('[patterns...]', 'glob patterns to scan', '**/*')
+  .argument('[patterns...]', 'glob patterns to scan', ['**/*'])
   .option('--ignore [patterns...]', 'glob patterns to ignore', [])
   .action(async (patterns: string[], options: { ignore: string[] }) => {
     const stopwatch = Stopwatch.start();
@@ -56,7 +56,7 @@ program
         chalk.yellow('spec'),
         chalk.white.bold(spec.name),
         chalk.gray(`[${spec.ids.length} ids]`),
-        chalk.gray(spec.path),
+        chalk.cyan(spec.path),
       );
     }
 
@@ -72,9 +72,8 @@ program
       log(
         chalk.magenta('annotation'),
         chalk.white.bold(annotation.id),
-        chalk.gray('at'),
+        chalk.gray(preview),
         chalk.cyan(annotation.location),
-        preview ? chalk.gray(`- ${preview}`) : '',
       );
     }
   });

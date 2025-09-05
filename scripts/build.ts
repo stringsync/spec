@@ -83,36 +83,8 @@ const fixImports = (dir: string): void => {
 console.log('Fixing imports...');
 fixImports(distDir);
 
-// Copy built files to root level for distribution
-const rootDir = path.join(__dirname, '..');
-const copyBuiltFiles = (srcDir: string, destDir: string, relativePath = ''): void => {
-  const files = fs.readdirSync(srcDir);
-
-  for (const file of files) {
-    const srcPath = path.join(srcDir, file);
-    const destPath = path.join(destDir, relativePath, file);
-    const stat = fs.statSync(srcPath);
-
-    if (stat.isDirectory()) {
-      // Skip the scripts directory
-      if (file === 'scripts') {
-        return;
-      }
-      // Create directory in destination
-      fs.mkdirSync(destPath, { recursive: true });
-      copyBuiltFiles(srcPath, destDir, path.join(relativePath, file));
-    } else if (file.endsWith('.js')) {
-      fs.copyFileSync(srcPath, destPath);
-      console.log(`✓ Copied ${path.join(relativePath, file)}`);
-    }
-  }
-};
-
-// Copy all built files to root
-copyBuiltFiles(distDir, rootDir);
-
 // Make the main entry point executable
-const mainFile = path.join(rootDir, 'index.js');
+const mainFile = path.join(distDir, 'index.js');
 if (fs.existsSync(mainFile)) {
   // Read the file content
   let content = fs.readFileSync(mainFile, 'utf8');
@@ -132,8 +104,5 @@ if (fs.existsSync(mainFile)) {
   console.error('Error: Main entry point not found after build');
   process.exit(1);
 }
-
-// Clean up dist directory
-fs.rmSync(distDir, { recursive: true, force: true });
 
 console.log('Build complete!');

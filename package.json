@@ -4,10 +4,15 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "main": "./index.js",
+  "main": "./dist/index.js",
   "bin": {
-    "spec": "./index.js"
+    "spec": "./dist/index.js"
   },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "bun scripts/build.ts",
     "prepublishOnly": "npm run build",
