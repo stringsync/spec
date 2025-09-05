@@ -46,7 +46,7 @@ program
     log(
       chalk.blue('scanned'),
       chalk.white.bold(results.length.toString()),
-      'items',
+      results.length === 1 ? 'item' : 'items',
       chalk.gray(`in [${ms}ms]`),
     );
 
@@ -61,10 +61,6 @@ program
     }
 
     const annotations = results.filter((r) => r.type === 'annotation');
-    if (annotations.length > 0) {
-      log();
-    }
-
     for (const annotation of annotations) {
       // Show a better preview: first line, trimmed, or up to 80 chars
       const preview =
