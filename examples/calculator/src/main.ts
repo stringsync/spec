@@ -110,8 +110,6 @@ class Calculator {
   }
 
   private inputOperator(nextOperator: string, buttonElement?: HTMLElement): void {
-    const inputValue = parseFloat(this.currentValue);
-
     if (this.previousValue === '') {
       this.previousValue = this.currentValue;
     } else if (this.operator) {
