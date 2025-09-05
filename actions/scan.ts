@@ -1,7 +1,8 @@
-import { glob } from 'glob';
+import * as glob from 'glob';
 import { parse } from '~/annotations/parse';
 import { File } from '~/util/file';
 import { Markdown } from '~/util/markdown';
+import fs from 'fs';
 
 export type ScanResult = SpecResult | AnnotationResult;
 
@@ -25,7 +26,9 @@ export async function scan(input: {
   patterns: string[];
   ignore?: string[];
 }): Promise<ScanResult[]> {
-  const paths = await glob(input.patterns, {
+  const patterns = await Promise.all(input.patterns.map(maybeExpandToRecursiveGlob));
+
+  const paths = await glob.glob(patterns, {
     absolute: true,
     ignore: input.ignore,
     nodir: true,
@@ -42,6 +45,19 @@ export async function scan(input: {
   );
 
   return results.flat();
+}
+
+async function maybeExpandToRecursiveGlob(pattern: string): Promise<string> {
+  if (glob.hasMagic(pattern)) {
+    return pattern;
+  }
+
+  const stat = await fs.promises.stat(pattern);
+  if (stat.isDirectory()) {
+    return `${pattern}/**/*`;
+  }
+
+  return pattern;
 }
 
 async function getSpecResult(path: string): Promise<SpecResult> {

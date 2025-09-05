@@ -72,8 +72,9 @@ program
       log(
         chalk.magenta('annotation'),
         chalk.white.bold(annotation.id),
-        preview ? chalk.gray(preview) : '',
-        chalk.gray(annotation.location),
+        chalk.gray('at'),
+        chalk.cyan(annotation.location),
+        preview ? chalk.gray(`- ${preview}`) : '',
       );
     }
   });
