@@ -1,12 +1,16 @@
 {
   "name": "@stringsync/spec",
   "description": "spec driven development tools",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "main": "./index.js",
   "bin": {
-    "spec": "./index.ts"
+    "spec": "./index.js"
   },
   "scripts": {
+    "build": "bun scripts/build.ts",
+    "prepublishOnly": "npm run build",
     "setup": "bun link",
     "teardown": "bun unlink"
   },
