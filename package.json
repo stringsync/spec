@@ -6,7 +6,8 @@
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "spec": "./dist/index.js"
+    "spec": "./dist/index.js",
+    "specd": "./index.ts"
   },
   "files": [
     "dist/**/*",

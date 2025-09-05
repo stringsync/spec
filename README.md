@@ -57,7 +57,7 @@ To install the project dependencies, run:
 bun install
 ```
 
-To install the `spec` CLI, run:
+To install the `specd` CLI, run:
 
 ```sh
 bun setup
@@ -66,10 +66,13 @@ bun setup
 To verify the installation, run:
 
 ```sh
-spec
+specd
 ```
 
-To uninstall the `spec` CLI, run:
+> [!NOTE]  
+> `specd` doesn't require you to rebuild between changes.
+
+To uninstall the `specd` CLI, run:
 
 ```sh
 bun teardown
