@@ -1,23 +1,26 @@
 {
-  "name": "@stringsync/intent-monorepo",
+  "name": "@stringsync/spec",
+  "description": "spec driven development tools",
   "version": "0.0.0",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "examples/*"
-  ],
+  "bin": {
+    "spec": "./index.ts"
+  },
   "scripts": {
-    "setup": "bun link --cwd ./packages/intentx",
-    "teardown": "bun unlink --cwd ./packages/intentx"
+    "setup": "bun link",
+    "teardown": "bun unlink"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/bun": "latest",
     "eslint": "^9.32.0",
     "prettier": "3.6.2",
+    "typescript": "^5.9.2",
     "typescript-eslint": "^8.38.0"
   },
-  "peerDependencies": {
-    "typescript": "^5.8.3"
+  "dependencies": {
+    "chalk": "^5.6.0",
+    "commander": "^14.0.0",
+    "glob": "^11.0.3"
   }
 }
