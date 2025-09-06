@@ -3,35 +3,30 @@
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import { Stopwatch } from '~/util/stopwatch';
+import chalk from 'chalk';
 
-console.log('Building @stringsync/spec...');
+function cleanAndCreateDistDirectory(distDir: string): void {
+  // Clean dist directory
+  if (fs.existsSync(distDir)) {
+    fs.rmSync(distDir, { recursive: true, force: true });
+  }
 
-// Clean dist directory
-const distDir = path.join(__dirname, '..', 'dist');
-if (fs.existsSync(distDir)) {
-  fs.rmSync(distDir, { recursive: true, force: true });
+  // Create dist directory
+  fs.mkdirSync(distDir, { recursive: true });
 }
 
-// Create dist directory
-fs.mkdirSync(distDir, { recursive: true });
-
-// Build with TypeScript compiler
-try {
-  console.log('Compiling TypeScript...');
+function compileTypeScript(): void {
   execSync(
-    'npx tsc --outDir dist --rootDir . --module ESNext --target ES2022 --moduleResolution bundler --allowSyntheticDefaultImports --esModuleInterop --skipLibCheck --declaration false --sourceMap false --noEmit false --verbatimModuleSyntax false --allowImportingTsExtensions false',
+    'bunx tsc --outDir dist --rootDir . --module ESNext --target ES2022 --moduleResolution bundler --allowSyntheticDefaultImports --esModuleInterop --skipLibCheck --declaration false --sourceMap false --noEmit false --verbatimModuleSyntax false --allowImportingTsExtensions false',
     {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..'),
     },
   );
-} catch (error) {
-  console.error('TypeScript compilation failed:', (error as Error).message);
-  process.exit(1);
 }
 
-// Fix imports in the compiled files
-const fixImports = (dir: string): void => {
+function fixImports(dir: string): void {
   const files = fs.readdirSync(dir);
 
   for (const file of files) {
@@ -45,7 +40,7 @@ const fixImports = (dir: string): void => {
 
       // Replace ~/ imports with relative paths
       content = content.replace(/from ['"]~\/([^'"]+)['"]/g, (match, importPath) => {
-        const relativePath = path.relative(path.dirname(filePath), path.join(distDir, importPath));
+        const relativePath = path.relative(path.dirname(filePath), path.join(dir, importPath));
         return `from './${relativePath.replace(/\\/g, '/')}.js'`;
       });
 
@@ -78,31 +73,53 @@ const fixImports = (dir: string): void => {
       fs.writeFileSync(filePath, content);
     }
   }
-};
-
-console.log('Fixing imports...');
-fixImports(distDir);
-
-// Make the main entry point executable
-const mainFile = path.join(distDir, 'index.js');
-if (fs.existsSync(mainFile)) {
-  // Read the file content
-  let content = fs.readFileSync(mainFile, 'utf8');
-
-  // Replace the bun shebang with node shebang for broader compatibility
-  content = content.replace('#!/usr/bin/env bun', '#!/usr/bin/env node');
-
-  // Write back the modified content
-  fs.writeFileSync(mainFile, content);
-
-  // Make it executable
-  fs.chmodSync(mainFile, '755');
-
-  console.log('✓ Built successfully');
-  console.log(`✓ Entry point: ${mainFile}`);
-} else {
-  console.error('Error: Main entry point not found after build');
-  process.exit(1);
 }
 
-console.log('Build complete!');
+function makeExecutable(distDir: string): void {
+  const mainFile = path.join(distDir, 'index.js');
+
+  if (fs.existsSync(mainFile)) {
+    // Read the file content
+    let content = fs.readFileSync(mainFile, 'utf8');
+
+    // Replace the bun shebang with node shebang for broader compatibility
+    content = content.replace('#!/usr/bin/env bun', '#!/usr/bin/env node');
+
+    // Write back the modified content
+    fs.writeFileSync(mainFile, content);
+
+    // Make it executable
+    fs.chmodSync(mainFile, '755');
+  } else {
+    throw new Error('Main entry point not found after build');
+  }
+}
+
+function main(): void {
+  const stopwatch = Stopwatch.start();
+  const distDir = path.resolve(__dirname, '..', 'dist');
+
+  try {
+    console.log(chalk.white('building @stringsync/spec...'));
+
+    cleanAndCreateDistDirectory(distDir);
+
+    console.log(chalk.gray('Compiling TypeScript...'));
+    compileTypeScript();
+
+    console.log(chalk.gray('Fixing imports...'));
+    fixImports(distDir);
+
+    makeExecutable(distDir);
+    console.log(
+      chalk.green('built'),
+      chalk.white.bold('@stringsync/spec'),
+      chalk.gray(`in [${stopwatch.ms().toFixed(2)}ms]`),
+    );
+  } catch (error) {
+    console.log(chalk.red('failure'), error);
+    process.exit(1);
+  }
+}
+
+main();
