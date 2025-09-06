@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "build": "bun scripts/build.ts",
-    "prepublishOnly": "npm run build",
+    "release": "bun scripts/release.ts",
     "setup": "bun link",
     "teardown": "bun unlink"
   },
