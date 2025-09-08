@@ -52,6 +52,16 @@ To see a complete list of commands, run:
 bunx @stringsync/spec
 ```
 
+## MCP
+
+_Coming soon_
+
+@stringsync/spec will have an MCP server that provides:
+
+- tools to check specs and scan for tags
+- prompts to implement specs
+- prompts to infer and tag specs from existing code
+
 ## Dev
 
 To install the project dependencies, run:
