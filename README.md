@@ -37,7 +37,7 @@ class Calculator {
 }
 ```
 
-Scan for specs..
+Scan for specs.
 
 ```sh
 bunx @stringsync/spec scan
@@ -57,20 +57,23 @@ To install the project dependencies, run:
 bun install
 ```
 
-To install the `specd` CLI, run:
+To install the `spec` CLI, run:
 
 ```sh
 bun setup
 ```
 
+To run dev mode, run:
+
+```sh
+bun dev
+```
+
 To verify the installation, run:
 
 ```sh
-specd
+spec
 ```
-
-> [!NOTE]  
-> `specd` doesn't require you to rebuild between changes.
 
 To uninstall the `specd` CLI, run:
 
