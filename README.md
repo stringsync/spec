@@ -30,7 +30,7 @@ _calculator.ts_
 
 ```ts
 class Calculator {
-  // spec(calculator.add): Optional annotation.
+  // spec(calculator.add): Optional tag body.
   add(a: number, b: number) {
     return a + b;
   }

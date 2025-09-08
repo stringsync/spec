@@ -1,13 +1,13 @@
 /**
- * Represents an annotation in a file.
+ * Represents a tag in a file.
  *
  * For example, in the comment // spec(calculator.add): Hello, world!
- *  - tag:  "spec"
+ *  - name:  "spec"
  *  - id:   "calculator.add"
  *  - body: "Hello, world!"
  */
-export interface Annotation {
-  tag: string;
+export interface Tag {
+  name: string;
   id: string;
   body: string;
   location: string;

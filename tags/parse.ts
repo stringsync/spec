@@ -1,19 +1,19 @@
-import { Style } from '~/annotations/style';
-import type { Annotation, Comment } from '~/annotations/types';
+import { Style } from '~/tags/style';
+import type { Tag, Comment } from '~/tags/types';
 import type { File } from '~/util/file';
 
 /**
- * Parse all annotations with the given tag from the file.
+ * Parse all tags with the given tag name from the file.
  */
-export function parse(tag: string, file: File, styles?: Style[]): Annotation[] {
+export function parse(tagName: string, file: File, styles?: Style[]): Tag[] {
   styles ??= Style.for(file);
   if (styles.length === 0) {
     return [];
   }
 
-  const annotations: Annotation[] = [];
+  const tags = new Array<Tag>();
 
-  // Track processed positions to avoid duplicate annotations
+  // Track processed positions to avoid duplicate tags
   const processedPositions = new Set<number>();
 
   for (const style of styles) {
@@ -38,21 +38,15 @@ export function parse(tag: string, file: File, styles?: Style[]): Annotation[] {
       // Mark this position as processed to avoid duplicate processing
       processedPositions.add(startIndex);
 
-      // Parse all annotations in this comment
-      const commentAnnotations = parseAllAnnotations(
-        tag,
-        comment.text,
-        commentStartIndex,
-        file,
-        style,
-      );
+      // Parse all tags in this comment
+      const commentTags = parseAllTags(tagName, comment.text, commentStartIndex, file, style);
 
-      // Handle multi-line bodies for each annotation
-      for (const annotation of commentAnnotations) {
-        if (annotation.body !== '') {
+      // Handle multi-line bodies for each tag
+      for (const tag of commentTags) {
+        if (tag.body !== '') {
           if (style.type === 'single') {
             // Handle multi-line body for single-line comments
-            const bodyLines = [annotation.body];
+            const bodyLines = [tag.body];
             let nextIndex = comment.endIndex;
 
             // Continue reading subsequent comment lines
@@ -78,9 +72,9 @@ export function parse(tag: string, file: File, styles?: Style[]): Annotation[] {
               // Empty comment line ends the multi-line body
               if (nextCommentText === '') break;
 
-              // Check if this line contains another annotation - if so, stop multi-line body
-              const hasAnnotation = parseAnnotationInLine(tag, nextCommentText, 0, file);
-              if (hasAnnotation) break;
+              // Check if this line contains another tag - if so, stop multi-line body
+              const hasTag = parseTagInLine(tagName, nextCommentText, 0, file);
+              if (hasTag) break;
 
               bodyLines.push(nextCommentText);
               nextIndex = nextComment.endIndex;
@@ -88,30 +82,30 @@ export function parse(tag: string, file: File, styles?: Style[]): Annotation[] {
 
             // Join body lines if we found additional lines
             if (bodyLines.length > 1) {
-              annotation.body = bodyLines.join('\n');
+              tag.body = bodyLines.join('\n');
             }
           } else {
             // Handle multi-line body for block comments
-            const bodyLines = [annotation.body];
+            const bodyLines = [tag.body];
             const commentLines = comment.text.split('\n');
 
-            // Find which line contains this specific annotation
-            let annotationLineIndex = -1;
+            // Find which line contains this specific tag
+            let tagLineIndex = -1;
             for (let i = 0; i < commentLines.length; i++) {
               let line = commentLines[i].trim();
               if (line.startsWith(style.middle || '')) {
                 line = line.substring((style.middle || '').length).trim();
               }
-              const lineAnnotation = parseAnnotationInLine(tag, line, 0, file);
-              if (lineAnnotation && lineAnnotation.id === annotation.id) {
-                annotationLineIndex = i;
+              const lineTag = parseTagInLine(tagName, line, 0, file);
+              if (lineTag && lineTag.id === tag.id) {
+                tagLineIndex = i;
                 break;
               }
             }
 
             // Continue reading subsequent lines in the block comment
-            if (annotationLineIndex !== -1) {
-              for (let i = annotationLineIndex + 1; i < commentLines.length; i++) {
+            if (tagLineIndex !== -1) {
+              for (let i = tagLineIndex + 1; i < commentLines.length; i++) {
                 let line = commentLines[i].trim();
 
                 // Remove middle character if present
@@ -122,29 +116,29 @@ export function parse(tag: string, file: File, styles?: Style[]): Annotation[] {
                 // Empty line ends the multi-line body
                 if (line === '') break;
 
-                // Check if this line contains another annotation - if so, stop multi-line body
-                const hasAnnotation = parseAnnotationInLine(tag, line, 0, file);
-                if (hasAnnotation) break;
+                // Check if this line contains another tag - if so, stop multi-line body
+                const hasTag = parseTagInLine(tagName, line, 0, file);
+                if (hasTag) break;
 
                 bodyLines.push(line);
               }
 
               // Join body lines if we found additional lines
               if (bodyLines.length > 1) {
-                annotation.body = bodyLines.join('\n');
+                tag.body = bodyLines.join('\n');
               }
             }
           }
         }
 
-        annotations.push(annotation);
+        tags.push(tag);
       }
 
       index = comment.endIndex;
     }
   }
 
-  return annotations.sort((a, b) => a.startIndex - b.startIndex);
+  return tags.sort((a, b) => a.startIndex - b.startIndex);
 }
 
 function parseComment(startIndex: number, file: File, style: Style): Comment {
@@ -169,14 +163,14 @@ function parseComment(startIndex: number, file: File, style: Style): Comment {
   return { startIndex, endIndex, text };
 }
 
-function parseAllAnnotations(
-  tag: string,
+function parseAllTags(
+  tagName: string,
   comment: string,
   startIndex: number,
   file: File,
   style: Style,
-): Annotation[] {
-  const annotations: Annotation[] = [];
+): Tag[] {
+  const tags: Tag[] = [];
 
   // For block comments, we need to handle multiple lines and middle characters
   if (style.type === 'block') {
@@ -205,36 +199,31 @@ function parseAllAnnotations(
 
       const trimmedLine = line.substring(trimmedIndex);
 
-      // Find all annotations in this line
-      const lineAnnotations = parseAllAnnotationsInLine(
-        tag,
+      // Find all tags in this line
+      const lineTags = parseAllTagsInLine(
+        tagName,
         trimmedLine,
         lineStartIndex + trimmedIndex,
         file,
       );
-      annotations.push(...lineAnnotations);
+      tags.push(...lineTags);
     }
   } else {
-    // Single line comment - find all annotations in the line
-    const lineAnnotations = parseAllAnnotationsInLine(tag, comment, startIndex, file);
-    annotations.push(...lineAnnotations);
+    // Single line comment - find all tags in the line
+    const lineTags = parseAllTagsInLine(tagName, comment, startIndex, file);
+    tags.push(...lineTags);
   }
 
-  return annotations;
+  return tags;
 }
 
-function parseAllAnnotationsInLine(
-  tag: string,
-  text: string,
-  startIndex: number,
-  file: File,
-): Annotation[] {
-  const annotations: Annotation[] = [];
+function parseAllTagsInLine(tagName: string, text: string, startIndex: number, file: File): Tag[] {
+  const tags = new Array<Tag>();
   let index = 0;
 
   // Look for all occurrences of the tag in the line
   while (index < text.length) {
-    const tagIndex = text.indexOf(tag, index);
+    const tagIndex = text.indexOf(tagName, index);
     if (tagIndex === -1) {
       break;
     }
@@ -249,7 +238,7 @@ function parseAllAnnotationsInLine(
     }
 
     // Check what comes after the tag
-    let afterTagIndex = tagIndex + tag.length;
+    let afterTagIndex = tagIndex + tagName.length;
 
     // Skip whitespace after tag
     while (afterTagIndex < text.length && /\s/.test(text[afterTagIndex])) {
@@ -289,37 +278,32 @@ function parseAllAnnotationsInLine(
       body = text.substring(afterTagIndex).trimEnd();
     }
 
-    const annotationStartIndex = startIndex + tagIndex;
-    const annotationEndIndex = startIndex + afterTagIndex;
-    const location = file.getLocation(annotationStartIndex);
+    const tagStartIndex = startIndex + tagIndex;
+    const tagEndIndex = startIndex + afterTagIndex;
+    const location = file.getLocation(tagStartIndex);
 
-    annotations.push({
-      tag,
+    tags.push({
+      name: tagName,
       id,
       body,
       location,
-      startIndex: annotationStartIndex,
-      endIndex: annotationEndIndex,
+      startIndex: tagStartIndex,
+      endIndex: tagEndIndex,
     });
 
-    // Continue searching after this annotation
+    // Continue searching after this tag
     index = afterTagIndex;
   }
 
-  return annotations;
+  return tags;
 }
 
-function parseAnnotationInLine(
-  tag: string,
-  text: string,
-  startIndex: number,
-  file: File,
-): Annotation | null {
+function parseTagInLine(tagName: string, text: string, startIndex: number, file: File): Tag | null {
   let index = 0;
 
   // Look for the tag anywhere in the line
   while (index < text.length) {
-    const tagIndex = text.indexOf(tag, index);
+    const tagIndex = text.indexOf(tagName, index);
     if (tagIndex === -1) {
       return null;
     }
@@ -334,7 +318,7 @@ function parseAnnotationInLine(
     }
 
     // Check what comes after the tag
-    let afterTagIndex = tagIndex + tag.length;
+    let afterTagIndex = tagIndex + tagName.length;
 
     // Skip whitespace after tag
     while (afterTagIndex < text.length && /\s/.test(text[afterTagIndex])) {
@@ -374,17 +358,17 @@ function parseAnnotationInLine(
       body = text.substring(afterTagIndex).trimEnd();
     }
 
-    const annotationStartIndex = startIndex + tagIndex;
-    const annotationEndIndex = startIndex + afterTagIndex;
-    const location = file.getLocation(annotationStartIndex);
+    const tagStartIndex = startIndex + tagIndex;
+    const tagEndIndex = startIndex + afterTagIndex;
+    const location = file.getLocation(tagStartIndex);
 
     return {
-      tag,
+      name: tagName,
       id,
       body,
       location,
-      startIndex: annotationStartIndex,
-      endIndex: annotationEndIndex,
+      startIndex: tagStartIndex,
+      endIndex: tagEndIndex,
     };
   }
 

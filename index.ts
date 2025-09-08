@@ -34,7 +34,7 @@ program
 
 program
   .command('scan')
-  .description('scans a directory for specs and annotations')
+  .description('scans a directory for specs and tags')
   .argument('[patterns...]', 'glob patterns to scan', ['**/*'])
   .option('--ignore [patterns...]', 'glob patterns to ignore', [])
   .action(async (patterns: string[], options: { ignore: string[] }) => {
@@ -60,20 +60,20 @@ program
       );
     }
 
-    const annotations = results.filter((r) => r.type === 'annotation');
-    for (const annotation of annotations) {
+    const tags = results.filter((r) => r.type === 'tag');
+    for (const tag of tags) {
       // Show a better preview: first line, trimmed, or up to 80 chars
       const preview =
-        annotation.body
+        tag.body
           .split('\n')[0] // first line
           .trim()
-          .slice(0, 80) + (annotation.body.length > 80 ? '...' : '');
+          .slice(0, 80) + (tag.body.length > 80 ? '...' : '');
 
       log(
-        chalk.magenta('annotation'),
-        chalk.white.bold(annotation.id),
+        chalk.magenta('tag'),
+        chalk.white.bold(tag.id),
         chalk.gray(preview),
-        chalk.cyan(annotation.location),
+        chalk.cyan(tag.location),
       );
     }
   });

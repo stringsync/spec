@@ -1,10 +1,10 @@
 import * as glob from 'glob';
-import { parse } from '~/annotations/parse';
+import { parse } from '~/tags/parse';
 import { File } from '~/util/file';
 import { Markdown } from '~/util/markdown';
 import fs from 'fs';
 
-export type ScanResult = SpecResult | AnnotationResult;
+export type ScanResult = SpecResult | TagResult;
 
 export interface SpecResult {
   type: 'spec';
@@ -13,8 +13,8 @@ export interface SpecResult {
   ids: string[];
 }
 
-export interface AnnotationResult {
-  type: 'annotation';
+export interface TagResult {
+  type: 'tag';
   id: string;
   body: string;
   location: string;
@@ -39,7 +39,7 @@ export async function scan(input: {
       if (path.endsWith('spec.md')) {
         return getSpecResult(path);
       } else {
-        return getAnnotationResults(path);
+        return getTagResults(path);
       }
     }),
   );
@@ -67,10 +67,10 @@ async function getSpecResult(path: string): Promise<SpecResult> {
   return { type: 'spec', name, path, ids };
 }
 
-async function getAnnotationResults(path: string): Promise<AnnotationResult[]> {
+async function getTagResults(path: string): Promise<TagResult[]> {
   const file = await File.load(path);
   return parse('spec', file).map(({ id, body, location }) => ({
-    type: 'annotation',
+    type: 'tag',
     id,
     body,
     location,
