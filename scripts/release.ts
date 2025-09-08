@@ -86,8 +86,8 @@ function main() {
       console.log(chalk.green(`🚀 Publishing version ${nextVersion}...`));
       updateVersion(nextVersion);
 
-      runCommand('npm install'); // Ensure dependencies are locked with the new version
-      runCommand('npm run build');
+      runCommand('bun install'); // Ensure dependencies are locked with the new version
+      runCommand('bun run build');
       runCommand(`git commit -am "Release ${nextVersion}"`);
       runCommand(`git tag v${nextVersion}`);
       runCommand(`git push origin v${nextVersion}`);
@@ -95,7 +95,7 @@ function main() {
       // Determine npm tag
       const npmTag = ['alpha', 'beta', 'rc'].includes(type) ? type : 'latest';
 
-      runCommand(`npm publish --access public --tag ${npmTag}`);
+      runCommand(`bun publish --access public --tag ${npmTag}`);
       runCommand('git push origin master'); // Push changes to repo
 
       console.log(chalk.green(`✅ Published ${nextVersion} with tag "${npmTag}".`));
