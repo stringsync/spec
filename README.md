@@ -18,10 +18,10 @@ _calculator.spec.md_
 It adds two numbers.
 ```
 
-Validate the spec.
+Check the spec.
 
 ```
-bunx @stringsync/spec validate calculator.md
+bunx @stringsync/spec check calculator.md
 ```
 
 Reference the spec.

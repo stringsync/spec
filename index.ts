@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { program } from 'commander';
 import { name, description, version } from './package.json';
-import { validate } from '~/actions/validate';
+import { check } from '~/actions/check';
 import { DEFAULT_IGNORE_PATTERNS, scan } from '~/actions/scan';
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
@@ -13,12 +13,12 @@ function log(...messages: string[]) {
 program.name(name).description(description).version(version);
 
 program
-  .command('validate')
+  .command('check')
   .description('validates a spec file')
   .argument('<path>', 'path to spec file')
   .action(async (path: string) => {
     const stopwatch = Stopwatch.start();
-    const result = await validate({ path });
+    const result = await check({ path });
     const ms = stopwatch.ms().toFixed(2);
 
     switch (result.type) {
