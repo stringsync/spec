@@ -62,6 +62,8 @@ _Coming soon_
 - prompts to implement specs
 - prompts to infer and tag specs from existing code
 
+For now, instruct your agent to read https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/AGENTS.md.
+
 ## Dev
 
 To install the project dependencies, run:
