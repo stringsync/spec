@@ -83,3 +83,11 @@ class Calculator {
 ```
 
 </bad-example>
+
+## Using Specs
+
+Specs prevent you from manually scan a codebase for implementations. Therefore, you should use them to quickly know what code is relevant to the user's request.
+
+1. Run the `scan` command to find the specs and tags in scope.
+2. Examine the spec results and read the ones you might be interested in. Find the spec ID with the format: `<filename>.<id>`.
+3. Examine the tag results from the `scan` command and use the code location as needed.
