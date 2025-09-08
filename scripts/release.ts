@@ -4,7 +4,7 @@ import path from 'path';
 import readline from 'readline';
 import chalk from 'chalk';
 
-const PACKAGE_JSON_PATH = path.join(process.cwd(), 'package.json');
+const PACKAGE_JSON_PATH = path.resolve(__dirname, '..', 'package.json');
 
 function runCommand(command: string) {
   console.log(chalk.cyan(`$ ${command}`));
