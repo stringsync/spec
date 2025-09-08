@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { program } from 'commander';
 import { name, description, version } from './package.json';
-import { validate } from '~/actions/validate';
+import { check } from '~/actions/check';
 import { DEFAULT_IGNORE_PATTERNS, scan } from '~/actions/scan';
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
@@ -13,12 +13,12 @@ function log(...messages: string[]) {
 program.name(name).description(description).version(version);
 
 program
-  .command('validate')
+  .command('check')
   .description('validates a spec file')
   .argument('<path>', 'path to spec file')
   .action(async (path: string) => {
     const stopwatch = Stopwatch.start();
-    const result = await validate({ path });
+    const result = await check({ path });
     const ms = stopwatch.ms().toFixed(2);
 
     switch (result.type) {
@@ -34,8 +34,8 @@ program
 
 program
   .command('scan')
-  .description('scans a directory for specs and annotations')
-  .argument('[patterns...]', 'glob patterns to scan', '**/*')
+  .description('scans a directory for specs and tags')
+  .argument('[patterns...]', 'glob patterns to scan', ['**/*'])
   .option('--ignore [patterns...]', 'glob patterns to ignore', [])
   .action(async (patterns: string[], options: { ignore: string[] }) => {
     const stopwatch = Stopwatch.start();
@@ -56,25 +56,24 @@ program
         chalk.yellow('spec'),
         chalk.white.bold(spec.name),
         chalk.gray(`[${spec.ids.length} ids]`),
-        chalk.gray(spec.path),
+        chalk.cyan(spec.path),
       );
     }
 
-    const annotations = results.filter((r) => r.type === 'annotation');
-    for (const annotation of annotations) {
+    const tags = results.filter((r) => r.type === 'tag');
+    for (const tag of tags) {
       // Show a better preview: first line, trimmed, or up to 80 chars
       const preview =
-        annotation.body
+        tag.body
           .split('\n')[0] // first line
           .trim()
-          .slice(0, 80) + (annotation.body.length > 80 ? '...' : '');
+          .slice(0, 80) + (tag.body.length > 80 ? '...' : '');
 
       log(
-        chalk.magenta('annotation'),
-        chalk.white.bold(annotation.id),
-        chalk.gray('at'),
-        chalk.cyan(annotation.location),
-        preview ? chalk.gray(`- ${preview}`) : '',
+        chalk.magenta('tag'),
+        chalk.white.bold(tag.id),
+        chalk.gray(preview),
+        chalk.cyan(tag.location),
       );
     }
   });

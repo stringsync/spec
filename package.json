@@ -1,18 +1,29 @@
 {
   "name": "@stringsync/spec",
   "description": "spec driven development tools",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.js",
   "bin": {
-    "spec": "./index.ts"
+    "spec": "./dist/index.js"
   },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
+    "build": "bun scripts/build.ts",
+    "release": "bun scripts/release.ts",
+    "dev": "chokidar '**/*.ts' --command 'bun scripts/build.ts' --ignore '**/node_modules/**' --silent --initial",
     "setup": "bun link",
     "teardown": "bun unlink"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/bun": "latest",
+    "chokidar-cli": "^3.0.0",
     "eslint": "^9.32.0",
     "prettier": "3.6.2",
     "typescript": "^5.9.2",

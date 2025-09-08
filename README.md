@@ -18,10 +18,10 @@ _calculator.spec.md_
 It adds two numbers.
 ```
 
-Validate the spec.
+Check the spec.
 
 ```
-bunx @stringsync/spec validate calculator.md
+bunx @stringsync/spec check calculator.md
 ```
 
 Reference the spec.
@@ -30,14 +30,14 @@ _calculator.ts_
 
 ```ts
 class Calculator {
-  // spec(calculator.add): Optional annotation.
+  // spec(calculator.add): Optional tag body.
   add(a: number, b: number) {
     return a + b;
   }
 }
 ```
 
-Scan for specs..
+Scan for specs.
 
 ```sh
 bunx @stringsync/spec scan
@@ -63,13 +63,19 @@ To install the `spec` CLI, run:
 bun setup
 ```
 
+To run dev mode, run:
+
+```sh
+bun dev
+```
+
 To verify the installation, run:
 
 ```sh
 spec
 ```
 
-To uninstall the `spec` CLI, run:
+To uninstall the `specd` CLI, run:
 
 ```sh
 bun teardown

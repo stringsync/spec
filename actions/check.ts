@@ -2,9 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { Markdown } from '~/util/markdown';
 
-export type ValidateResult = { type: 'success' } | { type: 'error'; errors: string[] };
+export type CheckResult = { type: 'success' } | { type: 'error'; errors: string[] };
 
-export async function validate(input: { path: string }): Promise<ValidateResult> {
+export async function check(input: { path: string }): Promise<CheckResult> {
   for await (const errors of generateErrors(input.path)) {
     if (errors.length > 0) {
       return error(errors);
