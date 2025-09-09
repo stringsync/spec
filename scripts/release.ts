@@ -3,13 +3,16 @@ import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import readline from 'readline';
 import chalk from 'chalk';
+import { ConsoleLogger } from '~/util/logs/console-logger';
+
+const log = new ConsoleLogger();
 
 const PACKAGE_JSON_PATH = path.resolve(__dirname, '..', 'package.json');
 
 function run(command: string) {
-  console.log(chalk.cyan(`$ ${command}`));
+  log.info(chalk.cyan(`$ ${command}`));
   const output = execSync(command).toString().trim();
-  console.log(chalk.gray(output));
+  log.info(chalk.gray(output));
   return output;
 }
 
@@ -47,43 +50,41 @@ function getNextVersion(type: string, currentVersion: string) {
 
 function main() {
   if (!run('which bun')) {
-    console.error(chalk.red('❌ Bun is not installed or not found in PATH.'));
+    log.error(chalk.red('❌ Bun is not installed or not found in PATH.'));
     process.exit(1);
   }
 
   if (!run('which git')) {
-    console.error(chalk.red('❌ Git is not installed or not found in PATH.'));
+    log.error(chalk.red('❌ Git is not installed or not found in PATH.'));
     process.exit(1);
   }
 
   if (!run('which gh')) {
-    console.error(chalk.red('❌ GitHub CLI (gh) is not installed or not found in PATH.'));
+    log.error(chalk.red('❌ GitHub CLI (gh) is not installed or not found in PATH.'));
     process.exit(1);
   }
 
   try {
     run('gh auth status');
   } catch (e) {
-    console.error(chalk.red('❌ You must be logged in to GitHub CLI (gh).', e));
+    log.error(chalk.red('❌ You must be logged in to GitHub CLI (gh).', e));
     process.exit(1);
   }
 
   if (run('git status --porcelain')) {
-    console.error(chalk.red('❌ Commit your changes before publishing.'));
+    log.error(chalk.red('❌ Commit your changes before publishing.'));
     process.exit(1);
   }
 
   const currentBranch = run('git rev-parse --abbrev-ref HEAD');
   if (currentBranch !== 'master') {
-    console.error(chalk.red('❌ You must be on the master branch to publish.'));
+    log.error(chalk.red('❌ You must be on the master branch to publish.'));
     process.exit(1);
   }
 
   const type = process.argv[2]; // Get version type from CLI args
   if (!type) {
-    console.error(
-      chalk.red('❌ Please specify a version type (alpha, beta, rc, patch, minor, major)'),
-    );
+    log.error(chalk.red('❌ Please specify a version type (alpha, beta, rc, patch, minor, major)'));
     process.exit(1);
   }
 
@@ -103,11 +104,11 @@ function main() {
       rl.close();
 
       if (answer.toLowerCase() !== 'y') {
-        console.log(chalk.red('❌ Aborted.'));
+        log.info(chalk.red('❌ Aborted.'));
         process.exit(0);
       }
 
-      console.log(chalk.green(`🚀 Publishing version ${nextVersion}...`));
+      log.info(chalk.green(`🚀 Publishing version ${nextVersion}...`));
       updateVersion(nextVersion);
 
       run('bun install'); // Ensure dependencies are locked with the new version
@@ -123,7 +124,7 @@ function main() {
       run('git push origin master');
       run(`gh release create v${nextVersion} --generate-notes`);
 
-      console.log(chalk.green(`✅ Published ${nextVersion} with tag "${npmTag}".`));
+      log.info(chalk.green(`✅ Published ${nextVersion} with tag "${npmTag}".`));
     },
   );
 }

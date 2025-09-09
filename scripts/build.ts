@@ -2,9 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import { Stopwatch } from '~/util/stopwatch';
 import chalk from 'chalk';
+import { ConsoleLogger } from '~/util/logs/console-logger';
+import { SpacedLogger } from '~/util/logs/spaced-logger';
+
+const log = new SpacedLogger(new ConsoleLogger());
 
 async function main(): Promise<void> {
-  console.log(chalk.white('building @stringsync/spec...'));
+  log.info('building @stringsync/spec...');
 
   const stopwatch = Stopwatch.start();
   const distDir = path.resolve(__dirname, '..', 'dist');
@@ -55,13 +59,13 @@ async function main(): Promise<void> {
       throw new Error('Main entry point not found after build');
     }
 
-    console.log(
+    log.info(
       chalk.green('built'),
       chalk.white.bold('@stringsync/spec'),
       chalk.gray(`in [${stopwatch.ms().toFixed(2)}ms]`),
     );
   } catch (error) {
-    console.log(chalk.red('failure'), error);
+    log.error(chalk.red('failure'), error);
   }
 }
 

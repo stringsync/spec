@@ -7,10 +7,10 @@ import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
 import { mcp } from '~/actions/mcp';
 import { StringSyncError } from '~/util/errors';
+import { ConsoleLogger } from '~/util/logs/console-logger';
+import { SpacedLogger } from '~/util/logs/spaced-logger';
 
-function log(...messages: string[]) {
-  console.log(messages.filter(Boolean).join(' '));
-}
+const log = new SpacedLogger(new ConsoleLogger());
 
 program.name(name).description(description).version(version);
 
@@ -25,11 +25,11 @@ program
 
     switch (result.type) {
       case 'success':
-        log(chalk.green('success'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
+        log.info(chalk.green('success'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
         break;
       case 'error':
-        log(chalk.red('failed'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
-        log(`${result.errors.join('\n')}`);
+        log.error(chalk.red('failed'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
+        log.error(`${result.errors.join('\n')}`);
         break;
     }
   });
@@ -41,7 +41,7 @@ program
     try {
       await mcp();
     } catch (e) {
-      console.error(chalk.red('Fatal error:'), StringSyncError.wrap(e).message);
+      log.error(chalk.red('Fatal error:'), StringSyncError.wrap(e).message);
       process.exit(1);
     }
   });
@@ -57,7 +57,7 @@ program
     const results = await scan({ patterns, ignore });
     const ms = stopwatch.ms().toFixed(2);
 
-    log(
+    log.info(
       chalk.blue('scanned'),
       chalk.white.bold(results.length.toString()),
       results.length === 1 ? 'item' : 'items',
@@ -66,7 +66,7 @@ program
 
     const specs = results.filter((r) => r.type === 'spec');
     for (const spec of specs) {
-      log(
+      log.info(
         chalk.yellow('spec'),
         chalk.white.bold(spec.name),
         chalk.gray(`[${spec.ids.length} ids]`),
@@ -83,7 +83,7 @@ program
           .trim()
           .slice(0, 80) + (tag.body.length > 80 ? '...' : '');
 
-      log(
+      log.info(
         chalk.magenta('tag'),
         chalk.white.bold(tag.id),
         chalk.gray(preview),

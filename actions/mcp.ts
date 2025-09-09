@@ -6,6 +6,9 @@ import { check } from '~/actions/check';
 import { PublicError } from '~/util/errors';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { DEFAULT_IGNORE_PATTERNS, scan, type ScanResult } from '~/actions/scan';
+import { StderrLogger } from '~/util/logs/stderr-logger';
+
+const log = new StderrLogger();
 
 export async function mcp() {
   const server = new McpServer({ name, version });
@@ -29,7 +32,7 @@ export async function mcp() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('@stringsync/spec MCP server running on stdio');
+  log.error('@stringsync/spec MCP server running on stdio');
 }
 
 async function checkTool({ path }: { path: string }) {
