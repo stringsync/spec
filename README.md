@@ -117,3 +117,16 @@ To uninstall the `specd` CLI, run:
 ```sh
 bun teardown
 ```
+
+### Releasing
+
+Install the official GitHub CLI at https://github.com/cli/cli.
+
+To bump the version and release it, run:
+
+```sh
+bun run release [alpha|beta|rc|patch|minor|major]
+```
+
+> [!IMPORTANT]  
+> Some partial failures are not reversible.

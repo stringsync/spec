@@ -6,9 +6,11 @@ import chalk from 'chalk';
 
 const PACKAGE_JSON_PATH = path.resolve(__dirname, '..', 'package.json');
 
-function runCommand(command: string) {
+function run(command: string) {
   console.log(chalk.cyan(`$ ${command}`));
-  return execSync(command, { stdio: 'inherit' });
+  const output = execSync(command).toString().trim();
+  console.log(chalk.gray(output));
+  return output;
 }
 
 function getCurrentVersion() {
@@ -44,12 +46,34 @@ function getNextVersion(type: string, currentVersion: string) {
 }
 
 function main() {
-  if (execSync('git status --porcelain').toString().trim()) {
+  if (!run('which bun')) {
+    console.error(chalk.red('❌ Bun is not installed or not found in PATH.'));
+    process.exit(1);
+  }
+
+  if (!run('which git')) {
+    console.error(chalk.red('❌ Git is not installed or not found in PATH.'));
+    process.exit(1);
+  }
+
+  if (!run('which gh')) {
+    console.error(chalk.red('❌ GitHub CLI (gh) is not installed or not found in PATH.'));
+    process.exit(1);
+  }
+
+  try {
+    run('gh auth status');
+  } catch (e) {
+    console.error(chalk.red('❌ You must be logged in to GitHub CLI (gh).', e));
+    process.exit(1);
+  }
+
+  if (run('git status --porcelain')) {
     console.error(chalk.red('❌ Commit your changes before publishing.'));
     process.exit(1);
   }
 
-  const currentBranch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
+  const currentBranch = run('git rev-parse --abbrev-ref HEAD');
   if (currentBranch !== 'master') {
     console.error(chalk.red('❌ You must be on the master branch to publish.'));
     process.exit(1);
@@ -86,17 +110,18 @@ function main() {
       console.log(chalk.green(`🚀 Publishing version ${nextVersion}...`));
       updateVersion(nextVersion);
 
-      runCommand('bun install'); // Ensure dependencies are locked with the new version
-      runCommand('bun run build');
-      runCommand(`git commit -am "Release ${nextVersion}"`);
-      runCommand(`git tag v${nextVersion}`);
-      runCommand(`git push origin v${nextVersion}`);
+      run('bun install'); // Ensure dependencies are locked with the new version
+      run('bun run build');
+      run(`git commit -am "Release ${nextVersion}"`);
+      run(`git tag v${nextVersion}`);
+      run(`git push origin v${nextVersion}`);
 
       // Determine npm tag
       const npmTag = ['alpha', 'beta', 'rc'].includes(type) ? type : 'latest';
 
-      runCommand(`bun publish --access public --tag ${npmTag}`);
-      runCommand('git push origin master'); // Push changes to repo
+      run(`bun publish --access public --tag ${npmTag}`);
+      run('git push origin master');
+      run(`gh release create v${nextVersion} --generate-notes`);
 
       console.log(chalk.green(`✅ Published ${nextVersion} with tag "${npmTag}".`));
     },
