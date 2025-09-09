@@ -37,7 +37,12 @@ program
   .command('mcp')
   .description('run an model context protocol (MCP) server')
   .action(async () => {
-    await mcp();
+    try {
+      await mcp();
+    } catch (e) {
+      console.error(chalk.red('Fatal error:'), e instanceof Error ? e.message : e);
+      process.exit(1);
+    }
   });
 
 program
