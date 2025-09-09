@@ -24,7 +24,7 @@ It adds two numbers.
 Check the spec.
 
 ```
-bunx @stringsync/spec check calculator.md
+bunx @stringsync/spec check calculator.spec.md
 ```
 
 Reference the spec.
