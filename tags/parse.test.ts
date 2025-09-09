@@ -316,7 +316,7 @@ describe('parse', () => {
       expect(tags[0].name).toBe('spec');
       expect(tags[0].id).toBe('foo.bar');
       expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.md:2:9');
+      expect(tags[0].location).toBe('test.txt:2:9');
     });
 
     it('//', () => {
@@ -603,6 +603,59 @@ describe('parse', () => {
       expect(tags[0].id).toBe('foo.bar');
       expect(tags[0].body).toBe('baz');
       expect(tags[0].location).toBe('test.html:3:9');
+    });
+
+    it(';', () => {
+      const file = new File(
+        'test.ini',
+        `
+        ; spec(foo.bar): baz
+        `,
+      );
+
+      const tags = parse('spec', file, [Style.Semicolon]);
+
+      expect(tags).toHaveLength(1);
+      expect(tags[0].name).toBe('spec');
+      expect(tags[0].id).toBe('foo.bar');
+      expect(tags[0].body).toBe('baz');
+      expect(tags[0].location).toBe('test.ini:2:11');
+    });
+
+    it('--[[ ]] (single line)', () => {
+      const file = new File(
+        'test.lua',
+        `
+        --[[spec(foo.bar): baz]]
+        `,
+      );
+
+      const tags = parse('spec', file, [Style.LuaBlock]);
+
+      expect(tags).toHaveLength(1);
+      expect(tags[0].name).toBe('spec');
+      expect(tags[0].id).toBe('foo.bar');
+      expect(tags[0].body).toBe('baz');
+      expect(tags[0].location).toBe('test.lua:2:13');
+    });
+
+    it('--[[ ]] (multi line)', () => {
+      const file = new File(
+        'test.lua',
+        `
+        --[[
+        spec(foo.bar): baz
+        ]]
+        `,
+      );
+
+      const tags = parse('spec', file, [Style.LuaBlock]);
+
+      expect(tags).toHaveLength(1);
+      expect(tags[0].name).toBe('spec');
+      expect(tags[0].id).toBe('foo.bar');
+      expect(tags[0].body).toBe('baz');
+      expect(tags[0].location).toBe('test.lua:3:9');
     });
   });
 });
