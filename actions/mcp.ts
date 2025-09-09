@@ -42,7 +42,7 @@ export async function mcp() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  log.error('@stringsync/spec MCP server running on stdio');
+  log.error(`${name} ${version} MCP server running on stdio`);
 }
 
 async function checkTool({ path }: { path: string }) {
