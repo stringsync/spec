@@ -77,11 +77,9 @@ program
     const tags = results.filter((r) => r.type === 'tag');
     for (const tag of tags) {
       // Show a better preview: first line, trimmed, or up to 80 chars
-      const preview =
-        tag.body
-          .split('\n')[0] // first line
-          .trim()
-          .slice(0, 80) + (tag.body.length > 80 ? '...' : '');
+      const preview = tag.body
+        .split('\n')[0] // first line
+        .trim();
 
       log.info(
         chalk.magenta('tag'),
