@@ -26,7 +26,7 @@ export function parse(tagName: string, file: File, styles?: Style[]): Tag[] {
 
       // Skip if we've already processed this position
       if (processedPositions.has(startIndex)) {
-        index = startIndex + style.start.length;
+        index = startIndex + Math.max(style.start.length, 1);
         continue;
       }
 

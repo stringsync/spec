@@ -43,7 +43,7 @@ It adds two numbers. For example, `calculator.add(2, 2) // returns 4`
 2. Pick the file you want to put the reference in.
 3. Pick a place to put the comment. Ideally, the comment is right next to the implementation. The second best place is the top of the file, but this is not preferred. Try to limit the scope as much as possible.
 4. Using the commenting rules of the file, add a comment with the format: `spec(<filename>.<id>)` or `spec(<filename>.<id>): Optional body.`.
-5. Check that the spec is returned by running the `scan` command. If it still doesn't show, it's possible that the file type is not supported. Inform the user to create an issue at https://github.com/stringsync/spec.
+5. Check that the spec is returned by running the `scan` command. If it still doesn't show, it's possible that there is a bug in @stringsync/spec. Inform the user to create an issue at https://github.com/stringsync/spec.
 
 <good-example>
 
@@ -66,7 +66,7 @@ class Calculator {
 
 <bad-example>
 
-This is a bad example because the tag is at the top of the file, when a more specific place is available.
+This is a bad example because the tag is at the top of the file, when a more specific place makes sense.
 
 ```ts
 // spec(calculator.add)
@@ -86,7 +86,7 @@ class Calculator {
 
 ## Using Specs
 
-Specs prevent you from manually scan a codebase for implementations. Therefore, you should use them to quickly know what code is relevant to the user's request.
+Specs prevent you from manually scanning a codebase for implementations. Therefore, you should use them to quickly know what code is relevant to the user's request.
 
 1. Run the `scan` command to find the specs and tags in scope.
 2. Examine the spec results and read the ones you might be interested in. Find the spec ID with the format: `<filename>.<id>`.

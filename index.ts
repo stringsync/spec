@@ -2,9 +2,11 @@
 import { program } from 'commander';
 import { name, description, version } from './package.json';
 import { check } from '~/actions/check';
-import { DEFAULT_IGNORE_PATTERNS, scan } from '~/actions/scan';
+import { DEFAULT_IGNORE_PATTERNS, DEFAULT_PATTERNS, scan } from '~/actions/scan';
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
+import { mcp } from '~/actions/mcp';
+import { StringSyncError } from '~/util/errors';
 
 function log(...messages: string[]) {
   console.log(messages.filter(Boolean).join(' '));
@@ -33,9 +35,21 @@ program
   });
 
 program
+  .command('mcp')
+  .description('run an model context protocol (MCP) server')
+  .action(async () => {
+    try {
+      await mcp();
+    } catch (e) {
+      console.error(chalk.red('Fatal error:'), StringSyncError.wrap(e).message);
+      process.exit(1);
+    }
+  });
+
+program
   .command('scan')
-  .description('scans a directory for specs and tags')
-  .argument('[patterns...]', 'glob patterns to scan', ['**/*'])
+  .description('scan for specs and tags')
+  .argument('[patterns...]', 'glob patterns to scan', DEFAULT_PATTERNS)
   .option('--ignore [patterns...]', 'glob patterns to ignore', [])
   .action(async (patterns: string[], options: { ignore: string[] }) => {
     const stopwatch = Stopwatch.start();

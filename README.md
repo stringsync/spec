@@ -24,7 +24,7 @@ It adds two numbers.
 Check the spec.
 
 ```
-bunx @stringsync/spec check calculator.md
+bunx @stringsync/spec check calculator.spec.md
 ```
 
 Reference the spec.
@@ -54,15 +54,37 @@ bunx @stringsync/spec
 
 ## MCP
 
-_Coming soon_
+_⚠️ Work in Progress_
 
-@stringsync/spec will have an MCP server that provides:
+To help your agent understand @stringsync/spec, instruct it to read https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/AGENTS.md.
 
-- tools to check specs and scan for tags
-- prompts to implement specs
-- prompts to infer and tag specs from existing code
+To run the @stringsync/spec MCP server, the command is:
 
-For now, instruct your agent to read https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/AGENTS.md.
+```sh
+bunx @stringsync/spec mcp
+```
+
+Read your agent's documentation to run the MCP server. For example, Claude's configuration will look like this:
+
+```json
+{
+  "mcpServers": {
+    "@stringsync/spec": {
+      "command": "bunx",
+      "args": ["-y", "@stringsync/spec", "mcp"]
+    }
+  }
+}
+```
+
+> [!NOTE]  
+> The `-y` flag skips confirmation to download packages.
+
+To run the MCP inspector, run:
+
+```sh
+bunx @modelcontextprotocol/inspector bunx @stringsync/spec mcp
+```
 
 ## Dev
 
