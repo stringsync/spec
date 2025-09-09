@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { check } from '~/actions/check';
 import { PublicError } from '~/util/errors';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { DEFAULT_IGNORE_PATTERNS, DEFAULT_PATTERNS, scan, type ScanResult } from '~/actions/scan';
+import { DEFAULT_IGNORE_PATTERNS, scan, type ScanResult } from '~/actions/scan';
 
 export async function mcp() {
   const server = new McpServer({ name, version });
@@ -21,16 +21,8 @@ export async function mcp() {
     'spec.scan',
     'scan for @stringsync/spec specs and tags',
     {
-      patterns: z
-        .array(z.string())
-        .optional()
-        .default(DEFAULT_PATTERNS)
-        .describe('glob patterns to scan'),
-      ignore: z
-        .array(z.string())
-        .optional()
-        .default(DEFAULT_IGNORE_PATTERNS)
-        .describe('glob patterns to ignore'),
+      patterns: z.array(z.string()).describe('glob patterns to scan'),
+      ignore: z.array(z.string()).optional().describe('glob patterns to ignore'),
     },
     scanTool,
   );
@@ -57,7 +49,7 @@ async function checkTool({ path }: { path: string }) {
   return builder.build();
 }
 
-async function scanTool({ patterns, ignore }: { patterns: string[]; ignore: string[] }) {
+async function scanTool({ patterns, ignore }: { patterns: string[]; ignore?: string[] }) {
   const builder = new CallToolResultBuilder();
 
   function toList(results: ScanResult[]): string {
@@ -76,7 +68,7 @@ async function scanTool({ patterns, ignore }: { patterns: string[]; ignore: stri
   try {
     const results = await scan({
       patterns,
-      ignore: [...DEFAULT_IGNORE_PATTERNS, ...ignore],
+      ignore: [...DEFAULT_IGNORE_PATTERNS, ...(ignore ?? [])],
     });
     builder.text(
       toList([
