@@ -20,6 +20,7 @@ export interface TagResult {
   location: string;
 }
 
+export const DEFAULT_PATTERNS = ['**/*'];
 export const DEFAULT_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
 export async function scan(input: {
