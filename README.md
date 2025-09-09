@@ -64,12 +64,13 @@ To run the @stringsync/spec MCP server, the command is:
 bunx @stringsync/spec mcp
 ```
 
-Read your agent's documentation to run the MCP server. For example, Claude's configuration will look like this:
+Read your agent's documentation to run the MCP server. For example, Cline's configuration will look like this:
 
 ```json
 {
   "mcpServers": {
     "@stringsync/spec": {
+      "type": "stdio",
       "command": "bunx",
       "args": ["-y", "@stringsync/spec", "mcp"]
     }
@@ -79,6 +80,9 @@ Read your agent's documentation to run the MCP server. For example, Claude's con
 
 > [!NOTE]  
 > The `-y` flag skips confirmation to download packages.
+
+> [!NOTE]  
+> Claude Desktop must use `npx`, since the paths aren't configurable.
 
 To run the MCP inspector, run:
 
