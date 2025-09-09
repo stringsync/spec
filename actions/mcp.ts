@@ -15,7 +15,7 @@ export async function mcp() {
 
   server.tool(
     'spec.check',
-    'validate a spec file',
+    'validate a @stringsync/spec spec file',
     {
       path: z.string().describe('the path to the spec file to validate'),
     },
@@ -39,7 +39,7 @@ export async function mcp() {
 
   server.tool(
     'spec.scan',
-    'scan for specs and tags',
+    'scan for @stringsync/spec specs and tags',
     {
       patterns: z
         .array(z.string())
