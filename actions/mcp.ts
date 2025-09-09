@@ -16,7 +16,7 @@ export async function mcp() {
   server.tool(
     'spec.check',
     'validate a @stringsync/spec spec file',
-    { path: z.string().describe('the path to the spec file to validate') },
+    { path: z.string().describe('the absolute path to the spec file to validate') },
     checkTool,
   );
 
@@ -24,7 +24,7 @@ export async function mcp() {
     'spec.scan',
     'scan for @stringsync/spec specs and tags',
     {
-      patterns: z.array(z.string()).describe('glob patterns to scan'),
+      patterns: z.array(z.string()).describe('absolute glob patterns to scan'),
       ignore: z.array(z.string()).optional().describe('glob patterns to ignore'),
     },
     scanTool,
@@ -37,6 +37,16 @@ export async function mcp() {
 
 async function checkTool({ path }: { path: string }) {
   const builder = new CallToolResultBuilder();
+
+  if (!path) {
+    builder.error(new PublicError('Path is required'));
+    return builder.build();
+  }
+
+  if (!path.startsWith('/')) {
+    builder.error(new PublicError('Path must be absolute'));
+    return builder.build();
+  }
 
   const result = await check({ path });
   switch (result.type) {
@@ -54,6 +64,16 @@ async function checkTool({ path }: { path: string }) {
 
 async function scanTool({ patterns, ignore }: { patterns: string[]; ignore?: string[] }) {
   const builder = new CallToolResultBuilder();
+
+  if (patterns.length === 0) {
+    builder.error(new PublicError('At least one pattern is required'));
+    return builder.build();
+  }
+
+  if (patterns.some((p) => !p.startsWith('/'))) {
+    builder.error(new PublicError('All patterns must be absolute'));
+    return builder.build();
+  }
 
   function toList(results: ScanResult[]): string {
     return results.map(toListItem).join('\n');
