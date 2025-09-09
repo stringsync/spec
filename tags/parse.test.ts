@@ -302,6 +302,23 @@ describe('parse', () => {
   });
 
   describe('styles', () => {
+    it('any text', () => {
+      const file = new File(
+        'test.txt',
+        `
+        spec(foo.bar): baz
+        `,
+      );
+
+      const tags = parse('spec', file, [Style.Any]);
+
+      expect(tags).toHaveLength(1);
+      expect(tags[0].name).toBe('spec');
+      expect(tags[0].id).toBe('foo.bar');
+      expect(tags[0].body).toBe('baz');
+      expect(tags[0].location).toBe('test.md:2:9');
+    });
+
     it('//', () => {
       const file = new File(
         'test.ts',

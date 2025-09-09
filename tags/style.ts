@@ -16,6 +16,7 @@ export class Style {
     return new Style('block', start, middle, end);
   }
 
+  static Any = Style.single('');
   static DoubleSlash = Style.single('//');
   static SlashSingleStarBlock = Style.block('/*', '*', '*/');
   static SlashDoubleStarBlock = Style.block('/**', '*', '*/');
@@ -43,14 +44,13 @@ export class Style {
           Style.DoubleSlash,
           Style.SlashDoubleStarBlock,
           Style.SlashSingleStarBlock,
-          Style.SlashDoubleStarBlock,
           Style.TripleSlash,
         ];
       case 'xml':
       case 'html':
         return [Style.AngleBracketBlock];
       default:
-        return [];
+        return [Style.Any];
     }
   }
 }
