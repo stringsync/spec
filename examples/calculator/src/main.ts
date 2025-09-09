@@ -1,6 +1,4 @@
-// spec(calculator.core): Calculator core functionality with add, subtract, multiply, divide, and clear operations
-// spec(calculator.dx): TypeScript implementation
-
+// spec(calculator.core)
 class Calculator {
   private display: HTMLElement;
   private currentValue: string = '0';
@@ -73,7 +71,6 @@ class Calculator {
     }
   }
 
-  // spec(calculator.core): Clear functionality
   private clear(): void {
     this.currentValue = '0';
     this.previousValue = '';
@@ -131,7 +128,6 @@ class Calculator {
     this.setActiveOperator(buttonElement);
   }
 
-  // spec(calculator.core): Core mathematical operations - add, subtract, multiply, divide
   private performCalculation(
     firstOperand: number,
     secondOperand: number,
