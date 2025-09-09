@@ -3,19 +3,16 @@ import type { GetPromptResult } from '@modelcontextprotocol/sdk/types.js';
 export class GetPromptResultBuilder {
   private messages = new Array<GetPromptResult['messages'][number]>();
 
-  constructor(private description: string) {}
-
-  user() {
+  get user() {
     return new GetPromptResultBuilder.MessageAppender(this, 'user');
   }
 
-  assistant() {
+  get assistant() {
     return new GetPromptResultBuilder.MessageAppender(this, 'assistant');
   }
 
   build(): GetPromptResult {
     return {
-      description: this.description,
       messages: [...this.messages],
     };
   }
@@ -26,7 +23,7 @@ export class GetPromptResultBuilder {
       private role: GetPromptResult['messages'][number]['role'],
     ) {}
 
-    text(text: string): GetPromptResultBuilder {
+    text(text: string) {
       this.getPromptResultBuilder.messages.push({
         role: this.role,
         content: {
@@ -37,7 +34,7 @@ export class GetPromptResultBuilder {
       return this.getPromptResultBuilder;
     }
 
-    resource(uri: string, text: string, mimeType: string): GetPromptResultBuilder {
+    resource(uri: string, text: string, mimeType: string) {
       this.getPromptResultBuilder.messages.push({
         role: this.role,
         content: {
