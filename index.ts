@@ -6,6 +6,7 @@ import { DEFAULT_IGNORE_PATTERNS, DEFAULT_PATTERNS, scan } from '~/actions/scan'
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
 import { mcp } from '~/actions/mcp';
+import { StringSyncError } from '~/util/errors';
 
 function log(...messages: string[]) {
   console.log(messages.filter(Boolean).join(' '));
@@ -40,7 +41,7 @@ program
     try {
       await mcp();
     } catch (e) {
-      console.error(chalk.red('Fatal error:'), e instanceof Error ? e.message : e);
+      console.error(chalk.red('Fatal error:'), StringSyncError.wrap(e).message);
       process.exit(1);
     }
   });
