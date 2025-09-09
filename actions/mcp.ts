@@ -22,12 +22,15 @@ export async function mcp() {
     async ({ path }) => {
       const builder = new CallToolResultBuilder();
 
-      try {
-        await check({ path });
-        builder.text(`The spec is valid: ${path}`);
-      } catch (e) {
-        builder.text(`The spec is invalid: ${path}`);
-        builder.error(PublicError.wrap(e));
+      const result = await check({ path });
+      switch (result.type) {
+        case 'success':
+          builder.text(`valid @stringsync/spec: ${path}`);
+          break;
+        case 'error':
+          builder.text(`invalid @stringsync/spec: ${path}`);
+          builder.error(new PublicError(result.errors.join('\n')));
+          break;
       }
 
       return builder.build();
