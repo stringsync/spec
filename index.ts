@@ -5,6 +5,7 @@ import { check } from '~/actions/check';
 import { DEFAULT_IGNORE_PATTERNS, scan } from '~/actions/scan';
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
+import { mcp } from '~/actions/mcp';
 
 function log(...messages: string[]) {
   console.log(messages.filter(Boolean).join(' '));
@@ -30,6 +31,13 @@ program
         log(`${result.errors.join('\n')}`);
         break;
     }
+  });
+
+program
+  .command('mcp')
+  .description('run an model context protocol (MCP) server')
+  .action(async () => {
+    await mcp();
   });
 
 program
