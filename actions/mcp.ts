@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { name, version } from '../package.json';
-import { CallToolResultBuilder } from '~/mcp/call-tool-result-builder';
+import { name, version } from '~/package.json';
+import { CallToolResultBuilder } from '~/util/mcp/call-tool-result-builder';
 import { z } from 'zod';
 import { check } from '~/actions/check';
 import { PublicError } from '~/util/errors';
