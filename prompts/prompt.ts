@@ -1,19 +1,25 @@
 import { z, ZodObject, type ZodRawShape } from 'zod';
 import describeMd from '~/prompts/data/describe.txt' with { type: 'text' };
+import agentsMd from '~/prompts/data/agents.txt' with { type: 'text' };
 
 // spec(prompts.core)
 export class Prompt<T extends ZodRawShape> {
+  public readonly name: string;
   public readonly description: string;
   public readonly schema: ZodObject<T>;
   private template: string;
 
-  private constructor(template: string, description: string, shape: T = {} as T) {
-    this.template = template;
+  private constructor(name: string, description: string, template: string, shape: T = {} as T) {
+    this.name = name;
     this.description = description;
+    this.template = template;
     this.schema = z.object(shape);
   }
 
-  static Describe = new Prompt(describeMd, 'describes the project specs');
+  static Agents = new Prompt('agents', 'instructs how to use the library', agentsMd);
+  static Describe = new Prompt('describe', 'describe the project specs and tags', describeMd);
+
+  static All = [this.Agents, this.Describe];
 
   render(args: z.infer<typeof this.schema>): string {
     this.schema.parse(args);
