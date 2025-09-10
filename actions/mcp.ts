@@ -8,13 +8,22 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { DEFAULT_IGNORE_PATTERNS, scan, type ScanResult } from '~/actions/scan';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
+import { Prompt } from '~/prompts/prompt';
 
 const log = new StderrLogger();
 
 export async function mcp() {
   const server = new McpServer({ name, version });
 
-  // Tools
+  addTools(server);
+  addPrompts(server);
+
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  log.info(`${name} ${version} MCP server running on stdio`);
+}
+
+function addTools(server: McpServer) {
   server.tool(
     'spec.check',
     'validate a @stringsync/spec spec file',
@@ -31,18 +40,21 @@ export async function mcp() {
     },
     scanTool,
   );
+}
 
-  // Prompts
-  server.prompt(
-    'spec.describe',
-    'instruct the assistant to describe the project using @stringsync/spec',
-    {},
-    describePrompt,
-  );
-
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  log.info(`${name} ${version} MCP server running on stdio`);
+function addPrompts(server: McpServer) {
+  for (const prompt of Prompt.all) {
+    server.prompt(
+      `spec.${prompt.name}`,
+      prompt.description,
+      prompt.schema.shape,
+      async (args: any) => {
+        const builder = new GetPromptResultBuilder();
+        builder.user.text(prompt.render(args));
+        return builder.build();
+      },
+    );
+  }
 }
 
 async function checkTool({ path }: { path: string }) {
@@ -112,21 +124,6 @@ async function scanTool({ patterns, ignore }: { patterns: string[]; ignore?: str
   } catch (e) {
     builder.error(PublicError.wrap(e));
   }
-
-  return builder.build();
-}
-
-async function describePrompt() {
-  const builder = new GetPromptResultBuilder();
-
-  builder.user.text(
-    'My project uses @stringsync/spec to facilitate spec-driven development. ' +
-      'Review how the library is intended to be used by reading: ' +
-      'https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/AGENTS.md. ' +
-      'Next, use the spec.scan tool to discover the specs and tags within the project. ' +
-      'Read any files you deem necessary to understanding the project. ' +
-      'Finally, provide a description of the project based on the specs and tags.',
-  );
 
   return builder.build();
 }

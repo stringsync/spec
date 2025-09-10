@@ -16,8 +16,12 @@ export class Prompt<T extends ZodRawShape> {
     this.schema = z.object(shape);
   }
 
-  static Agents = new Prompt('agents', 'instructs how to use the library', agentsMd);
-  static Describe = new Prompt('describe', 'describe the project specs and tags', describeMd);
+  static Agents = new Prompt('agents', 'instructs how to use @stringsync/spec', agentsMd);
+  static Describe = new Prompt(
+    'describe',
+    'instruct the assistant to describe the project using @stringsync/spec',
+    describeMd,
+  );
 
   static all = [this.Agents, this.Describe];
 
