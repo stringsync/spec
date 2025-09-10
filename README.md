@@ -54,9 +54,9 @@ bunx @stringsync/spec
 
 ## Prompts
 
-You can generate prompts for various workflows.
+You can generate prompts for various workflows using the @stringsync/spec CLI. If you have the @stringsync/spec MCP server installed on your agent, you can access the same prompts through there.
 
-To see a list of available prompts in an interactive way, run:
+To see an interactive list of available prompts, run:
 
 ```sh
 bunx @stringsync/spec prompt
@@ -68,7 +68,7 @@ You can also run a specific prompt:
 bunx @stringsync/spec prompt <name>
 ```
 
-If the prompt has arguments, the CLI will interactively ask you for them.
+If the prompt has arguments, the CLI will ask you for them.
 
 To provide arguments directly, use the `--arg` flag:
 
