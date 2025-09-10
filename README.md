@@ -54,7 +54,7 @@ bunx @stringsync/spec
 
 ## Prompts
 
-You can generate prompts for various workflows using the @stringsync/spec CLI. If you have the @stringsync/spec MCP server installed on your agent, you can access the same prompts through there.
+You can generate prompts for various workflows using the @stringsync/spec CLI. If you have the @stringsync/spec MCP server installed on your agent, you can access the same prompts through your MCP application (if it's supported).
 
 To see an interactive list of available prompts, run:
 
