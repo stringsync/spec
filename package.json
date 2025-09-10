@@ -21,19 +21,20 @@
     "teardown": "bun unlink"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@types/bun": "latest",
-    "chokidar-cli": "^3.0.0",
-    "eslint": "^9.32.0",
+    "@eslint/js": "9.32.0",
+    "@types/bun": "1.2.21",
+    "chokidar-cli": "3.0.0",
+    "eslint": "9.32.0",
     "prettier": "3.6.2",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.38.0"
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.38.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.5",
-    "chalk": "^5.6.0",
-    "commander": "^14.0.0",
-    "glob": "^11.0.3",
+    "@inquirer/prompts": "7.8.4",
+    "@modelcontextprotocol/sdk": "1.17.5",
+    "chalk": "5.6.2",
+    "commander": "14.0.0",
+    "glob": "11.0.3",
     "zod": "3"
   }
 }

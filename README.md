@@ -52,11 +52,43 @@ To see a complete list of commands, run:
 bunx @stringsync/spec
 ```
 
+## Prompts
+
+You can generate prompts for various workflows using the @stringsync/spec CLI. If you have the @stringsync/spec MCP server installed on your agent, you can access the same prompts through there.
+
+To see an interactive list of available prompts, run:
+
+```sh
+bunx @stringsync/spec prompt
+```
+
+You can also run a specific prompt:
+
+```sh
+bunx @stringsync/spec prompt <name>
+```
+
+If the prompt has arguments, the CLI will ask you for them.
+
+To provide arguments directly, use the `--arg` flag:
+
+```sh
+bunx @stringsync/spec prompt <name> --arg key1=val1 --arg key2=val2
+```
+
+To pipe the output to another program, use the `--pipe` flag:
+
+```sh
+bunx @stringsync/spec prompt <name> --pipe | pbcopy
+```
+
+To help your agent understand @stringsync/spec, give it the following prompt:
+
+```sh
+bunx @stringsync/spec prompt agents --pipe | pbcopy
+```
+
 ## MCP
-
-_⚠️ Work in Progress_
-
-To help your agent understand @stringsync/spec, instruct it to read https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/AGENTS.md.
 
 To run the @stringsync/spec MCP server, the command is:
 
@@ -116,7 +148,7 @@ To verify the installation, run:
 spec
 ```
 
-To uninstall the `specd` CLI, run:
+To uninstall the `spec` CLI, run:
 
 ```sh
 bun teardown

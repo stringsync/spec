@@ -16,6 +16,10 @@ You can use `npx` instead of `bunx`.
 
 When I reference a command in this document, assume the MCP tool equivalent or fallback to the CLI.
 
+## Anatomy
+
+A spec is composed of many requirements. Each requirement has an identifier and a body. A tag belongs to a requirement, and is usually used to mark where a requirement has been implemented.
+
 ## Declaring a Spec
 
 1. Create a file with the format: `<filename>.spec.md`.
@@ -70,7 +74,6 @@ This is a bad example because the tag is at the top of the file, when a more spe
 
 ```ts
 // spec(calculator.add)
-
 class Calculator {
   subtract(a: number, b: number) {
     return a - b;
