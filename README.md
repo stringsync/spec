@@ -82,11 +82,13 @@ To pipe the output to another program, use the `--pipe` flag:
 bunx @stringsync/spec prompt <name> --pipe | pbcopy
 ```
 
+To help your agent understand @stringsync/spec, give it the following prompt:
+
+```sh
+bunx @stringsync/spec prompt agents --pipe | pbcopy
+```
+
 ## MCP
-
-_⚠️ Work in Progress_
-
-To help your agent understand @stringsync/spec, instruct it to read https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/AGENTS.md.
 
 To run the @stringsync/spec MCP server, the command is:
 

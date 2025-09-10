@@ -1,6 +1,5 @@
 My project uses [`@stringsync/spec`](https://github.com/stringsync/spec) to facilitate spec-driven development.
 
-1. Review how the library is intended to be used by reading the [AGENTS.md](https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/AGENTS.md) documentation.
-2. Use the `spec.scan` tool to discover the specs and tags within the project.
-3. Read any files you deem necessary to understand the project.
-4. Finally, provide a description of the project based on the discovered specs and tags.
+1. Use the `spec.scan` tool to discover the specs and tags within the project.
+2. Read any files you deem necessary to understand the project.
+3. Finally, provide a description of the project based on the discovered specs and tags.
