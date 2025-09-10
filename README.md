@@ -52,6 +52,36 @@ To see a complete list of commands, run:
 bunx @stringsync/spec
 ```
 
+## Prompts
+
+You can generate prompts for various workflows.
+
+To see a list of available prompts in an interactive way, run:
+
+```sh
+bunx @stringsync/spec prompt
+```
+
+You can also run a specific prompt:
+
+```sh
+bunx @stringsync/spec prompt <name>
+```
+
+If the prompt has arguments, the CLI will interactively ask you for them.
+
+To provide arguments directly, use the `--arg` flag:
+
+```sh
+bunx @stringsync/spec prompt <name> --arg key1=val1 --arg key2=val2
+```
+
+To pipe the output to another program, use the `--pipe` flag:
+
+```sh
+bunx @stringsync/spec prompt <name> --pipe | pbcopy
+```
+
 ## MCP
 
 _⚠️ Work in Progress_
