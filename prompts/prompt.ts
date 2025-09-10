@@ -13,7 +13,7 @@ export class Prompt<T extends ZodRawShape> {
     this.schema = z.object(shape);
   }
 
-  static DESCRIBE = new Prompt(describeMd, 'describes the project specs');
+  static Describe = new Prompt(describeMd, 'describes the project specs');
 
   render(args: z.infer<typeof this.schema>): string {
     this.schema.parse(args);
