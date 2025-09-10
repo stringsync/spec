@@ -4,13 +4,14 @@ import path from 'path';
 import readline from 'readline';
 import chalk from 'chalk';
 import { ConsoleLogger } from '~/util/logs/console-logger';
+import { SpacedLogger } from '~/util/logs/spaced-logger';
 
-const log = new ConsoleLogger();
+const log = new SpacedLogger(new ConsoleLogger());
 
 const PACKAGE_JSON_PATH = path.resolve(__dirname, '..', 'package.json');
 
 function run(command: string) {
-  log.info(chalk.cyan(`$ ${command}`));
+  log.info(chalk.magenta('$'), chalk.bold.gray(command));
   const output = execSync(command).toString().trim();
   log.info(chalk.gray(output));
   return output;

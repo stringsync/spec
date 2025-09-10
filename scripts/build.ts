@@ -32,7 +32,6 @@ async function main(): Promise<void> {
       format: 'esm',
       minify: false,
       sourcemap: 'none',
-      splitting: false,
       external: ['commander', 'chalk'],
     });
 
