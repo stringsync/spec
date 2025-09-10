@@ -1,5 +1,5 @@
-export class StringSyncError extends Error {
-  static wrap(value: unknown): StringSyncError {
+export class InternalError extends Error {
+  static wrap(value: unknown): InternalError {
     if (value instanceof this) {
       return value;
     } else if (value instanceof Error) {
@@ -16,6 +16,6 @@ export class StringSyncError extends Error {
   public readonly isPublic: boolean = false;
 }
 
-export class PublicError extends StringSyncError {
+export class PublicError extends InternalError {
   public readonly isPublic = true;
 }

@@ -1,5 +1,5 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { StringSyncError } from '~/util/errors';
+import { InternalError } from '~/util/errors';
 
 export class CallToolResultBuilder {
   private content = new Array<CallToolResult['content'][number]>();
@@ -9,7 +9,7 @@ export class CallToolResultBuilder {
     return this;
   }
 
-  error(error: StringSyncError): this {
+  error(error: InternalError): this {
     let text = '';
     if (error.isPublic) {
       text = error.message;

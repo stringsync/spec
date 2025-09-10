@@ -6,9 +6,10 @@ import { DEFAULT_IGNORE_PATTERNS, DEFAULT_PATTERNS, scan } from '~/actions/scan'
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
 import { mcp } from '~/actions/mcp';
-import { StringSyncError } from '~/util/errors';
+import { InternalError } from '~/util/errors';
 import { ConsoleLogger } from '~/util/logs/console-logger';
 import { SpacedLogger } from '~/util/logs/spaced-logger';
+import { PromptCLI } from '~/prompts/cli';
 
 const log = new SpacedLogger(new ConsoleLogger());
 
@@ -41,7 +42,7 @@ program
     try {
       await mcp();
     } catch (e) {
-      log.error(chalk.red('Fatal error:'), StringSyncError.wrap(e).message);
+      log.error(chalk.red('Fatal error:'), InternalError.wrap(e).message);
       process.exit(1);
     }
   });
@@ -87,6 +88,36 @@ program
         chalk.gray(preview),
         chalk.cyan(tag.location),
       );
+    }
+  });
+
+program
+  .command('prompt')
+  .description('generate a prompt')
+  .argument('[name]', 'name of the prompt')
+  .option('--arg <values...>', 'arguments for the prompt format: [key=value]')
+  .option('--pipe', 'pipe output to another program', false)
+  .action(async (name: string | undefined, options: { arg?: string[]; pipe: boolean }) => {
+    try {
+      const args: Record<string, string> = {};
+      if (options.arg) {
+        for (const arg of options.arg) {
+          const [key, value] = arg.split('=');
+          if (!key || !value) {
+            throw new Error(`invalid argument: ${arg}`);
+          }
+          args[key] = value;
+        }
+      }
+      const log = new ConsoleLogger();
+      await new PromptCLI(log).run(name, args, options.pipe);
+    } catch (e) {
+      if (options.pipe) {
+        log.error(InternalError.wrap(e).message);
+      } else {
+        log.error(chalk.red('error:'), InternalError.wrap(e).message);
+      }
+      process.exit(1);
     }
   });
 
