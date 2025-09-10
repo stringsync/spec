@@ -19,7 +19,7 @@ export class Prompt<T extends ZodRawShape> {
   static Agents = new Prompt('agents', 'instructs how to use the library', agentsMd);
   static Describe = new Prompt('describe', 'describe the project specs and tags', describeMd);
 
-  static All = [this.Agents, this.Describe];
+  static all = [this.Agents, this.Describe];
 
   render(args: z.infer<typeof this.schema>): string {
     this.schema.parse(args);
