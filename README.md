@@ -148,7 +148,7 @@ To verify the installation, run:
 spec
 ```
 
-To uninstall the `specd` CLI, run:
+To uninstall the `spec` CLI, run:
 
 ```sh
 bun teardown
