@@ -4,7 +4,7 @@
 
 ## prompts.dir
 
-It SHOULD have a `prompts` directory, which SHOULD be mostly flat. The exception is a subdirectory called `data`, which will contain all the markdown files. The markdown files should be imported `with { type: 'text' }`, using Bun's capability to import files as a string.
+It SHOULD have a `prompts` directory, which SHOULD be mostly flat. The exception is a subdirectory called `data`, which will contain all the text files.
 
 ## prompts.core
 
@@ -14,4 +14,4 @@ It MUST have a `Prompt` class in a file named `prompt.ts`, which contains a temp
 It MUST throw an error when all the arguments aren't provided.
 It MUST use a raw zod shape as the input, defaulting to an empty object.
 A `Prompt` instance MUST expose what arguments it needs to make an interactive CLI prompt possible.
-The `Prompt` class must store all prompt instances as static members and privatize the constructor.
+The `Prompt` class must statically store all prompt instances as static members and privatize the constructor.
