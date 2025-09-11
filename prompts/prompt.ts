@@ -1,6 +1,6 @@
 import { z, ZodObject, type ZodRawShape } from 'zod';
-import describeMd from '~/prompts/data/describe.txt' with { type: 'text' };
-import agentsMd from '~/prompts/data/agents.txt' with { type: 'text' };
+import describeTxt from '~/prompts/data/describe.txt' with { type: 'text' };
+import agentsTxt from '~/prompts/data/agents.txt' with { type: 'text' };
 
 // spec(prompts.core)
 export class Prompt<T extends ZodRawShape> {
@@ -19,12 +19,12 @@ export class Prompt<T extends ZodRawShape> {
   static Agents = new Prompt(
     'agents',
     'instructs the assistant how to use @stringsync/spec',
-    agentsMd,
+    agentsTxt,
   );
   static Describe = new Prompt(
     'describe',
     'instruct the assistant to describe the project using @stringsync/spec',
-    describeMd,
+    describeTxt,
   );
 
   static all = [this.Agents, this.Describe];
