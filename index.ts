@@ -11,6 +11,7 @@ import { ConsoleLogger } from '~/util/logs/console-logger';
 import { SpacedLogger } from '~/util/logs/spaced-logger';
 import { PromptCLI } from '~/prompts/prompt-cli';
 import { Markdown } from '~/util/markdown';
+import { show } from '~/actions/show';
 
 const log = new SpacedLogger(new ConsoleLogger());
 
@@ -33,34 +34,25 @@ program
   .description('show a spec id')
   .option('-p, --pattern [patterns...]', 'glob patterns to scan', DEFAULT_PATTERNS)
   .option('-i, --ignore [patterns...]', 'glob patterns to ignore', [])
-  .argument('<id>', 'fully qualified spec id (e.g. "foo.bar")')
-  .action(async (id: string, options: { pattern: string[]; ignore: string[] }) => {
+  .argument('[selectors...]', 'fully qualified spec id (e.g. "foo.bar")')
+  .action(async (selectors: string[], options: { pattern: string[]; ignore: string[] }) => {
     const stopwatch = Stopwatch.start();
     const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
-    const results = await scan({ patterns: options.pattern, ignore, selectors: [id] });
+
+    const { specs, tags } = await scan({ patterns: options.pattern, ignore });
+    const results = show({ selectors, specs, tags });
     const ms = stopwatch.ms().toFixed(2);
 
-    const specs = results.filter((r) => r.type === 'spec');
-    if (specs.length !== 1) {
-      log.error(
-        chalk.red('error:'),
-        'expected to find exactly 1 spec with id',
-        chalk.white.bold(id),
-        'but found',
-        chalk.white.bold(specs.length),
-      );
-      process.exit(1);
+    switch (results.type) {
+      case 'success':
+        log.info(chalk.green('success'), chalk.gray(`in [${ms}ms]`));
+        log.info(results.content);
+        break;
+      case 'error':
+        log.error(chalk.red('failed'), chalk.gray(`in [${ms}ms]`));
+        log.error(`${results.errors.join('\n')}`);
+        break;
     }
-
-    const spec = specs[0];
-    const markdown = await Markdown.load(spec.path);
-    const content = markdown.getSubheaderContent(id);
-    const tags = results
-      .filter((r) => r.type === 'tag')
-      .map((t) => `- ${t.location} ${t.body}`.trim())
-      .join('\n');
-
-    log.info(`## ${id}\n\n${content}\n\n${tags}`);
   });
 
 program
@@ -73,16 +65,16 @@ program
     const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
     const results = await scan({ patterns: options.pattern, ignore });
     const ms = stopwatch.ms().toFixed(2);
+    const length = results.specs.length + results.tags.length;
 
     log.info(
       chalk.blue('scanned'),
-      chalk.white.bold(results.length.toString()),
-      results.length === 1 ? 'item' : 'items',
+      chalk.white.bold(length.toString()),
+      length === 1 ? 'item' : 'items',
       chalk.gray(`in [${ms}ms]`),
     );
 
-    const specs = results.filter((r) => r.type === 'spec');
-    for (const spec of specs) {
+    for (const spec of results.specs) {
       log.info(
         chalk.yellow('spec'),
         chalk.white.bold(spec.name),
@@ -91,8 +83,7 @@ program
       );
     }
 
-    const tags = results.filter((r) => r.type === 'tag');
-    for (const tag of tags) {
+    for (const tag of results.tags) {
       // Show a better preview: first line, trimmed, or up to 80 chars
       const preview = tag.body
         .split('\n')[0] // first line

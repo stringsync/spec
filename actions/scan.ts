@@ -4,13 +4,17 @@ import { File } from '~/util/file';
 import { Markdown } from '~/util/markdown';
 import fs from 'fs';
 
-export type ScanResult = SpecResult | TagResult;
+export type ScanResult = {
+  specs: SpecResult[];
+  tags: TagResult[];
+};
 
 export interface SpecResult {
   type: 'spec';
   name: string;
   path: string;
   ids: string[];
+  markdown: Markdown;
 }
 
 export interface TagResult {
@@ -23,11 +27,7 @@ export interface TagResult {
 export const DEFAULT_PATTERNS = ['**/*'];
 export const DEFAULT_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
-export async function scan(input: {
-  patterns: string[];
-  ignore?: string[];
-  selectors?: string[];
-}): Promise<ScanResult[]> {
+export async function scan(input: { patterns: string[]; ignore?: string[] }): Promise<ScanResult> {
   const patterns = await Promise.all(input.patterns.map(maybeExpandToRecursiveGlob));
 
   const paths = await glob.glob(patterns, {
@@ -46,20 +46,10 @@ export async function scan(input: {
     }),
   );
 
-  return results.flat().filter((result) => {
-    if (!input.selectors) {
-      return true;
-    }
-    if (input.selectors.length === 0) {
-      return true;
-    }
-    switch (result.type) {
-      case 'spec':
-        return result.ids.some((id) => input.selectors!.includes(id));
-      case 'tag':
-        return input.selectors.includes(result.id);
-    }
-  });
+  const specs = results.flat().filter((r): r is SpecResult => r.type === 'spec');
+  const tags = results.flat().filter((r): r is TagResult => r.type === 'tag');
+
+  return { specs, tags };
 }
 
 async function maybeExpandToRecursiveGlob(pattern: string): Promise<string> {
@@ -76,10 +66,10 @@ async function maybeExpandToRecursiveGlob(pattern: string): Promise<string> {
 }
 
 async function getSpecResult(path: string): Promise<SpecResult> {
-  const md = await Markdown.load(path);
-  const name = md.getHeader();
-  const ids = md.getSubheaders();
-  return { type: 'spec', name, path, ids };
+  const markdown = await Markdown.load(path);
+  const name = markdown.getHeader();
+  const ids = markdown.getSubheaders();
+  return { type: 'spec', name, path, ids, markdown };
 }
 
 async function getTagResults(path: string): Promise<TagResult[]> {
