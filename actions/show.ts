@@ -45,7 +45,7 @@ export function show(input: { selectors: string[]; specs: Spec[]; tags: Tag[] })
 
     if (specs.length === 0) {
       content.push(`## ${id}`);
-      content.push(`_subspec ${id} not found_`);
+      content.push(`_subspec "${id}" not found_`);
     }
 
     for (let index = 0; index < specs.length; index++) {
@@ -63,9 +63,7 @@ export function show(input: { selectors: string[]; specs: Spec[]; tags: Tag[] })
     if (tags.length === 0) {
       content.push('_none_');
     } else {
-      for (const tag of tags) {
-        content.push(`- ${tag.location} ${tag.body}`);
-      }
+      content.push(tags.map((tag) => `- ${tag.location} ${tag.body}`).join('\n'));
     }
 
     contentById[id] = content.join('\n\n');
