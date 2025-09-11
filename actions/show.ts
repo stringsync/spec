@@ -81,7 +81,7 @@ export function show(input: { selectors: string[]; specs: Spec[]; tags: Tag[] })
   if (content.length === 0) {
     return { type: 'error', errors: ['no specs or tags found'] };
   } else {
-    return { type: 'success', content: content.join('\n\n') };
+    return { type: 'success', content: content.join('\n\n---\n\n') };
   }
 }
 
