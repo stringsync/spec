@@ -11,6 +11,7 @@ export interface SpecResult {
   name: string;
   path: string;
   ids: string[];
+  markdown: Markdown;
 }
 
 export interface TagResult {
@@ -26,7 +27,6 @@ export const DEFAULT_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/
 export async function scan(input: {
   patterns: string[];
   ignore?: string[];
-  selectors?: string[];
 }): Promise<ScanResult[]> {
   const patterns = await Promise.all(input.patterns.map(maybeExpandToRecursiveGlob));
 
@@ -46,20 +46,7 @@ export async function scan(input: {
     }),
   );
 
-  return results.flat().filter((result) => {
-    if (!input.selectors) {
-      return true;
-    }
-    if (input.selectors.length === 0) {
-      return true;
-    }
-    switch (result.type) {
-      case 'spec':
-        return result.ids.some((id) => input.selectors!.includes(id));
-      case 'tag':
-        return input.selectors.includes(result.id);
-    }
-  });
+  return results.flat();
 }
 
 async function maybeExpandToRecursiveGlob(pattern: string): Promise<string> {
@@ -76,10 +63,10 @@ async function maybeExpandToRecursiveGlob(pattern: string): Promise<string> {
 }
 
 async function getSpecResult(path: string): Promise<SpecResult> {
-  const md = await Markdown.load(path);
-  const name = md.getHeader();
-  const ids = md.getSubheaders();
-  return { type: 'spec', name, path, ids };
+  const markdown = await Markdown.load(path);
+  const name = markdown.getHeader();
+  const ids = markdown.getSubheaders();
+  return { type: 'spec', name, path, ids, markdown };
 }
 
 async function getTagResults(path: string): Promise<TagResult[]> {

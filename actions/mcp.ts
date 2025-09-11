@@ -10,6 +10,7 @@ import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
 import { Prompt } from '~/prompts/prompt';
 import { Markdown } from '~/util/markdown';
+import { show } from '~/actions/show';
 
 const log = new StderrLogger();
 
@@ -29,7 +30,9 @@ function addTools(server: McpServer) {
     'spec.show',
     'show details about a spec ID',
     {
-      id: z.string().describe('the fully qualified spec id (e.g. "foo.bar")'),
+      selectors: z
+        .array(z.string())
+        .describe('a list of fully qualified spec ids or spec name (e.g. "foo.bar" or "foo")'),
       patterns: z.array(z.string()).describe('absolute glob patterns to scan'),
       ignore: z.array(z.string()).optional().describe('glob patterns to ignore'),
     },
@@ -70,51 +73,32 @@ function addPrompts(server: McpServer) {
 }
 
 async function showTool({
-  id,
+  selectors,
   patterns,
   ignore,
 }: {
-  id: string;
+  selectors: string[];
   patterns: string[];
   ignore?: string[];
 }) {
   const builder = new CallToolResultBuilder();
 
-  if (!id) {
-    builder.error(new PublicError('ID is required'));
-    return builder.build();
-  }
+  const scanResult = await scan({
+    patterns,
+    ignore: [...DEFAULT_IGNORE_PATTERNS, ...(ignore ?? [])],
+  });
+  const specs = scanResult.filter((r) => r.type === 'spec');
+  const tags = scanResult.filter((r) => r.type === 'tag');
 
-  if (patterns.length === 0) {
-    builder.error(new PublicError('At least one pattern is required'));
-    return builder.build();
-  }
+  const showResult = show({ selectors, specs, tags });
 
-  if (patterns.some((p) => !p.startsWith('/'))) {
-    builder.error(new PublicError('All patterns must be absolute'));
-    return builder.build();
-  }
-
-  try {
-    const results = await scan({
-      selectors: [id],
-      patterns,
-      ignore: [...DEFAULT_IGNORE_PATTERNS, ...(ignore ?? [])],
-    });
-    const specs = results.filter((r) => r.type === 'spec');
-    if (specs.length !== 1) {
-      throw new PublicError(`Expected 1 spec to be found, but found ${specs.length}`);
-    }
-    const spec = specs[0];
-    const markdown = await Markdown.load(spec.path);
-    const content = markdown.getSubheaderContent(id);
-    const tags = results
-      .filter((r) => r.type === 'tag')
-      .map((t) => `- ${t.location} ${t.body}`.trim())
-      .join('\n');
-    builder.text(`## ${id}\n\n${content}\n\n${tags}`);
-  } catch (e) {
-    builder.error(PublicError.wrap(e));
+  switch (showResult.type) {
+    case 'success':
+      builder.text(showResult.content);
+      break;
+    case 'error':
+      builder.error(new PublicError(showResult.errors.join('\n')));
+      break;
   }
 
   return builder.build();
