@@ -4,7 +4,10 @@ import { File } from '~/util/file';
 import { Markdown } from '~/util/markdown';
 import fs from 'fs';
 
-export type ScanResult = SpecResult | TagResult;
+export type ScanResult = {
+  specs: SpecResult[];
+  tags: TagResult[];
+};
 
 export interface SpecResult {
   type: 'spec';
@@ -24,10 +27,7 @@ export interface TagResult {
 export const DEFAULT_PATTERNS = ['**/*'];
 export const DEFAULT_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
-export async function scan(input: {
-  patterns: string[];
-  ignore?: string[];
-}): Promise<ScanResult[]> {
+export async function scan(input: { patterns: string[]; ignore?: string[] }): Promise<ScanResult> {
   const patterns = await Promise.all(input.patterns.map(maybeExpandToRecursiveGlob));
 
   const paths = await glob.glob(patterns, {
@@ -46,7 +46,10 @@ export async function scan(input: {
     }),
   );
 
-  return results.flat();
+  const specs = results.flat().filter((r): r is SpecResult => r.type === 'spec');
+  const tags = results.flat().filter((r): r is TagResult => r.type === 'tag');
+
+  return { specs, tags };
 }
 
 async function maybeExpandToRecursiveGlob(pattern: string): Promise<string> {

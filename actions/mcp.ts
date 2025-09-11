@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { check } from '~/actions/check';
 import { PublicError } from '~/util/errors';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { DEFAULT_IGNORE_PATTERNS, scan, type ScanResult } from '~/actions/scan';
+import { DEFAULT_IGNORE_PATTERNS, scan, type SpecResult, type TagResult } from '~/actions/scan';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
 import { Prompt } from '~/prompts/prompt';
@@ -82,13 +82,10 @@ async function showTool({
 }) {
   const builder = new CallToolResultBuilder();
 
-  const scanResult = await scan({
+  const { specs, tags } = await scan({
     patterns,
     ignore: [...DEFAULT_IGNORE_PATTERNS, ...(ignore ?? [])],
   });
-  const specs = scanResult.filter((r) => r.type === 'spec');
-  const tags = scanResult.filter((r) => r.type === 'tag');
-
   const showResult = show({ selectors, specs, tags });
 
   switch (showResult.type) {
@@ -143,11 +140,11 @@ async function scanTool({ patterns, ignore }: { patterns: string[]; ignore?: str
     return builder.build();
   }
 
-  function toList(results: ScanResult[]): string {
+  function toList(results: Array<SpecResult | TagResult>): string {
     return results.map(toListItem).join('\n');
   }
 
-  function toListItem(result: ScanResult): string {
+  function toListItem(result: SpecResult | TagResult): string {
     switch (result.type) {
       case 'spec':
         return `- spec: ${result.name} | path: ${result.path}`;
@@ -161,12 +158,7 @@ async function scanTool({ patterns, ignore }: { patterns: string[]; ignore?: str
       patterns,
       ignore: [...DEFAULT_IGNORE_PATTERNS, ...(ignore ?? [])],
     });
-    builder.text(
-      toList([
-        ...results.filter((r) => r.type === 'spec'),
-        ...results.filter((r) => r.type === 'tag'),
-      ]),
-    );
+    builder.text(toList([...results.specs, ...results.tags]));
   } catch (e) {
     builder.error(PublicError.wrap(e));
   }

@@ -39,21 +39,18 @@ program
     const stopwatch = Stopwatch.start();
     const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
 
-    const scanResults = await scan({ patterns: options.pattern, ignore });
-    const specs = scanResults.filter((r) => r.type === 'spec');
-    const tags = scanResults.filter((r) => r.type === 'tag');
-
-    const showResults = show({ selectors, specs, tags });
+    const { specs, tags } = await scan({ patterns: options.pattern, ignore });
+    const results = show({ selectors, specs, tags });
     const ms = stopwatch.ms().toFixed(2);
 
-    switch (showResults.type) {
+    switch (results.type) {
       case 'success':
         log.info(chalk.green('success'), chalk.gray(`in [${ms}ms]`));
-        log.info(showResults.content);
+        log.info(results.content);
         break;
       case 'error':
         log.error(chalk.red('failed'), chalk.gray(`in [${ms}ms]`));
-        log.error(`${showResults.errors.join('\n')}`);
+        log.error(`${results.errors.join('\n')}`);
         break;
     }
   });
@@ -68,16 +65,16 @@ program
     const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
     const results = await scan({ patterns: options.pattern, ignore });
     const ms = stopwatch.ms().toFixed(2);
+    const length = results.specs.length + results.tags.length;
 
     log.info(
       chalk.blue('scanned'),
-      chalk.white.bold(results.length.toString()),
-      results.length === 1 ? 'item' : 'items',
+      chalk.white.bold(length.toString()),
+      length === 1 ? 'item' : 'items',
       chalk.gray(`in [${ms}ms]`),
     );
 
-    const specs = results.filter((r) => r.type === 'spec');
-    for (const spec of specs) {
+    for (const spec of results.specs) {
       log.info(
         chalk.yellow('spec'),
         chalk.white.bold(spec.name),
@@ -86,8 +83,7 @@ program
       );
     }
 
-    const tags = results.filter((r) => r.type === 'tag');
-    for (const tag of tags) {
+    for (const tag of results.tags) {
       // Show a better preview: first line, trimmed, or up to 80 chars
       const preview = tag.body
         .split('\n')[0] // first line
