@@ -9,7 +9,7 @@ import { mcp } from '~/actions/mcp';
 import { InternalError } from '~/util/errors';
 import { ConsoleLogger } from '~/util/logs/console-logger';
 import { SpacedLogger } from '~/util/logs/spaced-logger';
-import { PromptCLI } from '~/prompts/cli';
+import { PromptCLI } from '~/prompts/prompt-cli';
 import { Markdown } from '~/util/markdown';
 
 const log = new SpacedLogger(new ConsoleLogger());

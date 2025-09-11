@@ -1,6 +1,6 @@
 import { z, ZodObject, type ZodRawShape } from 'zod';
-import describeTxt from '~/prompts/data/describe.txt' with { type: 'text' };
-import agentsTxt from '~/prompts/data/agents.txt' with { type: 'text' };
+import describeTxt from '~/prompts/templates/describe.txt' with { type: 'text' };
+import agentsTxt from '~/prompts/templates/agents.txt' with { type: 'text' };
 
 // spec(prompts.core)
 export class Prompt<T extends ZodRawShape> {
