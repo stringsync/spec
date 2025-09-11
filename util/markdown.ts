@@ -17,4 +17,19 @@ export class Markdown {
     const matches = this.content.matchAll(/^## (.+)$/gm);
     return Array.from(matches, (m) => m[1]);
   }
+
+  getSubheaderContent(subheader: string): string {
+    const subheading = `## ${subheader}`;
+    const startIndex = this.content.indexOf(subheading);
+    if (startIndex === -1) {
+      throw new Error(`Subheading "${subheading}" not found`);
+    }
+
+    let endIndex = this.content.indexOf('## ', startIndex + subheading.length);
+    if (endIndex === -1) {
+      endIndex = this.content.length;
+    }
+
+    return this.content.substring(startIndex + subheading.length, endIndex).trim();
+  }
 }

@@ -10,30 +10,11 @@ import { InternalError } from '~/util/errors';
 import { ConsoleLogger } from '~/util/logs/console-logger';
 import { SpacedLogger } from '~/util/logs/spaced-logger';
 import { PromptCLI } from '~/prompts/cli';
+import { Markdown } from '~/util/markdown';
 
 const log = new SpacedLogger(new ConsoleLogger());
 
 program.name(name).description(description).version(version);
-
-program
-  .command('check')
-  .description('validates a spec file')
-  .argument('<path>', 'path to spec file')
-  .action(async (path: string) => {
-    const stopwatch = Stopwatch.start();
-    const result = await check({ path });
-    const ms = stopwatch.ms().toFixed(2);
-
-    switch (result.type) {
-      case 'success':
-        log.info(chalk.green('success'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
-        break;
-      case 'error':
-        log.error(chalk.red('failed'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
-        log.error(`${result.errors.join('\n')}`);
-        break;
-    }
-  });
 
 program
   .command('mcp')
@@ -48,14 +29,49 @@ program
   });
 
 program
+  .command('show')
+  .description('show a spec id')
+  .option('-p, --pattern [patterns...]', 'glob patterns to scan', DEFAULT_PATTERNS)
+  .option('-i, --ignore [patterns...]', 'glob patterns to ignore', [])
+  .argument('<id>', 'fully qualified spec id (e.g. "foo.bar")')
+  .action(async (id: string, options: { pattern: string[]; ignore: string[] }) => {
+    const stopwatch = Stopwatch.start();
+    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
+    const results = await scan({ patterns: options.pattern, ignore, selectors: [id] });
+    const ms = stopwatch.ms().toFixed(2);
+
+    const specs = results.filter((r) => r.type === 'spec');
+    if (specs.length !== 1) {
+      log.error(
+        chalk.red('error:'),
+        'expected to find exactly 1 spec with id',
+        chalk.white.bold(id),
+        'but found',
+        chalk.white.bold(specs.length),
+      );
+      process.exit(1);
+    }
+
+    const spec = specs[0];
+    const markdown = await Markdown.load(spec.path);
+    const content = markdown.getSubheaderContent(id);
+    const tags = results
+      .filter((r) => r.type === 'tag')
+      .map((t) => `- ${t.location} ${t.body}`.trim())
+      .join('\n');
+
+    log.info(`## ${id}\n\n${content}\n\n${tags}`);
+  });
+
+program
   .command('scan')
   .description('scan for specs and tags')
-  .argument('[patterns...]', 'glob patterns to scan', DEFAULT_PATTERNS)
-  .option('--ignore [patterns...]', 'glob patterns to ignore', [])
-  .action(async (patterns: string[], options: { ignore: string[] }) => {
+  .option('-p, --pattern [patterns...]', 'glob patterns to scan', DEFAULT_PATTERNS)
+  .option('-i, --ignore [patterns...]', 'glob patterns to ignore', [])
+  .action(async (options: { pattern: string[]; ignore: string[] }) => {
     const stopwatch = Stopwatch.start();
-    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...options.ignore];
-    const results = await scan({ patterns, ignore });
+    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
+    const results = await scan({ patterns: options.pattern, ignore });
     const ms = stopwatch.ms().toFixed(2);
 
     log.info(
@@ -88,6 +104,26 @@ program
         chalk.gray(preview),
         chalk.cyan(tag.location),
       );
+    }
+  });
+
+program
+  .command('check')
+  .description('validates a spec file')
+  .argument('<path>', 'path to spec file')
+  .action(async (path: string) => {
+    const stopwatch = Stopwatch.start();
+    const result = await check({ path });
+    const ms = stopwatch.ms().toFixed(2);
+
+    switch (result.type) {
+      case 'success':
+        log.info(chalk.green('success'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
+        break;
+      case 'error':
+        log.error(chalk.red('failed'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
+        log.error(`${result.errors.join('\n')}`);
+        break;
     }
   });
 
