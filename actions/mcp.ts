@@ -9,6 +9,7 @@ import { DEFAULT_IGNORE_PATTERNS, scan, type ScanResult } from '~/actions/scan';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
 import { Prompt } from '~/prompts/prompt';
+import { Markdown } from '~/util/markdown';
 
 const log = new StderrLogger();
 
@@ -24,6 +25,17 @@ export async function mcp() {
 }
 
 function addTools(server: McpServer) {
+  server.tool(
+    'spec.show',
+    'show details about a spec ID',
+    {
+      id: z.string().describe('the fully qualified spec id (e.g. "foo.bar")'),
+      patterns: z.array(z.string()).describe('absolute glob patterns to scan'),
+      ignore: z.array(z.string()).optional().describe('glob patterns to ignore'),
+    },
+    showTool,
+  );
+
   server.tool(
     'spec.check',
     'validate a @stringsync/spec spec file',
@@ -55,6 +67,57 @@ function addPrompts(server: McpServer) {
       },
     );
   }
+}
+
+async function showTool({
+  id,
+  patterns,
+  ignore,
+}: {
+  id: string;
+  patterns: string[];
+  ignore?: string[];
+}) {
+  const builder = new CallToolResultBuilder();
+
+  if (!id) {
+    builder.error(new PublicError('ID is required'));
+    return builder.build();
+  }
+
+  if (patterns.length === 0) {
+    builder.error(new PublicError('At least one pattern is required'));
+    return builder.build();
+  }
+
+  if (patterns.some((p) => !p.startsWith('/'))) {
+    builder.error(new PublicError('All patterns must be absolute'));
+    return builder.build();
+  }
+
+  try {
+    const results = await scan({
+      selectors: [id],
+      patterns,
+      ignore: [...DEFAULT_IGNORE_PATTERNS, ...(ignore ?? [])],
+    });
+    const specs = results.filter((r) => r.type === 'spec');
+    if (specs.length !== 1) {
+      throw new PublicError(`Expected 1 spec to be found, but found ${specs.length}`);
+    }
+    const spec = specs[0];
+    const markdown = await Markdown.load(spec.path);
+    const content = markdown.getSubheaderContent(id);
+    const tags = results
+      .filter((r) => r.type === 'tag')
+      .map((t) => `- ${t.location} ${t.body}`.trim())
+      .join('\n');
+    builder.text(`## ${id}\n\n${content}\n\n${tags}`);
+  } catch (e) {
+    builder.error(PublicError.wrap(e));
+  }
+
+  return builder.build();
 }
 
 async function checkTool({ path }: { path: string }) {

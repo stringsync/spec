@@ -32,7 +32,7 @@ async function main(): Promise<void> {
       format: 'esm',
       minify: false,
       sourcemap: 'none',
-      external: ['commander', 'chalk'],
+      external: ['@inquirer/prompts', 'commander', 'chalk'],
     });
 
     if (!result.success) {
