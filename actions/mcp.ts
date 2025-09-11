@@ -9,7 +9,6 @@ import { DEFAULT_IGNORE_PATTERNS, scan, type ScanResult } from '~/actions/scan';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
 import { Prompt } from '~/prompts/prompt';
-import { Markdown } from '~/util/markdown';
 import { show } from '~/actions/show';
 
 const log = new StderrLogger();
