@@ -30,6 +30,7 @@ const s2 = Selector.parse('foo.bar');
 // selects all specs in the foo module
 const s3 = new Selector('foo');
 const s4 = Selector.parse('foo');
+const s5 = Selector.parse('foo.*');
 ```
 
 ## spec.scope

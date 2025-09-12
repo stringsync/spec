@@ -18,6 +18,9 @@ export class Selector {
       return new Selector(parts[0]);
     }
     if (parts.length === 2) {
+      if (parts[1] === '*') {
+        return new Selector(parts[0]);
+      }
       return new Selector(parts[0], parts[1]);
     }
     throw new Error(`Invalid selector format: ${selector}`);
