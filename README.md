@@ -9,7 +9,7 @@ Install `bun` at https://bun.sh/.
 > [!NOTE]  
 > You can also use `npx`.
 
-Declare a spec.
+Declare a spec module.
 
 _calculator.spec.md_
 
@@ -21,13 +21,13 @@ _calculator.spec.md_
 It adds two numbers.
 ```
 
-Check the spec.
+Validate the spec module.
 
 ```
 bunx @stringsync/spec check calculator.spec.md
 ```
 
-Reference the spec.
+Tag a spec.
 
 _calculator.ts_
 
@@ -40,7 +40,7 @@ class Calculator {
 }
 ```
 
-Scan for specs.
+Scan for specs and spec modules.
 
 ```sh
 bunx @stringsync/spec scan

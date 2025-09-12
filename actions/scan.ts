@@ -1,5 +1,5 @@
 import * as glob from 'glob';
-import { parse } from '~/tags/parse';
+import { parse } from '~/parsing/parse';
 import { File } from '~/util/file';
 import { Markdown } from '~/util/markdown';
 import fs from 'fs';

@@ -1,5 +1,5 @@
-import { Style } from '~/tags/style';
-import type { Tag, Comment } from '~/tags/types';
+import { Style } from '~/parsing/style';
+import type { Tag, Comment } from '~/parsing/types';
 import type { File } from '~/util/file';
 
 /**
