@@ -7,25 +7,25 @@ import { Tag } from './tag';
 // spec(spec.scope)
 export class Scope {
   private selectors: Selector[];
-  private patterns: string[];
-  private ignoredPatterns: string[];
+  private includedPatterns: string[];
+  private excludedPatterns: string[];
 
-  constructor(selectors: Selector[], patterns: string[], ignoredPatterns: string[]) {
+  constructor(selectors: Selector[], includedPatterns: string[], excludedPatterns: string[]) {
     this.selectors = selectors;
-    this.patterns = patterns;
-    this.ignoredPatterns = ignoredPatterns;
+    this.includedPatterns = includedPatterns;
+    this.excludedPatterns = excludedPatterns;
   }
 
   getSelectors(): Selector[] {
     return this.selectors;
   }
 
-  getPatterns(): string[] {
-    return this.patterns;
+  getIncludedPatterns(): string[] {
+    return this.includedPatterns;
   }
 
-  getIgnoredPatterns(): string[] {
-    return this.ignoredPatterns;
+  getExcludedPatterns(): string[] {
+    return this.excludedPatterns;
   }
 
   matches(target: Module | Spec | Tag): boolean {
@@ -40,12 +40,12 @@ export class Scope {
   }
 
   private matchesPath(path: string): boolean {
-    if (this.patterns.length === 0) {
+    if (this.includedPatterns.length === 0) {
       return true;
     }
     return (
-      this.patterns.some((pattern) => minimatch(path, pattern)) &&
-      !this.ignoredPatterns.some((ignore) => minimatch(path, ignore))
+      this.includedPatterns.some((pattern) => minimatch(path, pattern)) &&
+      !this.excludedPatterns.some((ignore) => minimatch(path, ignore))
     );
   }
 }

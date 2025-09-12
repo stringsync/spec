@@ -32,8 +32,16 @@ function addTools(server: McpServer) {
       selectors: z
         .array(z.string())
         .describe('a list of fully qualified spec ids or spec name (e.g. "foo.bar" or "foo")'),
-      patterns: z.array(z.string()).describe('absolute glob patterns to scan'),
-      ignore: z.array(z.string()).optional().describe('glob patterns to ignore'),
+      includePatterns: z
+        .array(z.string())
+        .optional()
+        .default(['**/*'])
+        .describe('absolute glob patterns to scan'),
+      excludePatterns: z
+        .array(z.string())
+        .optional()
+        .default([])
+        .describe('absolute glob patterns to ignore'),
     },
     showTool,
   );
@@ -42,8 +50,16 @@ function addTools(server: McpServer) {
     'spec.scan',
     'scan for @stringsync/spec specs and tags',
     {
-      patterns: z.array(z.string()).describe('absolute glob patterns to scan'),
-      ignore: z.array(z.string()).optional().describe('glob patterns to ignore'),
+      includePatterns: z
+        .array(z.string())
+        .optional()
+        .default(['**/*'])
+        .describe('absolute glob patterns to scan'),
+      excludePatterns: z
+        .array(z.string())
+        .optional()
+        .default([])
+        .describe('absolute glob patterns to ignore'),
     },
     scanTool,
   );
@@ -66,18 +82,18 @@ function addPrompts(server: McpServer) {
 
 async function showTool({
   selectors,
-  patterns,
-  ignore,
+  includePatterns,
+  excludePatterns,
 }: {
   selectors: string[];
-  patterns: string[];
-  ignore?: string[];
+  includePatterns: string[];
+  excludePatterns: string[];
 }) {
   const builder = new CallToolResultBuilder();
 
   const { specs, tags } = await scan({
-    patterns,
-    ignore: [...DEFAULT_IGNORE_PATTERNS, ...(ignore ?? [])],
+    patterns: includePatterns,
+    ignore: [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns],
   });
   const showResult = show({ selectors, specs, tags });
 
@@ -93,15 +109,21 @@ async function showTool({
   return builder.build();
 }
 
-async function scanTool({ patterns, ignore }: { patterns: string[]; ignore?: string[] }) {
+async function scanTool({
+  includePatterns,
+  excludePatterns,
+}: {
+  includePatterns: string[];
+  excludePatterns: string[];
+}) {
   const builder = new CallToolResultBuilder();
 
-  if (patterns.length === 0) {
+  if (includePatterns.length === 0) {
     builder.error(new PublicError('At least one pattern is required'));
     return builder.build();
   }
 
-  if (patterns.some((p) => !p.startsWith('/'))) {
+  if (includePatterns.some((p) => !p.startsWith('/'))) {
     builder.error(new PublicError('All patterns must be absolute'));
     return builder.build();
   }
@@ -121,8 +143,8 @@ async function scanTool({ patterns, ignore }: { patterns: string[]; ignore?: str
 
   try {
     const results = await scan({
-      patterns,
-      ignore: [...DEFAULT_IGNORE_PATTERNS, ...(ignore ?? [])],
+      patterns: includePatterns,
+      ignore: [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns],
     });
     builder.text(toList([...results.specs, ...results.tags]));
   } catch (e) {
