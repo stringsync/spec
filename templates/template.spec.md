@@ -1,5 +1,5 @@
 # template
 
-# template.core
+## template.core
 
 TODO
