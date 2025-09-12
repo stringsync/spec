@@ -53,11 +53,15 @@ interface Scope {
   getSelectors(): Selector[];
   getPatterns(): string[];
   getIgnoredPatterns(): string[];
-  contains(target: Module | Spec | Tag): boolean;
+  matches(target: Module | Spec | Tag): boolean; // matches using the name and path
 }
 ```
 
 Absolute patterns are preferred, but relative patterns are acceptable.
+
+**Hints**
+
+- Use the glob library to determine if a path matches.
 
 ## spec.module
 
@@ -92,7 +96,7 @@ type ModuleLoader = (path: string) => Promise<Module>;
 
 **Hints**
 
-The `Module` class should be backed by the `Markdown` class from util/markdown.ts.
+- The `Module` class should be backed by the `Markdown` class from util/markdown.ts.
 
 ## spec.spec
 

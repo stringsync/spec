@@ -1,5 +1,9 @@
 // spec(spec.module): TODO
 export class Module {
+  getPath(): string {
+    return '';
+  }
+
   getName(): string {
     return '';
   }

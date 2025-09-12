@@ -59,7 +59,7 @@ export function show(input: { selectors: string[]; specs: Spec[]; tags: Tag[] })
       content.push(spec.markdown.getSubheaderContent(id));
     }
 
-    content.push('**tags**');
+    content.push('**Tags**');
     if (tags.length === 0) {
       content.push('_none_');
     } else {
