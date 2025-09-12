@@ -81,24 +81,22 @@ interface Module {
   getName(): string;
   getScope(): Scope;
   getPath(): string;
-  getSpecs(): Spec[];
-  findSpec(name: string): Spec | null;
   getErrors(): string[];
   getContent(): string;
-  withSpecs(specs: Spec[]): Module;
 }
 ```
 
 The `Module` class also has a static method named `load`, which _implicitly_ implements the type:
 
 ```ts
-type ModuleLoader = (path: string) => Promise<Module>;
+type ModuleLoader = (path: string, scope: Scope) => Promise<Module>;
 ```
+
+During construction, the scope should be validated that it matches the path.
 
 **Hints**
 
 - The `Module` class should be backed by the `Markdown` class from util/markdown.ts.
-- `Module.withSpecs` should return a new instance.
 
 ## spec.spec
 
@@ -119,15 +117,11 @@ interface Spec {
   getModuleName(): string;
   getPath(): string;
   getLocation(): string;
-  getTags(): Tag[];
   getContent(): string;
-  withTags(tags: Tag[]): Spec;
 }
 ```
 
-**Hints**
-
-- `Spec.withTags` should return a new instance.
+During construction, the scope should be validated that it matches the path.
 
 ## spec.tag
 
