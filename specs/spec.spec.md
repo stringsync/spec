@@ -1,11 +1,44 @@
 # spec
 
-## spec.scope
+## spec.selector
 
-A scope represents the patterns and ignored patterns used to hydrate spec objects.
+A selector represents module and spec **name** patterns used to select modules and specs.
 
 **Relations**
 
+- A selector belongs to a scope.
+
+**Behavior**
+
+The `Selector` class fulfills the following interface:
+
+```ts
+interface Selector {
+  getModuleName(): string;
+  getSpecName(): string | null;
+  matches(target: Module | Spec | Tag): boolean;
+}
+```
+
+The `Selector` class can be created multiple ways:
+
+```ts
+// selects the foo module and foo.bar spec
+const s1 = new Selector('foo', 'bar');
+const s2 = Selector.parse('foo.bar');
+
+// selects all specs in the foo module
+const s3 = new Selector('foo');
+const s4 = Selector.parse('foo');
+```
+
+## spec.scope
+
+A scope represents the **path** patterns, ignored **path** patterns, and selectors used to hydrate spec-related objects.
+
+**Relations**
+
+- A scope has many selectors.
 - A scope belongs to a module.
 - A scope belongs to a spec.
 - A scope belongs to a tag.
@@ -16,6 +49,7 @@ The `Scope` class fulfills the following interface:
 
 ```ts
 interface Scope {
+  getSelectors(): Selector[];
   getPatterns(): string[];
   getIgnoredPatterns(): string[];
 }
@@ -104,8 +138,8 @@ The `Tag` class _implicitly_ implements the interface:
 ```ts
 interface Tag {
   getName(): string;
-  getModuleName(): string;
   getSpecName(): string;
+  getModuleName(): string;
   getContent(): string;
 }
 ```
