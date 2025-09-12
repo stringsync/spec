@@ -85,6 +85,7 @@ interface Module {
   findSpec(name: string): Spec | null;
   getErrors(): string[];
   getContent(): string;
+  withSpecs(specs: Spec[]): Module;
 }
 ```
 
@@ -97,6 +98,7 @@ type ModuleLoader = (path: string) => Promise<Module>;
 **Hints**
 
 - The `Module` class should be backed by the `Markdown` class from util/markdown.ts.
+- `Module.withSpecs` should return a new instance.
 
 ## spec.spec
 
@@ -119,8 +121,13 @@ interface Spec {
   getLocation(): string;
   getTags(): Tag[];
   getContent(): string;
+  withTags(tags: Tag[]): Spec;
 }
 ```
+
+**Hints**
+
+- `Spec.withTags` should return a new instance.
 
 ## spec.tag
 
