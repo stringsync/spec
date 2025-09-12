@@ -10,7 +10,6 @@ import { InternalError } from '~/util/errors';
 import { ConsoleLogger } from '~/util/logs/console-logger';
 import { SpacedLogger } from '~/util/logs/spaced-logger';
 import { PromptCLI } from '~/prompts/prompt-cli';
-import { Markdown } from '~/util/markdown';
 import { show } from '~/actions/show';
 
 const log = new SpacedLogger(new ConsoleLogger());
