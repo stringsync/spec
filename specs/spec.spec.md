@@ -51,8 +51,8 @@ The `Scope` class fulfills the following interface:
 ```ts
 interface Scope {
   getSelectors(): Selector[];
-  getPatterns(): string[];
-  getIgnoredPatterns(): string[];
+  getIncludedPatterns(): string[];
+  getExcludedPatterns(): string[];
   matches(target: Module | Spec | Tag): boolean; // matches using the name and path
 }
 ```
