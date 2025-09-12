@@ -4,12 +4,9 @@ spec driven development tools
 
 ## Getting Started
 
-Install `bun` at https://bun.sh/.
+To run the commands, you will need an NPM package executor like `npx`. We recommend `bunx`: https://bun.sh/
 
-> [!NOTE]  
-> You can also use `npx`.
-
-Declare a spec module.
+**Declare**
 
 _calculator.spec.md_
 
@@ -21,13 +18,7 @@ _calculator.spec.md_
 It adds two numbers.
 ```
 
-Validate the spec module.
-
-```
-bunx @stringsync/spec check calculator.spec.md
-```
-
-Tag a spec.
+**Tag**
 
 _calculator.ts_
 
@@ -40,16 +31,10 @@ class Calculator {
 }
 ```
 
-Scan for specs and spec modules.
+**Scan**
 
 ```sh
 bunx @stringsync/spec scan
-```
-
-To see a complete list of commands, run:
-
-```sh
-bunx @stringsync/spec
 ```
 
 ## Prompts
