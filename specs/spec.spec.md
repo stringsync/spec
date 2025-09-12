@@ -53,6 +53,7 @@ interface Scope {
   getSelectors(): Selector[];
   getPatterns(): string[];
   getIgnoredPatterns(): string[];
+  contains(target: Module | Spec | Tag): boolean;
 }
 ```
 
@@ -89,6 +90,10 @@ The `Module` class also has a static method named `load`, which _implicitly_ imp
 type ModuleLoader = (path: string) => Promise<Module>;
 ```
 
+**Hints**
+
+The `Module` class should be backed by the `Markdown` class from util/markdown.ts.
+
 ## spec.spec
 
 A spec is a section within a module.
@@ -106,6 +111,7 @@ interface Spec {
   getScope(): Scope;
   getName(): string;
   getModuleName(): string;
+  getPath(): string;
   getLocation(): string;
   getTags(): Tag[];
   getContent(): string;
@@ -142,6 +148,8 @@ interface Tag {
   getSpecName(): string;
   getModuleName(): string;
   getContent(): string;
+  getPath(): string;
+  getLocation(): string;
 }
 ```
 
