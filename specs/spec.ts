@@ -1,2 +1,10 @@
 // spec(spec.spec): TODO
-export class Spec {}
+export class Spec {
+  getModuleName(): string {
+    return '';
+  }
+
+  getName(): string {
+    return '';
+  }
+}

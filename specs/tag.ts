@@ -1,2 +1,10 @@
 // spec(spec.tag): TODO
-export class Tag {}
+export class Tag {
+  getModuleName(): string {
+    return '';
+  }
+
+  getSpecName(): string {
+    return '';
+  }
+}
