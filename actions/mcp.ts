@@ -36,12 +36,12 @@ function addTools(server: McpServer) {
         .array(z.string())
         .optional()
         .default(['**/*'])
-        .describe('absolute glob patterns to scan'),
+        .describe('absolute glob patterns to scan, prefer to leave this blank'),
       excludePatterns: z
         .array(z.string())
         .optional()
         .default([])
-        .describe('absolute glob patterns to ignore'),
+        .describe('absolute glob patterns to ignore, prefer to leave this blank'),
     },
     showTool,
   );
@@ -54,12 +54,12 @@ function addTools(server: McpServer) {
         .array(z.string())
         .optional()
         .default(['**/*'])
-        .describe('absolute glob patterns to scan'),
+        .describe('absolute glob patterns to scan, prefer to leave this blank'),
       excludePatterns: z
         .array(z.string())
         .optional()
         .default([])
-        .describe('absolute glob patterns to ignore'),
+        .describe('absolute glob patterns to ignore, prefer to leave this blank'),
     },
     scanTool,
   );
