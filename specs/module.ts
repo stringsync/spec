@@ -9,7 +9,6 @@ export class Module {
     private path: string,
     private markdown: Markdown,
     private scope: Scope,
-    private specs: Spec[] = [],
   ) {}
 
   static async load(path: string, scope: Scope): Promise<Module> {
@@ -27,18 +26,6 @@ export class Module {
 
   getContent(): string {
     return this.markdown.getContent();
-  }
-
-  getSpecs(): Spec[] {
-    return this.specs;
-  }
-
-  withSpecs(specs: Spec[]): Module {
-    return new Module(this.path, this.markdown, this.scope, specs);
-  }
-
-  findSpec(name: string): Spec | null {
-    return this.specs.find((spec) => spec.getName() === name) ?? null;
   }
 
   getScope(): Scope {

@@ -32,14 +32,14 @@ program
 program
   .command('show')
   .description('show a spec id')
-  .option('-p, --pattern [patterns...]', 'glob patterns to scan', DEFAULT_PATTERNS)
-  .option('-i, --ignore [patterns...]', 'glob patterns to ignore', [])
+  .option('-i, --include [patterns...]', 'glob patterns to include', DEFAULT_PATTERNS)
+  .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
   .argument('[selectors...]', 'fully qualified spec id (e.g. "foo.bar")')
-  .action(async (selectors: string[], options: { pattern: string[]; ignore: string[] }) => {
+  .action(async (selectors: string[], options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
-    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
+    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...options.exclude];
 
-    const { specs, tags } = await scan({ patterns: options.pattern, ignore });
+    const { specs, tags } = await scan({ patterns: options.include, ignore });
     const results = show({ selectors, specs, tags });
     const ms = stopwatch.ms().toFixed(2);
 
@@ -58,12 +58,12 @@ program
 program
   .command('scan')
   .description('scan for specs and tags')
-  .option('-p, --pattern [patterns...]', 'glob patterns to scan', DEFAULT_PATTERNS)
-  .option('-i, --ignore [patterns...]', 'glob patterns to ignore', [])
-  .action(async (options: { pattern: string[]; ignore: string[] }) => {
+  .option('-i, --include [patterns...]', 'glob patterns to include', DEFAULT_PATTERNS)
+  .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
+  .action(async (options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
-    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
-    const results = await scan({ patterns: options.pattern, ignore });
+    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...options.exclude];
+    const results = await scan({ patterns: options.include, ignore });
     const ms = stopwatch.ms().toFixed(2);
     const length = results.specs.length + results.tags.length;
 

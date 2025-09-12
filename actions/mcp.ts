@@ -34,9 +34,7 @@ function addTools(server: McpServer) {
         .describe('a list of fully qualified spec ids or spec name (e.g. "foo.bar" or "foo")'),
       includePatterns: z
         .array(z.string())
-        .optional()
-        .default(['**/*'])
-        .describe('absolute glob patterns to scan, prefer to leave this blank'),
+        .describe('absolute glob patterns to scan, prefer to use all files in the project root'),
       excludePatterns: z
         .array(z.string())
         .optional()
@@ -52,9 +50,7 @@ function addTools(server: McpServer) {
     {
       includePatterns: z
         .array(z.string())
-        .optional()
-        .default(['**/*'])
-        .describe('absolute glob patterns to scan, prefer to leave this blank'),
+        .describe('absolute glob patterns to scan, prefer to use all files in the project root'),
       excludePatterns: z
         .array(z.string())
         .optional()

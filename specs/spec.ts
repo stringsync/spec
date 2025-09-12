@@ -7,7 +7,6 @@ export class Spec {
   private name: string;
   private moduleName: string;
   private path: string;
-  private tags: Tag[];
   private content: string;
 
   constructor(init: {
@@ -16,14 +15,12 @@ export class Spec {
     moduleName: string;
     path: string;
     content: string;
-    tags?: Tag[];
   }) {
     this.scope = init.scope;
     this.name = init.name;
     this.moduleName = init.moduleName;
     this.path = init.path;
     this.content = init.content;
-    this.tags = init.tags ?? [];
   }
 
   getScope(): Scope {
@@ -46,22 +43,7 @@ export class Spec {
     return this.path;
   }
 
-  getTags(): Tag[] {
-    return this.tags;
-  }
-
   getContent(): string {
     return this.content;
-  }
-
-  withTags(tags: Tag[]): Spec {
-    return new Spec({
-      scope: this.scope,
-      name: this.name,
-      moduleName: this.moduleName,
-      path: this.path,
-      content: this.content,
-      tags: tags,
-    });
   }
 }
