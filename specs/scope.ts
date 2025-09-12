@@ -40,12 +40,12 @@ export class Scope {
   }
 
   private matchesPath(path: string): boolean {
-    if (this.includedPatterns.length === 0) {
-      return true;
-    }
-    return (
-      this.includedPatterns.some((pattern) => minimatch(path, pattern)) &&
-      !this.excludedPatterns.some((ignore) => minimatch(path, ignore))
-    );
+    const isIncluded =
+      this.includedPatterns.length === 0 ||
+      this.includedPatterns.some((pattern) => minimatch(path, pattern));
+
+    const isExcluded = this.excludedPatterns.some((ignore) => minimatch(path, ignore));
+
+    return isIncluded && !isExcluded;
   }
 }

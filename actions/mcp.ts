@@ -10,6 +10,7 @@ import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
 import { Prompt } from '~/prompts/prompt';
 import { show } from '~/actions/show';
+import { Scope } from '~/specs/scope';
 
 const log = new StderrLogger();
 
@@ -87,10 +88,8 @@ async function showTool({
 }) {
   const builder = new CallToolResultBuilder();
 
-  const { specs, tags } = await scan({
-    patterns: includePatterns,
-    ignore: [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns],
-  });
+  const scope = new Scope([], includePatterns, [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns]);
+  const { specs, tags } = await scan({ scopes: [scope] });
   const showResult = show({ selectors, specs, tags });
 
   switch (showResult.type) {
@@ -138,10 +137,8 @@ async function scanTool({
   }
 
   try {
-    const results = await scan({
-      patterns: includePatterns,
-      ignore: [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns],
-    });
+    const scope = new Scope([], includePatterns, [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns]);
+    const results = await scan({ scopes: [scope] });
     builder.text(toList([...results.specs, ...results.tags]));
   } catch (e) {
     builder.error(PublicError.wrap(e));

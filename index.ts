@@ -3,6 +3,7 @@ import { program } from 'commander';
 import { name, description, version } from './package.json';
 import { check } from '~/actions/check';
 import { DEFAULT_IGNORE_PATTERNS, DEFAULT_PATTERNS, scan } from '~/actions/scan';
+import { Scope } from '~/specs/scope';
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
 import { mcp } from '~/actions/mcp';
@@ -39,7 +40,8 @@ program
     const stopwatch = Stopwatch.start();
     const ignore = [...DEFAULT_IGNORE_PATTERNS, ...options.exclude];
 
-    const { specs, tags } = await scan({ patterns: options.include, ignore });
+    const scope = new Scope([], options.include, ignore);
+    const { specs, tags } = await scan({ scopes: [scope] });
     const results = show({ selectors, specs, tags });
     const ms = stopwatch.ms().toFixed(2);
 
@@ -63,7 +65,8 @@ program
   .action(async (options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
     const ignore = [...DEFAULT_IGNORE_PATTERNS, ...options.exclude];
-    const results = await scan({ patterns: options.include, ignore });
+    const scope = new Scope([], options.include, ignore);
+    const results = await scan({ scopes: [scope] });
     const ms = stopwatch.ms().toFixed(2);
     const length = results.specs.length + results.tags.length;
 

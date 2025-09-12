@@ -4,6 +4,7 @@ import { File } from '~/util/file';
 import { Markdown } from '~/util/markdown';
 import fs from 'fs';
 import { check } from '~/actions/check';
+import { Scope } from '~/specs/scope';
 
 export type ScanResult = {
   specs: SpecResult[];
@@ -29,14 +30,29 @@ export interface TagResult {
 export const DEFAULT_PATTERNS = ['**/*'];
 export const DEFAULT_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
-export async function scan(input: { patterns: string[]; ignore?: string[] }): Promise<ScanResult> {
-  const patterns = await Promise.all(input.patterns.map(maybeExpandToRecursiveGlob));
+// spec(spec.scope): input now uses a Scope[].
+export async function scan(input: { scopes: Scope[] }): Promise<ScanResult> {
+  const pathSet = new Set<string>();
 
-  const paths = await glob.glob(patterns, {
-    absolute: true,
-    ignore: input.ignore,
-    nodir: true,
-  });
+  for (const scope of input.scopes) {
+    const patterns = await Promise.all(scope.getIncludedPatterns().map(maybeExpandToRecursiveGlob));
+
+    if (patterns.length === 0) {
+      continue;
+    }
+
+    const scopePaths = await glob.glob(patterns, {
+      absolute: true,
+      ignore: scope.getExcludedPatterns(),
+      nodir: true,
+    });
+
+    for (const p of scopePaths) {
+      pathSet.add(p);
+    }
+  }
+
+  const paths = Array.from(pathSet);
 
   const results = await Promise.all(
     paths.map((path) => {
