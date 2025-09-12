@@ -1,8 +1,9 @@
 import * as glob from 'glob';
-import { parse } from '~/tags/parse';
+import { parse } from '~/parsing/parse';
 import { File } from '~/util/file';
 import { Markdown } from '~/util/markdown';
 import fs from 'fs';
+import { check } from '~/actions/check';
 
 export type ScanResult = {
   specs: SpecResult[];
@@ -14,6 +15,7 @@ export interface SpecResult {
   name: string;
   path: string;
   ids: string[];
+  errors: string[];
   markdown: Markdown;
 }
 
@@ -69,7 +71,19 @@ async function getSpecResult(path: string): Promise<SpecResult> {
   const markdown = await Markdown.load(path);
   const name = markdown.getHeader();
   const ids = markdown.getSubheaders();
-  return { type: 'spec', name, path, ids, markdown };
+
+  const checkResult = await check({ path });
+  let errors: string[];
+  switch (checkResult.type) {
+    case 'success':
+      errors = [];
+      break;
+    case 'error':
+      errors = checkResult.errors;
+      break;
+  }
+
+  return { type: 'spec', name, path, ids, markdown, errors };
 }
 
 async function getTagResults(path: string): Promise<TagResult[]> {

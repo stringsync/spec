@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
-import { parse } from '~/tags/parse';
-import { Style } from '~/tags/style';
+import { parse } from '~/parsing/parse';
+import { Style } from '~/parsing/style';
 import { File } from '~/util/file';
 
 describe('parse', () => {

@@ -39,13 +39,6 @@ function addTools(server: McpServer) {
   );
 
   server.tool(
-    'spec.check',
-    'validate a @stringsync/spec spec file',
-    { path: z.string().describe('the absolute path to the spec file to validate') },
-    checkTool,
-  );
-
-  server.tool(
     'spec.scan',
     'scan for @stringsync/spec specs and tags',
     {
@@ -100,33 +93,6 @@ async function showTool({
   return builder.build();
 }
 
-async function checkTool({ path }: { path: string }) {
-  const builder = new CallToolResultBuilder();
-
-  if (!path) {
-    builder.error(new PublicError('Path is required'));
-    return builder.build();
-  }
-
-  if (!path.startsWith('/')) {
-    builder.error(new PublicError('Path must be absolute'));
-    return builder.build();
-  }
-
-  const result = await check({ path });
-  switch (result.type) {
-    case 'success':
-      builder.text(`valid @stringsync/spec: ${path}`);
-      break;
-    case 'error':
-      builder.text(`invalid @stringsync/spec: ${path}`);
-      builder.error(new PublicError(result.errors.join('\n')));
-      break;
-  }
-
-  return builder.build();
-}
-
 async function scanTool({ patterns, ignore }: { patterns: string[]; ignore?: string[] }) {
   const builder = new CallToolResultBuilder();
 
@@ -147,7 +113,7 @@ async function scanTool({ patterns, ignore }: { patterns: string[]; ignore?: str
   function toListItem(result: SpecResult | TagResult): string {
     switch (result.type) {
       case 'spec':
-        return `- spec: ${result.name} | path: ${result.path}`;
+        return `- spec: ${result.name} | path: ${result.path} | errors: ${result.errors.length ? result.errors.join(', ') : 'none'}`;
       case 'tag':
         return `- tag: ${result.id} | body: ${result.body} | location: ${result.location}`;
     }

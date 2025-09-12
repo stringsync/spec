@@ -4,6 +4,7 @@ import { Markdown } from '~/util/markdown';
 
 export type CheckResult = { type: 'success' } | { type: 'error'; errors: string[] };
 
+// spec(spec.validation): TODO - move this to the specs directory
 export async function check(input: { path: string }): Promise<CheckResult> {
   for await (const errors of generateErrors(input.path)) {
     if (errors.length > 0) {
