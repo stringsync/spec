@@ -14,6 +14,7 @@ export interface SpecResult {
   name: string;
   path: string;
   ids: string[];
+  errors: string[];
   markdown: Markdown;
 }
 
@@ -69,7 +70,8 @@ async function getSpecResult(path: string): Promise<SpecResult> {
   const markdown = await Markdown.load(path);
   const name = markdown.getHeader();
   const ids = markdown.getSubheaders();
-  return { type: 'spec', name, path, ids, markdown };
+  const errors = ['error checking not implemented yet'];
+  return { type: 'spec', name, path, ids, markdown, errors };
 }
 
 async function getTagResults(path: string): Promise<TagResult[]> {

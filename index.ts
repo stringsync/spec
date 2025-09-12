@@ -11,6 +11,7 @@ import { ConsoleLogger } from '~/util/logs/console-logger';
 import { SpacedLogger } from '~/util/logs/spaced-logger';
 import { PromptCLI } from '~/prompts/prompt-cli';
 import { show } from '~/actions/show';
+import { IndentedLogger } from '~/util/logs/indented-logger';
 
 const log = new SpacedLogger(new ConsoleLogger());
 
@@ -74,46 +75,32 @@ program
     );
 
     for (const spec of results.specs) {
-      log.info(
-        chalk.yellow('spec'),
-        chalk.white.bold(spec.name),
-        chalk.gray(`[${spec.ids.length} ids]`),
-        chalk.cyan(spec.path),
-      );
+      let validity = '';
+      if (spec.errors.length === 0) {
+        validity = chalk.green('✓ valid');
+      } else if (spec.errors.length === 1) {
+        validity = chalk.red('✗ 1 error');
+      } else {
+        validity = chalk.red(`✗ ${spec.errors.length} errors`);
+      }
+
+      log.info(chalk.yellow('spec'), chalk.white.bold(spec.name), chalk.cyan(spec.path), validity);
+
+      let ilog = new IndentedLogger(log, 1);
+      if (spec.errors.length > 0) {
+        for (const error of spec.errors) {
+          ilog.error(chalk.red('error:'), chalk.gray(error));
+        }
+      }
     }
 
     for (const tag of results.tags) {
-      // Show a better preview: first line, trimmed, or up to 80 chars
-      const preview = tag.body
-        .split('\n')[0] // first line
-        .trim();
-
       log.info(
         chalk.magenta('tag'),
         chalk.white.bold(tag.id),
-        chalk.gray(preview),
         chalk.cyan(tag.location),
+        chalk.gray(tag.body),
       );
-    }
-  });
-
-program
-  .command('check')
-  .description('validates a spec file')
-  .argument('<path>', 'path to spec file')
-  .action(async (path: string) => {
-    const stopwatch = Stopwatch.start();
-    const result = await check({ path });
-    const ms = stopwatch.ms().toFixed(2);
-
-    switch (result.type) {
-      case 'success':
-        log.info(chalk.green('success'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
-        break;
-      case 'error':
-        log.error(chalk.red('failed'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
-        log.error(`${result.errors.join('\n')}`);
-        break;
     }
   });
 
