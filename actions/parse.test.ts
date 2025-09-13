@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'bun:test';
 import { parse } from '~/actions/parse';
-import { Scope } from '~/specs/scope';
 import { CommentStyle } from '~/util/comment-style';
 import { File } from '~/util/file';
 
