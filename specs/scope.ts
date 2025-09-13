@@ -1,6 +1,5 @@
 import { minimatch } from 'minimatch';
 import { Module } from './module';
-import { Selector } from './selector';
 import { Spec } from './spec';
 import { Tag } from './tag';
 
