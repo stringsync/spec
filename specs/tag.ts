@@ -2,7 +2,6 @@ import { Scope } from './scope';
 
 // spec(spec.tag)
 export class Tag {
-  private name: string;
   private specName: string;
   private moduleName: string;
   private content: string;
@@ -10,23 +9,17 @@ export class Tag {
   private location: string;
 
   constructor(init: {
-    name: string;
     specName: string;
     moduleName: string;
     content: string;
     path: string;
     location: string;
   }) {
-    this.name = init.name;
     this.specName = init.specName;
     this.moduleName = init.moduleName;
     this.content = init.content;
     this.path = init.path;
     this.location = init.location;
-  }
-
-  getName(): string {
-    return this.name;
   }
 
   getSpecName(): string {
