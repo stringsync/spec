@@ -5,11 +5,16 @@ import { z } from 'zod';
 import { check } from '~/actions/check';
 import { PublicError } from '~/util/errors';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { DEFAULT_IGNORE_PATTERNS, scan, type SpecResult, type TagResult } from '~/actions/scan';
+import {
+  DEFAULT_IGNORE_PATTERNS,
+  legacyScan,
+  type SpecResult,
+  type TagResult,
+} from '~/actions/legacy-scan';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
 import { Prompt } from '~/prompts/prompt';
-import { show } from '~/actions/show';
+import { legacyShow } from '~/actions/legacy-show';
 import { Scope } from '~/specs/scope';
 
 const log = new StderrLogger();
@@ -88,9 +93,12 @@ async function showTool({
 }) {
   const builder = new CallToolResultBuilder();
 
-  const scope = new Scope([], includePatterns, [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns]);
-  const { specs, tags } = await scan({ scopes: [scope] });
-  const showResult = show({ selectors, specs, tags });
+  const scope = new Scope({
+    includePatterns,
+    excludePatterns: [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns],
+  });
+  const { specs, tags } = await legacyScan({ scopes: [scope] });
+  const showResult = legacyShow({ selectors, specs, tags });
 
   switch (showResult.type) {
     case 'success':
@@ -137,8 +145,11 @@ async function scanTool({
   }
 
   try {
-    const scope = new Scope([], includePatterns, [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns]);
-    const results = await scan({ scopes: [scope] });
+    const scope = new Scope({
+      includePatterns,
+      excludePatterns: [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns],
+    });
+    const results = await legacyScan({ scopes: [scope] });
     builder.text(toList([...results.specs, ...results.tags]));
   } catch (e) {
     builder.error(PublicError.wrap(e));

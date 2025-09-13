@@ -7,6 +7,7 @@ export class Tag {
   private moduleName: string;
   private content: string;
   private path: string;
+  private location: string;
 
   constructor(init: {
     name: string;
@@ -14,12 +15,14 @@ export class Tag {
     moduleName: string;
     content: string;
     path: string;
+    location: string;
   }) {
     this.name = init.name;
     this.specName = init.specName;
     this.moduleName = init.moduleName;
     this.content = init.content;
     this.path = init.path;
+    this.location = init.location;
   }
 
   getName(): string {
@@ -43,6 +46,6 @@ export class Tag {
   }
 
   getLocation(): string {
-    return this.path;
+    return this.location;
   }
 }

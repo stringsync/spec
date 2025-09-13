@@ -4,10 +4,6 @@
 
 A selector represents module and spec **name** patterns used to select modules and specs.
 
-**Relations**
-
-- A selector belongs to a scope.
-
 **Behavior**
 
 The `Selector` class fulfills the following interface:
@@ -50,7 +46,6 @@ The `Scope` class fulfills the following interface:
 
 ```ts
 interface Scope {
-  getSelectors(): Selector[];
   getIncludedPatterns(): string[];
   getExcludedPatterns(): string[];
   matches(target: Module | Spec | Tag): boolean; // matches using the name and path

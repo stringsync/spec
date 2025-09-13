@@ -1,113 +1,83 @@
-import * as glob from 'glob';
-import { parse } from '~/parsing/parse';
 import { File } from '~/util/file';
-import { Markdown } from '~/util/markdown';
-import fs from 'fs';
-import { check } from '~/actions/check';
-import { Scope } from '~/specs/scope';
+import { Module } from '~/specs/module';
+import { Spec } from '~/specs/spec';
+import { parse } from '~/parsing/parse';
+import type { Globber } from '~/util/globber/globber';
+import type { Scope } from '~/specs/scope';
+import { Tag } from '~/specs/tag';
 
-export type ScanResult = {
-  specs: SpecResult[];
-  tags: TagResult[];
-};
-
-export interface SpecResult {
-  type: 'spec';
-  name: string;
-  path: string;
-  ids: string[];
-  errors: string[];
-  markdown: Markdown;
+export interface ScanResult {
+  modules: Module[];
+  specs: Spec[];
+  tags: Tag[];
 }
 
-export interface TagResult {
-  type: 'tag';
-  id: string;
-  body: string;
-  location: string;
+interface ParseResult {
+  modules: Module[];
+  specs: Spec[];
+  tags: Tag[];
 }
 
-export const DEFAULT_PATTERNS = ['**/*'];
-export const DEFAULT_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
+export async function scan({ scope, globber }: { scope: Scope; globber: Globber }) {
+  const paths = await globber.glob(scope);
+  const results = await Promise.all(paths.map((path) => parseFile(path, scope)));
 
-// spec(spec.scope): input now uses a Scope[].
-export async function scan(input: { scopes: Scope[] }): Promise<ScanResult> {
-  const pathSet = new Set<string>();
+  const modules = results.flatMap((r) => r.modules);
+  const specs = results.flatMap((r) => r.specs);
+  const tags = results.flatMap((r) => r.tags);
 
-  for (const scope of input.scopes) {
-    const patterns = await Promise.all(scope.getIncludedPatterns().map(maybeExpandToRecursiveGlob));
+  return { modules, specs, tags };
+}
 
-    if (patterns.length === 0) {
-      continue;
-    }
+async function parseFile(path: string, scope: Scope): Promise<ParseResult> {
+  if (path.endsWith('spec.md')) {
+    // TODO: A module can also contain tags, so we need to parse those too.
+    const [module, specs] = await parseModule(path, scope);
+    return { modules: [module], specs, tags: [] };
+  } else {
+    const tags = await parseTags(path);
+    return { modules: [], specs: [], tags };
+  }
+}
 
-    const scopePaths = await glob.glob(patterns, {
-      absolute: true,
-      ignore: scope.getExcludedPatterns(),
-      nodir: true,
+async function parseModule(path: string, scope: Scope): Promise<[module: Module, specs: Spec[]]> {
+  const module = await Module.load(path, scope);
+  const markdown = module.getMarkdown();
+
+  const text = markdown.getContent();
+  const file = new File(path, text);
+
+  const specs = new Array<Spec>();
+
+  for (const subheader of markdown.getSubheaders()) {
+    const index = text.indexOf(`## ${subheader}`);
+    const spec = new Spec({
+      scope,
+      name: subheader,
+      content: markdown.getSubheaderContent(subheader),
+      moduleName: module.getName(),
+      path: module.getPath(),
+      location: file.getLocation(index),
     });
-
-    for (const p of scopePaths) {
-      pathSet.add(p);
-    }
+    specs.push(spec);
   }
 
-  const paths = Array.from(pathSet);
-
-  const results = await Promise.all(
-    paths.map((path) => {
-      if (path.endsWith('spec.md')) {
-        return getSpecResult(path);
-      } else {
-        return getTagResults(path);
-      }
-    }),
-  );
-
-  const specs = results.flat().filter((r): r is SpecResult => r.type === 'spec');
-  const tags = results.flat().filter((r): r is TagResult => r.type === 'tag');
-
-  return { specs, tags };
+  return [module, specs];
 }
 
-async function maybeExpandToRecursiveGlob(pattern: string): Promise<string> {
-  if (glob.hasMagic(pattern)) {
-    return pattern;
-  }
-
-  const stat = await fs.promises.stat(pattern);
-  if (stat.isDirectory()) {
-    return `${pattern}/**/*`;
-  }
-
-  return pattern;
-}
-
-async function getSpecResult(path: string): Promise<SpecResult> {
-  const markdown = await Markdown.load(path);
-  const name = markdown.getHeader();
-  const ids = markdown.getSubheaders();
-
-  const checkResult = await check({ path });
-  let errors: string[];
-  switch (checkResult.type) {
-    case 'success':
-      errors = [];
-      break;
-    case 'error':
-      errors = checkResult.errors;
-      break;
-  }
-
-  return { type: 'spec', name, path, ids, markdown, errors };
-}
-
-async function getTagResults(path: string): Promise<TagResult[]> {
+async function parseTags(path: string): Promise<Tag[]> {
   const file = await File.load(path);
-  return parse('spec', file).map(({ id, body, location }) => ({
-    type: 'tag',
-    id,
-    body,
-    location,
-  }));
+  const results = parse('spec', file);
+  // TODO: Just return the results when parse returns Tag[]
+  return results.map(
+    (tag) =>
+      new Tag({
+        path,
+        name: tag.id,
+        specName: tag.name,
+        moduleName: tag.id.split('.')[0],
+        content: tag.body,
+        location: tag.location,
+      }),
+  );
 }

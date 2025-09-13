@@ -1,8 +1,7 @@
 #!/usr/bin/env bun
 import { program } from 'commander';
 import { name, description, version } from './package.json';
-import { check } from '~/actions/check';
-import { DEFAULT_IGNORE_PATTERNS, DEFAULT_PATTERNS, scan } from '~/actions/scan';
+import { DEFAULT_IGNORE_PATTERNS, DEFAULT_PATTERNS, legacyScan } from '~/actions/legacy-scan';
 import { Scope } from '~/specs/scope';
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
@@ -11,8 +10,9 @@ import { InternalError } from '~/util/errors';
 import { ConsoleLogger } from '~/util/logs/console-logger';
 import { SpacedLogger } from '~/util/logs/spaced-logger';
 import { PromptCLI } from '~/prompts/prompt-cli';
-import { show } from '~/actions/show';
+import { legacyShow } from '~/actions/legacy-show';
 import { IndentedLogger } from '~/util/logs/indented-logger';
+import { scan } from '~/actions/scan';
 
 const log = new SpacedLogger(new ConsoleLogger());
 
@@ -38,11 +38,12 @@ program
   .argument('[selectors...]', 'fully qualified spec id (e.g. "foo.bar")')
   .action(async (selectors: string[], options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
-    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...options.exclude];
-
-    const scope = new Scope([], options.include, ignore);
-    const { specs, tags } = await scan({ scopes: [scope] });
-    const results = show({ selectors, specs, tags });
+    const scope = new Scope({
+      includePatterns: options.include,
+      excludePatterns: [...DEFAULT_IGNORE_PATTERNS, ...options.exclude],
+    });
+    const { specs, tags } = await legacyScan({ scopes: [scope] });
+    const results = legacyShow({ selectors, specs, tags });
     const ms = stopwatch.ms().toFixed(2);
 
     switch (results.type) {
@@ -64,9 +65,11 @@ program
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
   .action(async (options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
-    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...options.exclude];
-    const scope = new Scope([], options.include, ignore);
-    const results = await scan({ scopes: [scope] });
+    const scope = new Scope({
+      includePatterns: options.include,
+      excludePatterns: [...DEFAULT_IGNORE_PATTERNS, ...options.exclude],
+    });
+    const results = await legacyScan({ scopes: [scope] });
     const ms = stopwatch.ms().toFixed(2);
     const length = results.specs.length + results.tags.length;
 

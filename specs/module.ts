@@ -24,8 +24,8 @@ export class Module {
     return this.markdown.getHeader();
   }
 
-  getContent(): string {
-    return this.markdown.getContent();
+  getMarkdown(): Markdown {
+    return this.markdown;
   }
 
   getScope(): Scope {

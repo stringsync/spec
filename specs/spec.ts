@@ -8,6 +8,7 @@ export class Spec {
   private moduleName: string;
   private path: string;
   private content: string;
+  private location: string;
 
   constructor(init: {
     scope: Scope;
@@ -15,12 +16,14 @@ export class Spec {
     moduleName: string;
     path: string;
     content: string;
+    location: string;
   }) {
     this.scope = init.scope;
     this.name = init.name;
     this.moduleName = init.moduleName;
     this.path = init.path;
     this.content = init.content;
+    this.location = init.location;
   }
 
   getScope(): Scope {
@@ -40,7 +43,7 @@ export class Spec {
   }
 
   getLocation(): string {
-    return this.path;
+    return this.location;
   }
 
   getContent(): string {

@@ -23,7 +23,7 @@ export type ShowResult =
       errors: string[];
     };
 
-export function show(input: { selectors: string[]; specs: Spec[]; tags: Tag[] }): ShowResult {
+export function legacyShow(input: { selectors: string[]; specs: Spec[]; tags: Tag[] }): ShowResult {
   const selectors = unique(input.selectors);
   const errors = selectors.flatMap(validate);
   if (errors.length > 0) {
