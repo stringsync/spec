@@ -21,7 +21,7 @@ export class Selector {
       if (parts[1] === '*') {
         return new Selector(parts[0]);
       }
-      return new Selector(parts[0], parts[1]);
+      return new Selector(parts[0], selector);
     }
     throw new Error(`Invalid selector format: ${selector}`);
   }

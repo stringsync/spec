@@ -2,20 +2,11 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { name, version } from '~/package.json';
 import { CallToolResultBuilder } from '~/util/mcp/call-tool-result-builder';
 import { z } from 'zod';
-import { check } from '~/actions/check';
-import { PublicError } from '~/util/errors';
+import { NotImplementedError, PublicError } from '~/util/errors';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  DEFAULT_IGNORE_PATTERNS,
-  legacyScan,
-  type SpecResult,
-  type TagResult,
-} from '~/actions/legacy-scan';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
 import { Prompt } from '~/prompts/prompt';
-import { legacyShow } from '~/actions/legacy-show';
-import { Scope } from '~/specs/scope';
 
 const log = new StderrLogger();
 
@@ -33,7 +24,7 @@ export async function mcp() {
 function addTools(server: McpServer) {
   server.tool(
     'spec.show',
-    'show details about a spec ID',
+    'show details about specs',
     {
       selectors: z
         .array(z.string())
@@ -52,8 +43,11 @@ function addTools(server: McpServer) {
 
   server.tool(
     'spec.scan',
-    'scan for @stringsync/spec specs and tags',
+    'show a summary of modules, specs, and tags',
     {
+      selectors: z
+        .array(z.string())
+        .describe('a list of fully qualified spec ids or spec name (e.g. "foo.bar" or "foo")'),
       includePatterns: z
         .array(z.string())
         .describe('absolute glob patterns to scan, prefer to use all files in the project root'),
@@ -93,67 +87,23 @@ async function showTool({
 }) {
   const builder = new CallToolResultBuilder();
 
-  const scope = new Scope({
-    includePatterns,
-    excludePatterns: [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns],
-  });
-  const { specs, tags } = await legacyScan({ scopes: [scope] });
-  const showResult = legacyShow({ selectors, specs, tags });
-
-  switch (showResult.type) {
-    case 'success':
-      builder.text(showResult.content);
-      break;
-    case 'error':
-      builder.error(new PublicError(showResult.errors.join('\n')));
-      break;
-  }
+  builder.error(new NotImplementedError());
 
   return builder.build();
 }
 
 async function scanTool({
+  selectors,
   includePatterns,
   excludePatterns,
 }: {
+  selectors: string[];
   includePatterns: string[];
   excludePatterns: string[];
 }) {
   const builder = new CallToolResultBuilder();
 
-  if (includePatterns.length === 0) {
-    builder.error(new PublicError('At least one pattern is required'));
-    return builder.build();
-  }
-
-  if (includePatterns.some((p) => !p.startsWith('/'))) {
-    builder.error(new PublicError('All patterns must be absolute'));
-    return builder.build();
-  }
-
-  function toList(results: Array<SpecResult | TagResult>): string {
-    return results.map(toListItem).join('\n');
-  }
-
-  function toListItem(result: SpecResult | TagResult): string {
-    switch (result.type) {
-      case 'spec':
-        return `- spec: ${result.name} | path: ${result.path} | errors: ${result.errors.length ? result.errors.join(', ') : 'none'}`;
-      case 'tag':
-        return `- tag: ${result.id} | body: ${result.body} | location: ${result.location}`;
-    }
-  }
-
-  try {
-    const scope = new Scope({
-      includePatterns,
-      excludePatterns: [...DEFAULT_IGNORE_PATTERNS, ...excludePatterns],
-    });
-    const results = await legacyScan({ scopes: [scope] });
-    builder.text(toList([...results.specs, ...results.tags]));
-  } catch (e) {
-    builder.error(PublicError.wrap(e));
-  }
+  builder.error(new NotImplementedError());
 
   return builder.build();
 }

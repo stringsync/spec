@@ -14,14 +14,6 @@ export class IndentedLogger implements Logger {
     this.logger.error(this.indentation(), ...args);
   }
 
-  indent() {
-    return new IndentedLogger(this.logger, this.depth + 1);
-  }
-
-  outdent() {
-    return new IndentedLogger(this.logger, Math.max(0, this.depth - 1));
-  }
-
   private indentation() {
     return '  '.repeat(this.depth);
   }

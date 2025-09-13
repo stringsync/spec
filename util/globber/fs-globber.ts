@@ -9,7 +9,10 @@ export class FsGlobber implements Globber {
     const exclude = scope.getExcludePatterns();
 
     for await (const path of fs.promises.glob(include, { exclude })) {
-      paths.push(path);
+      const stat = await fs.promises.stat(path);
+      if (stat.isFile()) {
+        paths.push(path);
+      }
     }
 
     return paths;

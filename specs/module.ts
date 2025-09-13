@@ -1,7 +1,9 @@
 import { Markdown } from '../util/markdown';
 import { Scope } from './scope';
-import { Spec } from './spec';
-import { Selector } from './selector';
+
+interface ModuleRelative {
+  getModuleName(): string;
+}
 
 // spec(spec.module)
 export class Module {
@@ -45,6 +47,10 @@ export class Module {
     }
 
     return [];
+  }
+
+  matches(target: ModuleRelative): boolean {
+    return this.getName() === target.getModuleName();
   }
 
   private validateIdentifier(id: string): string[] {

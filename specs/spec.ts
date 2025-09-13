@@ -1,5 +1,8 @@
 import { Scope } from './scope';
-import { Tag } from './tag';
+
+interface SpecRelative {
+  getSpecName(): string;
+}
 
 // spec(spec.spec)
 export class Spec {
@@ -48,5 +51,9 @@ export class Spec {
 
   getContent(): string {
     return this.content;
+  }
+
+  matches(target: SpecRelative): boolean {
+    return this.getName() === target.getSpecName();
   }
 }

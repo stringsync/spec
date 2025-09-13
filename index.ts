@@ -1,20 +1,21 @@
 #!/usr/bin/env bun
 import { program } from 'commander';
 import { name, description, version } from './package.json';
-import { DEFAULT_IGNORE_PATTERNS, DEFAULT_PATTERNS, legacyScan } from '~/actions/legacy-scan';
 import { Scope } from '~/specs/scope';
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
-import { mcp } from '~/actions/mcp';
 import { InternalError } from '~/util/errors';
-import { ConsoleLogger } from '~/util/logs/console-logger';
-import { SpacedLogger } from '~/util/logs/spaced-logger';
 import { PromptCLI } from '~/prompts/prompt-cli';
-import { legacyShow } from '~/actions/legacy-show';
-import { IndentedLogger } from '~/util/logs/indented-logger';
+import { mcp } from '~/mcp/mcp';
+import { ExtendableLogger } from '~/util/logs/extendable-logger';
 import { scan } from '~/actions/scan';
+import { Selector } from '~/specs/selector';
+import { ExtendableGlobber } from '~/util/globber/extendable-globber';
 
-const log = new SpacedLogger(new ConsoleLogger());
+const log = ExtendableLogger.console();
+
+const DEFAULT_PATTERNS = ['**/*'];
+const MUST_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
 program.name(name).description(description).version(version);
 
@@ -35,27 +36,16 @@ program
   .description('show a spec id')
   .option('-i, --include [patterns...]', 'glob patterns to include', DEFAULT_PATTERNS)
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
-  .argument('[selectors...]', 'fully qualified spec id (e.g. "foo.bar")')
+  .argument('[selectors...]', 'fully qualified spec id (e.g. "foo.bar" or "foo")', [])
   .action(async (selectors: string[], options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
     const scope = new Scope({
       includePatterns: options.include,
-      excludePatterns: [...DEFAULT_IGNORE_PATTERNS, ...options.exclude],
+      excludePatterns: [...MUST_IGNORE_PATTERNS, ...options.exclude],
     });
-    const { specs, tags } = await legacyScan({ scopes: [scope] });
-    const results = legacyShow({ selectors, specs, tags });
     const ms = stopwatch.ms().toFixed(2);
 
-    switch (results.type) {
-      case 'success':
-        log.info(chalk.green('success'), chalk.gray(`in [${ms}ms]`));
-        log.info(results.content);
-        break;
-      case 'error':
-        log.error(chalk.red('failed'), chalk.gray(`in [${ms}ms]`));
-        log.error(`${results.errors.join('\n')}`);
-        break;
-    }
+    log.spaced.info(chalk.green('success'), chalk.gray(`in [${ms}ms]`));
   });
 
 program
@@ -63,50 +53,91 @@ program
   .description('scan for specs and tags')
   .option('-i, --include [patterns...]', 'glob patterns to include', DEFAULT_PATTERNS)
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
-  .action(async (options: { include: string[]; exclude: string[] }) => {
+  .argument('[selectors...]', 'fully qualified spec id (e.g. "foo.bar" or "foo")', [])
+  .action(async (selectorStrings: string[], options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
+
     const scope = new Scope({
       includePatterns: options.include,
-      excludePatterns: [...DEFAULT_IGNORE_PATTERNS, ...options.exclude],
+      excludePatterns: [...MUST_IGNORE_PATTERNS, ...options.exclude],
     });
-    const results = await legacyScan({ scopes: [scope] });
-    const ms = stopwatch.ms().toFixed(2);
-    const length = results.specs.length + results.tags.length;
+    const selectors = selectorStrings.map((s) => Selector.parse(s));
+    const globber = ExtendableGlobber.fs().autoExpand().cached();
+    const result = await scan({ scope, selectors, globber });
+    const paths = await globber.glob(scope);
 
-    log.info(
+    const ms = stopwatch.ms().toFixed(2);
+
+    log.spaced.info(
       chalk.blue('scanned'),
-      chalk.white.bold(length.toString()),
-      length === 1 ? 'item' : 'items',
+      chalk.white.bold(paths.length.toString()),
+      paths.length === 1 ? 'item' : 'items',
       chalk.gray(`in [${ms}ms]`),
+      '\n',
     );
 
-    for (const spec of results.specs) {
+    for (const module of result.modules) {
       let validity = '';
-      if (spec.errors.length === 0) {
+      const errors = module.getErrors();
+      if (errors.length === 0) {
         validity = chalk.green('✓ valid');
-      } else if (spec.errors.length === 1) {
+      } else if (errors.length === 1) {
         validity = chalk.red('✗ 1 error');
       } else {
-        validity = chalk.red(`✗ ${spec.errors.length} errors`);
+        validity = chalk.red(`✗ ${errors.length} errors`);
       }
 
-      log.info(chalk.yellow('spec'), chalk.white.bold(spec.name), chalk.cyan(spec.path), validity);
+      log.spaced.info(
+        chalk.yellow('module'),
+        chalk.white.bold(module.getName()),
+        chalk.cyan(module.getPath()),
+        validity,
+      );
 
-      let ilog = new IndentedLogger(log, 1);
-      if (spec.errors.length > 0) {
-        for (const error of spec.errors) {
-          ilog.error(chalk.red('error:'), chalk.gray(error));
+      if (errors.length > 0) {
+        for (const error of errors) {
+          log.spaced.indented().error(chalk.red('error:'), chalk.gray(error));
         }
       }
+
+      const specs = result.specs.filter((s) => module.matches(s));
+      for (const spec of specs) {
+        log.spaced
+          .indented()
+          .info(
+            chalk.magenta('spec'),
+            chalk.white.bold(spec.getName()),
+            chalk.cyan(spec.getLocation()),
+          );
+
+        const tags = result.tags.filter((t) => spec.matches(t));
+        for (const tag of tags) {
+          log.spaced
+            .indented(2)
+            .info(chalk.green('tag'), chalk.cyan(tag.getLocation()), chalk.gray(tag.getContent()));
+        }
+      }
+
+      log.info(''); // new line between modules
     }
 
-    for (const tag of results.tags) {
-      log.info(
-        chalk.magenta('tag'),
-        chalk.white.bold(tag.id),
-        chalk.cyan(tag.location),
-        chalk.gray(tag.body),
-      );
+    const specNames = new Set(result.specs.map((s) => s.getName()));
+    const orphanedTags = result.tags
+      .filter((t) => !specNames.has(t.getSpecName()))
+      .filter((t) => selectors.length === 0 || selectors.some((s) => s.matches(t)));
+    if (orphanedTags.length > 0) {
+      log.spaced.info(chalk.red('orphaned'));
+      for (const tag of orphanedTags) {
+        log.spaced
+          .indented()
+          .info(
+            chalk.green('tag'),
+            chalk.white.bold(tag.getSpecName()),
+            chalk.cyan(tag.getLocation()),
+            chalk.gray(tag.getContent()),
+          );
+      }
+      log.info('');
     }
   });
 
@@ -128,7 +159,6 @@ program
           args[key] = value;
         }
       }
-      const log = new ConsoleLogger();
       await new PromptCLI(log).run(name, args, options.pipe);
     } catch (e) {
       if (options.pipe) {

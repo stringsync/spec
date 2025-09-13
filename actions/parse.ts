@@ -344,11 +344,11 @@ function parseAllTagsInLine(
       continue;
     }
 
-    const id = text.substring(idStartIndex, afterTagIndex);
+    const specName = text.substring(idStartIndex, afterTagIndex);
     afterTagIndex++; // Skip closing parenthesis
 
     // Body is optional
-    let body = '';
+    let content = '';
     if (afterTagIndex < text.length && text[afterTagIndex] === ':') {
       afterTagIndex++;
 
@@ -356,17 +356,18 @@ function parseAllTagsInLine(
       while (afterTagIndex < text.length && text[afterTagIndex] === ' ') {
         afterTagIndex++;
       }
-      body = text.substring(afterTagIndex).trimEnd();
+      content = text.substring(afterTagIndex).trimEnd();
     }
 
+    const moduleName = specName.split('.')[0];
     const tagStartIndex = startIndex + tagIndex;
     const tagEndIndex = startIndex + afterTagIndex;
     const location = file.getLocation(tagStartIndex);
 
     tags.push({
-      specName: id,
-      moduleName: tagName,
-      content: body,
+      specName,
+      moduleName,
+      content,
       location,
       startIndex: tagStartIndex,
       endIndex: tagEndIndex,
