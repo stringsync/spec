@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 import { parse } from '~/parsing/parse';
-import { Style } from '~/parsing/style';
+import { CommentStyle } from '~/util/comment-style';
 import { File } from '~/util/file';
 
 describe('parse', () => {
@@ -16,10 +16,9 @@ describe('parse', () => {
       const tags = parse('spec', file);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBeEmpty();
-      expect(tags[0].location).toBe('test.ts:2:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBeEmpty();
+      expect(tags[0].getLocation()).toBe('test.ts:2:12');
     });
 
     it('parses tags with a body', () => {
@@ -33,10 +32,9 @@ describe('parse', () => {
       const tags = parse('spec', file);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:2:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:2:12');
     });
 
     it('parses multiple tags in the same file', () => {
@@ -52,15 +50,13 @@ describe('parse', () => {
 
       expect(tags).toHaveLength(2);
 
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.one');
-      expect(tags[0].body).toBe('one');
-      expect(tags[0].location).toBe('test.ts:2:12');
+      expect(tags[0].getSpecName()).toBe('foo.one');
+      expect(tags[0].getContent()).toBe('one');
+      expect(tags[0].getLocation()).toBe('test.ts:2:12');
 
-      expect(tags[1].name).toBe('spec');
-      expect(tags[1].id).toBe('foo.two');
-      expect(tags[1].body).toBe('two');
-      expect(tags[1].location).toBe('test.ts:3:12');
+      expect(tags[1].getSpecName()).toBe('foo.two');
+      expect(tags[1].getContent()).toBe('two');
+      expect(tags[1].getLocation()).toBe('test.ts:3:12');
     });
 
     it('ignores non-tag comments', () => {
@@ -101,10 +97,9 @@ describe('parse', () => {
       const tags = parse('spec', file);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBeEmpty();
-      expect(tags[0].location).toBe('test.ts:3:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBeEmpty();
+      expect(tags[0].getLocation()).toBe('test.ts:3:12');
     });
 
     it('parses block comment tags', () => {
@@ -120,10 +115,9 @@ describe('parse', () => {
       const tags = parse('spec', file);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:3:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:3:12');
     });
 
     it('parses block comment and single line comment tags in the same file', () => {
@@ -141,15 +135,13 @@ describe('parse', () => {
 
       expect(tags).toHaveLength(2);
 
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:3:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:3:12');
 
-      expect(tags[1].name).toBe('spec');
-      expect(tags[1].id).toBe('foo.qux');
-      expect(tags[1].body).toBe('qux');
-      expect(tags[1].location).toBe('test.ts:5:12');
+      expect(tags[1].getSpecName()).toBe('foo.qux');
+      expect(tags[1].getContent()).toBe('qux');
+      expect(tags[1].getLocation()).toBe('test.ts:5:12');
     });
 
     it('ignores tags with invalid tags', () => {
@@ -179,15 +171,13 @@ describe('parse', () => {
 
       expect(tags).toHaveLength(2);
 
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBeEmpty();
-      expect(tags[0].location).toBe('test.ts:2:22');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBeEmpty();
+      expect(tags[0].getLocation()).toBe('test.ts:2:22');
 
-      expect(tags[1].name).toBe('spec');
-      expect(tags[1].id).toBe('foo.baz');
-      expect(tags[1].body).toBe('with a body comment.');
-      expect(tags[1].location).toBe('test.ts:3:22');
+      expect(tags[1].getSpecName()).toBe('foo.baz');
+      expect(tags[1].getContent()).toBe('with a body comment.');
+      expect(tags[1].getLocation()).toBe('test.ts:3:22');
     });
 
     it('parses tags with a multi line body', () => {
@@ -207,10 +197,9 @@ describe('parse', () => {
       const tags = parse('spec', file);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe(`one\ntwo\nthree`);
-      expect(tags[0].location).toBe('test.ts:4:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe(`one\ntwo\nthree`);
+      expect(tags[0].getLocation()).toBe('test.ts:4:12');
     });
 
     it('parses block tags with a multi line body', () => {
@@ -232,10 +221,9 @@ describe('parse', () => {
       const tags = parse('spec', file);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe(`one\ntwo\nthree`);
-      expect(tags[0].location).toBe('test.ts:5:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe(`one\ntwo\nthree`);
+      expect(tags[0].getLocation()).toBe('test.ts:5:12');
     });
 
     it('parses multiple tags on the same line', () => {
@@ -250,15 +238,13 @@ describe('parse', () => {
 
       expect(tags).toHaveLength(2);
 
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.one');
-      expect(tags[0].body).toBe('one');
-      expect(tags[0].location).toBe('test.ts:2:12');
+      expect(tags[0].getSpecName()).toBe('foo.one');
+      expect(tags[0].getContent()).toBe('one');
+      expect(tags[0].getLocation()).toBe('test.ts:2:12');
 
-      expect(tags[1].name).toBe('spec');
-      expect(tags[1].id).toBe('foo.two');
-      expect(tags[1].body).toBe('two');
-      expect(tags[1].location).toBe('test.ts:2:37');
+      expect(tags[1].getSpecName()).toBe('foo.two');
+      expect(tags[1].getContent()).toBe('two');
+      expect(tags[1].getLocation()).toBe('test.ts:2:37');
     });
 
     it('parses multiple tags in the same block comment', () => {
@@ -276,15 +262,13 @@ describe('parse', () => {
 
       expect(tags).toHaveLength(2);
 
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.one');
-      expect(tags[0].body).toBe('one');
-      expect(tags[0].location).toBe('test.ts:3:12');
+      expect(tags[0].getSpecName()).toBe('foo.one');
+      expect(tags[0].getContent()).toBe('one');
+      expect(tags[0].getLocation()).toBe('test.ts:3:12');
 
-      expect(tags[1].name).toBe('spec');
-      expect(tags[1].id).toBe('foo.two');
-      expect(tags[1].body).toBe('two');
-      expect(tags[1].location).toBe('test.ts:4:12');
+      expect(tags[1].getSpecName()).toBe('foo.two');
+      expect(tags[1].getContent()).toBe('two');
+      expect(tags[1].getLocation()).toBe('test.ts:4:12');
     });
 
     it('ignores irrelevant comment styles', () => {
@@ -310,13 +294,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.Any]);
+      const tags = parse('spec', file, [CommentStyle.Any]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.txt:2:9');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.txt:2:9');
     });
 
     it('//', () => {
@@ -327,13 +310,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.DoubleSlash]);
+      const tags = parse('spec', file, [CommentStyle.DoubleSlash]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:2:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:2:12');
     });
 
     it('///', () => {
@@ -344,13 +326,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.TripleSlash]);
+      const tags = parse('spec', file, [CommentStyle.TripleSlash]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.cs:2:13');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.cs:2:13');
     });
 
     it('/* */ (single line)', () => {
@@ -361,13 +342,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.SlashSingleStarBlock]);
+      const tags = parse('spec', file, [CommentStyle.SlashSingleStarBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:2:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:2:12');
     });
 
     it('/* */ (multi line)', () => {
@@ -380,13 +360,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.SlashSingleStarBlock]);
+      const tags = parse('spec', file, [CommentStyle.SlashSingleStarBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:3:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:3:12');
     });
 
     it('/* */ (multi line, no middle)', () => {
@@ -399,13 +378,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.SlashSingleStarBlock]);
+      const tags = parse('spec', file, [CommentStyle.SlashSingleStarBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:3:9');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:3:9');
     });
 
     it('/** */ (single line)', () => {
@@ -416,13 +394,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.SlashDoubleStarBlock]);
+      const tags = parse('spec', file, [CommentStyle.SlashDoubleStarBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:2:13');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:2:13');
     });
 
     it('/** */ (multi line)', () => {
@@ -435,13 +412,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.SlashDoubleStarBlock]);
+      const tags = parse('spec', file, [CommentStyle.SlashDoubleStarBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:3:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:3:12');
     });
 
     it('/** */ (multi line, no middle)', () => {
@@ -454,13 +430,12 @@ describe('parse', () => {
       `,
       );
 
-      const tags = parse('spec', file, [Style.SlashDoubleStarBlock]);
+      const tags = parse('spec', file, [CommentStyle.SlashDoubleStarBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ts:3:7');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ts:3:7');
     });
 
     it('#', () => {
@@ -471,13 +446,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.Hash]);
+      const tags = parse('spec', file, [CommentStyle.Hash]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.py:2:11');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.py:2:11');
     });
 
     it("''' (single line)", () => {
@@ -488,13 +462,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.TripleSingleQuote]);
+      const tags = parse('spec', file, [CommentStyle.TripleSingleQuote]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.py:2:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.py:2:12');
     });
 
     it("''' (multi line)", () => {
@@ -507,13 +480,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.TripleSingleQuote]);
+      const tags = parse('spec', file, [CommentStyle.TripleSingleQuote]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.py:3:9');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.py:3:9');
     });
 
     it('""" (single line)', () => {
@@ -524,13 +496,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.TripleDoubleQuote]);
+      const tags = parse('spec', file, [CommentStyle.TripleDoubleQuote]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.py:2:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.py:2:12');
     });
 
     it('""" (multi line)', () => {
@@ -543,13 +514,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.TripleDoubleQuote]);
+      const tags = parse('spec', file, [CommentStyle.TripleDoubleQuote]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.py:3:9');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.py:3:9');
     });
 
     it('--', () => {
@@ -560,13 +530,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.DoubleDash]);
+      const tags = parse('spec', file, [CommentStyle.DoubleDash]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.sql:2:12');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.sql:2:12');
     });
 
     it('<!-- --> (single line)', () => {
@@ -577,13 +546,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.AngleBracketBlock]);
+      const tags = parse('spec', file, [CommentStyle.AngleBracketBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.html:2:14');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.html:2:14');
     });
 
     it('<!-- --> (multi line)', () => {
@@ -596,13 +564,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.AngleBracketBlock]);
+      const tags = parse('spec', file, [CommentStyle.AngleBracketBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.html:3:9');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.html:3:9');
     });
 
     it(';', () => {
@@ -613,13 +580,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.Semicolon]);
+      const tags = parse('spec', file, [CommentStyle.Semicolon]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.ini:2:11');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.ini:2:11');
     });
 
     it('--[[ ]] (single line)', () => {
@@ -630,13 +596,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.LuaBlock]);
+      const tags = parse('spec', file, [CommentStyle.LuaBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.lua:2:13');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.lua:2:13');
     });
 
     it('--[[ ]] (multi line)', () => {
@@ -649,13 +614,12 @@ describe('parse', () => {
         `,
       );
 
-      const tags = parse('spec', file, [Style.LuaBlock]);
+      const tags = parse('spec', file, [CommentStyle.LuaBlock]);
 
       expect(tags).toHaveLength(1);
-      expect(tags[0].name).toBe('spec');
-      expect(tags[0].id).toBe('foo.bar');
-      expect(tags[0].body).toBe('baz');
-      expect(tags[0].location).toBe('test.lua:3:9');
+      expect(tags[0].getSpecName()).toBe('foo.bar');
+      expect(tags[0].getContent()).toBe('baz');
+      expect(tags[0].getLocation()).toBe('test.lua:3:9');
     });
   });
 });

@@ -1,15 +1,17 @@
 import { CommentStyle } from '~/util/comment-style';
+import { Module } from '~/specs/module';
+import { Scope } from '~/specs/scope';
+import { Spec } from '~/specs/spec';
 import { Tag } from '~/specs/tag';
-import type { File } from '~/util/file';
+import { File } from '~/util/file';
+import { Markdown } from '~/util/markdown';
 
-/**
- * Represents a tag in a file.
- *
- * For example, in the comment // spec(calculator.add): Hello, world!
- *  - moduleName: "calculator"
- *  - specName:   "calculator.add"
- *  - content:    "Hello, world!"
- */
+export interface ParseResult {
+  modules: Module[];
+  specs: Spec[];
+  tags: Tag[];
+}
+
 interface TagData {
   moduleName: string;
   specName: string;
@@ -25,11 +27,51 @@ interface CommentData {
   endIndex: number;
 }
 
-/**
- * Parse all tags with the given tag name from the file.
- */
-export function parse(tagName: string, file: File, styles?: CommentStyle[]): Tag[] {
+export function parse({
+  file,
+  scope,
+  styles,
+}: {
+  file: File;
+  scope?: Scope;
+  styles?: CommentStyle[];
+}): ParseResult {
+  scope ??= Scope.all();
   styles ??= CommentStyle.for(file);
+
+  if (file.path.endsWith('spec.md')) {
+    const [module, specs] = parseModule(file, scope);
+    return { modules: [module], specs, tags: [] };
+  } else {
+    const tags = parseTags('spec', file, styles);
+    return { modules: [], specs: [], tags };
+  }
+}
+
+function parseModule(file: File, scope: Scope): [Module, Spec[]] {
+  const markdown = new Markdown(file.text);
+  const module = new Module(file.path, markdown, scope);
+  const text = markdown.getContent();
+
+  const specs = new Array<Spec>();
+
+  for (const subheader of markdown.getSubheaders()) {
+    const index = text.indexOf(`## ${subheader}`);
+    const spec = new Spec({
+      scope,
+      name: subheader,
+      content: markdown.getSubheaderContent(subheader),
+      moduleName: module.getName(),
+      path: module.getPath(),
+      location: file.getLocation(index),
+    });
+    specs.push(spec);
+  }
+
+  return [module, specs];
+}
+
+function parseTags(tagName: string, file: File, styles: CommentStyle[]): Tag[] {
   if (styles.length === 0) {
     return [];
   }

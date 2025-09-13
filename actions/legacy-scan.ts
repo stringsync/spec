@@ -108,10 +108,10 @@ async function getSpecResult(path: string): Promise<SpecResult> {
 
 async function getTagResults(path: string): Promise<TagResult[]> {
   const file = await File.load(path);
-  return parse('spec', file).map(({ id, body, location }) => ({
+  return parse('spec', file).map((tag) => ({
     type: 'tag',
-    id,
-    body,
-    location,
+    id: tag.getSpecName(),
+    body: tag.getContent(),
+    location: tag.getLocation(),
   }));
 }

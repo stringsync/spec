@@ -5,7 +5,7 @@ import { Selector } from './selector';
 
 // spec(spec.module)
 export class Module {
-  private constructor(
+  constructor(
     private path: string,
     private markdown: Markdown,
     private scope: Scope,
