@@ -1,8 +1,3 @@
-import { minimatch } from 'minimatch';
-import { Module } from './module';
-import { Spec } from './spec';
-import { Tag } from './tag';
-
 // spec(spec.scope)
 export class Scope {
   private includePatterns: string[];
@@ -23,17 +18,5 @@ export class Scope {
 
   getExcludePatterns(): string[] {
     return this.excludePatterns;
-  }
-
-  matches(target: Module | Spec | Tag): boolean {
-    const path = target.getPath();
-
-    const isIncluded =
-      this.includePatterns.length === 0 ||
-      this.includePatterns.some((pattern) => minimatch(path, pattern));
-
-    const isExcluded = this.excludePatterns.some((ignore) => minimatch(path, ignore));
-
-    return isIncluded && !isExcluded;
   }
 }
