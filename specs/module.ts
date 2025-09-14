@@ -36,12 +36,12 @@ export class Module {
 
   // spec(spec.validation)
   getErrors(): string[] {
-    const headerErrors = this.validateHeader();
+    const headerErrors = this.getHeaderErrors();
     if (headerErrors.length > 0) {
       return headerErrors;
     }
 
-    const subheaderErrors = this.validateSubheaders();
+    const subheaderErrors = this.getSubheaderErrors();
     if (subheaderErrors.length > 0) {
       return subheaderErrors;
     }
@@ -62,7 +62,7 @@ export class Module {
     return [];
   }
 
-  private validateHeader(): string[] {
+  private getHeaderErrors(): string[] {
     const name = this.getName();
     if (!name) {
       return ['Module header is missing or empty.'];
@@ -70,7 +70,7 @@ export class Module {
     return this.validateIdentifier(name);
   }
 
-  private validateSubheaders(): string[] {
+  private getSubheaderErrors(): string[] {
     const errors: string[] = [];
     const moduleName = this.getName();
     const subheaders = this.markdown.getSubheaders();

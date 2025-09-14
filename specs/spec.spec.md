@@ -2,7 +2,11 @@
 
 ## spec.selector
 
-A selector represents module and spec **name** patterns used to select modules and specs.
+```ts
+// spec(spec.selector)
+```
+
+A selector represents module and spec **name** selectors used to select modules and specs.
 
 **Behavior**
 
@@ -20,25 +24,33 @@ The `Selector` class can be created multiple ways:
 
 ```ts
 // selects the foo module and foo.bar spec
-const s1 = new Selector('foo', 'bar');
-const s2 = Selector.parse('foo.bar');
+const s1 = Selector.parse('foo.bar');
+const s2 = new Selector('foo', 'foo.bar');
 
 // selects all specs in the foo module
 const s3 = new Selector('foo');
 const s4 = Selector.parse('foo');
-const s5 = Selector.parse('foo.*');
+const s5 = Selector.parse('foo.*'); // '*' parses to module-only selection
+
+// parse multiple selectors
+const sels = Selector.parseAll(['foo', 'bar.baz']);
 ```
+
+Note: When using the constructor with two arguments, the second argument must be the full spec id "<module>.<spec>" (e.g., "foo.bar").
 
 ## spec.scope
 
-A scope represents the **path** patterns, ignored **path** patterns, and selectors used to hydrate spec-related objects.
+```ts
+// spec(spec.scope)
+```
+
+A scope represents the included **path** patterns and ignored **path** patterns used for globs.
 
 **Relations**
 
-- A scope has many selectors.
-- A scope belongs to a module.
-- A scope belongs to a spec.
-- A scope belongs to a tag.
+- Used by the globber to include/exclude files.
+- A Module and each Spec carry a Scope.
+- Tags do not have a Scope.
 
 **Behavior**
 
@@ -46,11 +58,19 @@ The `Scope` class fulfills the following interface:
 
 ```ts
 interface Scope {
-  getIncludedPatterns(): string[];
-  getExcludedPatterns(): string[];
-  matches(target: Module | Spec | Tag): boolean; // matches using the name and path
+  getIncludePatterns(): string[];
+  getExcludePatterns(): string[];
 }
 ```
+
+Additional API:
+
+```ts
+// returns a scope that includes everything
+static all(): Scope;
+```
+
+Matching is performed by Globber implementations using these patterns; Scope itself does not perform matches.
 
 Absolute patterns are preferred, but relative patterns are acceptable.
 
@@ -59,6 +79,10 @@ Absolute patterns are preferred, but relative patterns are acceptable.
 - Use the glob library to determine if a path matches.
 
 ## spec.module
+
+```ts
+// spec(spec.module)
+```
 
 A file ending in .spec.md is a module.
 
@@ -73,11 +97,12 @@ The `Module` class _implicitly_ implements the interface:
 
 ```ts
 interface Module {
-  getName(): string;
+  getName(): string; // module header text
   getScope(): Scope;
   getPath(): string;
   getErrors(): string[];
-  getContent(): string;
+  getMarkdown(): Markdown; // access to parsed markdown (content, subheaders, etc.)
+  matches(target: { getModuleName(): string }): boolean;
 }
 ```
 
@@ -87,13 +112,17 @@ The `Module` class also has a static method named `load`, which _implicitly_ imp
 type ModuleLoader = (path: string, scope: Scope) => Promise<Module>;
 ```
 
-During construction, the scope should be validated that it matches the path.
+Validation occurs via getErrors(); no scope-vs-path validation is performed during construction.
 
 **Hints**
 
 - The `Module` class should be backed by the `Markdown` class from util/markdown.ts.
 
 ## spec.spec
+
+```ts
+// spec(spec.spec)
+```
 
 A spec is a section within a module.
 
@@ -108,32 +137,34 @@ The `Spec` class _implicitly_ implements the interface:
 ```ts
 interface Spec {
   getScope(): Scope;
-  getName(): string;
+  getName(): string; // full spec id: "<module>.<spec>"
   getModuleName(): string;
   getPath(): string;
   getLocation(): string;
   getContent(): string;
+  matches(target: { getSpecName(): string }): boolean;
 }
 ```
 
-During construction, the scope should be validated that it matches the path.
-
 ## spec.tag
 
-A tag is an reference to a spec, usually in code.
+```ts
+// spec(spec.tag)
+```
+
+A tag is a reference to a spec, usually in code.
 
 **Relations**
 
-- A tag belongs to a spec.
-- A tag has one scope.
+- A tag references a spec.
 
 **Anatomy**
 
 ```ts
-// foo(bar.baz): qux
+// spec(bar.baz): qux
 ```
 
-- "foo" is the tag name
+- "spec" is the tag name
 - "bar" is the module name
 - "bar.baz" is the spec name
 - "qux" is the tag content
@@ -144,19 +175,24 @@ The `Tag` class _implicitly_ implements the interface:
 
 ```ts
 interface Tag {
-  getName(): string;
-  getSpecName(): string;
-  getModuleName(): string;
-  getContent(): string;
-  getPath(): string;
-  getLocation(): string;
+  getSpecName(): string; // "<module>.<spec>"
+  getModuleName(): string; // derived from specName
+  getContent(): string; // optional, may span multiple lines
+  getPath(): string; // file path where the tag was found
+  getLocation(): string; // "path:line:column"
 }
 ```
 
+Note: The tag name currently used is "spec".
+
 ## spec.validation
 
-- The module name must only contain alphanumeric characters, hyphens, and underscores.
-- The header must match the name.
-- Each subheader must have the format `<module-name>.<spec.name>`
-- Each subheader must only contain alphanumeric characters, hyphens, and underscores.
+```ts
+// spec(spec.validation)
+```
+
+- The module header is required and must only contain alphanumeric characters, hyphens, and underscores.
+- Each subheader must have the format `<module-name>.<spec-name>`.
+- The `<module-name>` prefix in each subheader must equal the module header.
+- Each `<spec-name>` must only contain alphanumeric characters, hyphens, and underscores.
 - Each subheader must be unique.

@@ -1,5 +1,3 @@
-import { Scope } from './scope';
-
 // spec(spec.tag)
 export class Tag {
   private specName: string;
