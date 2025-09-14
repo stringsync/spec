@@ -25,7 +25,7 @@ bunx @stringsync/spec show --flag1 --flag2 args
 
 </example>
 
-## Anatomy
+## Terminology
 
 <example>
 
@@ -60,6 +60,8 @@ _foo.ts_
 - "baz" is the tag content
 
 </example>
+
+A selector is either a module name (e.g. "foo") or spec name (e.g. "foo.bar")
 
 ## Workflows
 
