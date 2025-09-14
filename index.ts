@@ -55,7 +55,7 @@ program
       includePatterns: options.include,
       excludePatterns: [...MUST_IGNORE_PATTERNS, ...options.exclude],
     });
-    const globber = ExtendableGlobber.fs().autoExpandDirs();
+    const globber = ExtendableGlobber.fs().autoExpandDirs().freeze();
     const result = await scan({ scope, selectors, globber });
     const ms = stopwatch.ms();
     const template = new ShowCommandTemplate(result, ms);
@@ -81,7 +81,7 @@ program
       includePatterns: options.include,
       excludePatterns: [...MUST_IGNORE_PATTERNS, ...options.exclude],
     });
-    const globber = ExtendableGlobber.fs().autoExpandDirs().cached();
+    const globber = ExtendableGlobber.fs().autoExpandDirs().cached().freeze();
     const result = await scan({ scope, selectors, globber });
     const paths = await globber.glob(scope);
     const ms = stopwatch.ms();

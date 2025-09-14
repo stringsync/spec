@@ -19,6 +19,10 @@ export class ExtendableGlobber implements Globber {
     return this.with(new CachedGlobber(capacity, this.globber));
   }
 
+  freeze(): Globber {
+    return this;
+  }
+
   async glob(scope: Scope): Promise<string[]> {
     return this.globber.glob(scope);
   }
