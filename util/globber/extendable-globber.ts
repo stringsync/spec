@@ -11,19 +11,20 @@ export class ExtendableGlobber implements Globber {
     return new ExtendableGlobber(new FsGlobber());
   }
 
-  autoExpand(): ExtendableGlobber {
-    return this.extend(new AutoExpandGlobber(this.globber));
+  autoExpandDirs(): ExtendableGlobber {
+    return this.with(new AutoExpandGlobber(this.globber));
   }
 
   cached(capacity: number = 10): ExtendableGlobber {
-    return this.extend(new CachedGlobber(capacity, this.globber));
+    return this.with(new CachedGlobber(capacity, this.globber));
   }
 
   async glob(scope: Scope): Promise<string[]> {
     return this.globber.glob(scope);
   }
 
-  private extend(globber: Globber): ExtendableGlobber {
-    return new ExtendableGlobber(globber);
+  private with(globber: Globber): this {
+    this.globber = globber;
+    return this;
   }
 }

@@ -11,11 +11,16 @@ import { ExtendableLogger } from '~/util/logs/extendable-logger';
 import { scan } from '~/actions/scan';
 import { Selector } from '~/specs/selector';
 import { ExtendableGlobber } from '~/util/globber/extendable-globber';
+import { ScanResultCliTemplate } from '~/templates/scan-result-cli-template';
 
 const log = ExtendableLogger.console();
 
 const DEFAULT_PATTERNS = ['**/*'];
 const MUST_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
+
+function parseSelector(value: string, previous: Selector[]): Selector[] {
+  return [...previous, Selector.parse(value)];
+}
 
 program.name(name).description(description).version(version);
 
@@ -36,8 +41,13 @@ program
   .description('show a spec id')
   .option('-i, --include [patterns...]', 'glob patterns to include', DEFAULT_PATTERNS)
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
-  .argument('[selectors...]', 'fully qualified spec id (e.g. "foo.bar" or "foo")', [])
-  .action(async (selectors: string[], options: { include: string[]; exclude: string[] }) => {
+  .argument(
+    '[selectors...]',
+    'fully qualified spec id (e.g. "foo.bar" or "foo")',
+    parseSelector,
+    [],
+  )
+  .action(async (selectors: Selector[], options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
     const scope = new Scope({
       includePatterns: options.include,
@@ -53,92 +63,26 @@ program
   .description('scan for specs and tags')
   .option('-i, --include [patterns...]', 'glob patterns to include', DEFAULT_PATTERNS)
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
-  .argument('[selectors...]', 'fully qualified spec id (e.g. "foo.bar" or "foo")', [])
-  .action(async (selectorStrings: string[], options: { include: string[]; exclude: string[] }) => {
+  .argument(
+    '[selectors...]',
+    'fully qualified spec id (e.g. "foo.bar" or "foo")',
+    parseSelector,
+    [],
+  )
+  .action(async (selectors: Selector[], options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
 
     const scope = new Scope({
       includePatterns: options.include,
       excludePatterns: [...MUST_IGNORE_PATTERNS, ...options.exclude],
     });
-    const selectors = selectorStrings.map((s) => Selector.parse(s));
-    const globber = ExtendableGlobber.fs().autoExpand().cached();
+    const globber = ExtendableGlobber.fs().autoExpandDirs().cached();
     const result = await scan({ scope, selectors, globber });
     const paths = await globber.glob(scope);
+    const ms = stopwatch.ms();
+    const template = new ScanResultCliTemplate(result, selectors, paths.length, ms);
 
-    const ms = stopwatch.ms().toFixed(2);
-
-    log.spaced.info(
-      chalk.blue('scanned'),
-      chalk.white.bold(paths.length.toString()),
-      paths.length === 1 ? 'item' : 'items',
-      chalk.gray(`in [${ms}ms]`),
-      '\n',
-    );
-
-    for (const module of result.modules) {
-      let validity = '';
-      const errors = module.getErrors();
-      if (errors.length === 0) {
-        validity = chalk.green('✓ valid');
-      } else if (errors.length === 1) {
-        validity = chalk.red('✗ 1 error');
-      } else {
-        validity = chalk.red(`✗ ${errors.length} errors`);
-      }
-
-      log.spaced.info(
-        chalk.yellow('module'),
-        chalk.white.bold(module.getName()),
-        chalk.cyan(module.getPath()),
-        validity,
-      );
-
-      if (errors.length > 0) {
-        for (const error of errors) {
-          log.spaced.indented().error(chalk.red('error:'), chalk.gray(error));
-        }
-      }
-
-      const specs = result.specs.filter((s) => module.matches(s));
-      for (const spec of specs) {
-        log.spaced
-          .indented()
-          .info(
-            chalk.magenta('spec'),
-            chalk.white.bold(spec.getName()),
-            chalk.cyan(spec.getLocation()),
-          );
-
-        const tags = result.tags.filter((t) => spec.matches(t));
-        for (const tag of tags) {
-          log.spaced
-            .indented(2)
-            .info(chalk.green('tag'), chalk.cyan(tag.getLocation()), chalk.gray(tag.getContent()));
-        }
-      }
-
-      log.info(''); // new line between modules
-    }
-
-    const specNames = new Set(result.specs.map((s) => s.getName()));
-    const orphanedTags = result.tags
-      .filter((t) => !specNames.has(t.getSpecName()))
-      .filter((t) => selectors.length === 0 || selectors.some((s) => s.matches(t)));
-    if (orphanedTags.length > 0) {
-      log.spaced.info(chalk.red('orphaned'));
-      for (const tag of orphanedTags) {
-        log.spaced
-          .indented()
-          .info(
-            chalk.green('tag'),
-            chalk.white.bold(tag.getSpecName()),
-            chalk.cyan(tag.getLocation()),
-            chalk.gray(tag.getContent()),
-          );
-      }
-      log.info('');
-    }
+    log.info(template.render());
   });
 
 program

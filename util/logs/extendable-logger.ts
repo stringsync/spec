@@ -11,11 +11,11 @@ export class ExtendableLogger {
   }
 
   get spaced(): ExtendableLogger {
-    return this.extend(new SpacedLogger(this.log));
+    return this.with(new SpacedLogger(this.log));
   }
 
   indented(depth = 1): ExtendableLogger {
-    return this.extend(new IndentedLogger(this.log, depth));
+    return this.with(new IndentedLogger(this.log, depth));
   }
 
   info(message: unknown, ...optionalParams: unknown[]): void {
@@ -26,7 +26,8 @@ export class ExtendableLogger {
     this.log.error(message, ...optionalParams);
   }
 
-  private extend(log: Logger): ExtendableLogger {
-    return new ExtendableLogger(log);
+  private with(log: Logger): this {
+    this.log = log;
+    return this;
   }
 }
