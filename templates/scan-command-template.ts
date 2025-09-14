@@ -6,15 +6,16 @@ import { Selector } from '~/specs/selector';
 import type { Spec } from '~/specs/spec';
 import type { Tag } from '~/specs/tag';
 import { Template } from '~/templates/template';
-import { SCAN_RESULT_TYPE } from '~/templates/args';
+import { SCAN_RESULT } from '~/templates/args';
 import { StringBuilder } from '~/util/string-builder';
+import { SELECTORS } from '~/templates/args';
 
 export const SCAN_COMMAND_TEMPLATE = Template.dynamic({
   name: 'scan',
   description: 'renders the output for the scan command',
   shape: {
-    result: SCAN_RESULT_TYPE,
-    selectors: z.array(z.instanceof(Selector)),
+    result: SCAN_RESULT,
+    selectors: SELECTORS,
     pathCount: z.number(),
     ms: z.number(),
   },

@@ -1,10 +1,13 @@
 import z from 'zod';
 import { Module } from '~/specs/module';
+import { Selector } from '~/specs/selector';
 import { Spec } from '~/specs/spec';
 import { Tag } from '~/specs/tag';
 
-export const SCAN_RESULT_TYPE = z.object({
+export const SCAN_RESULT = z.object({
   modules: z.array(z.instanceof(Module)),
   tags: z.array(z.instanceof(Tag)),
   specs: z.array(z.instanceof(Spec)),
 });
+
+export const SELECTORS = z.array(z.instanceof(Selector));
