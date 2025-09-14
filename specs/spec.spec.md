@@ -2,10 +2,6 @@
 
 ## spec.selector
 
-```ts
-// spec(spec.selector)
-```
-
 A selector represents module and spec **name** selectors used to select modules and specs.
 
 **Behavior**
@@ -39,10 +35,6 @@ const sels = Selector.parseAll(['foo', 'bar.baz']);
 Note: When using the constructor with two arguments, the second argument must be the full spec id "<module>.<spec>" (e.g., "foo.bar").
 
 ## spec.scope
-
-```ts
-// spec(spec.scope)
-```
 
 A scope represents the included **path** patterns and ignored **path** patterns used for globs.
 
@@ -80,10 +72,6 @@ Absolute patterns are preferred, but relative patterns are acceptable.
 
 ## spec.module
 
-```ts
-// spec(spec.module)
-```
-
 A file ending in .spec.md is a module.
 
 **Relations**
@@ -120,10 +108,6 @@ Validation occurs via getErrors(); no scope-vs-path validation is performed duri
 
 ## spec.spec
 
-```ts
-// spec(spec.spec)
-```
-
 A spec is a section within a module.
 
 **Relations**
@@ -147,10 +131,6 @@ interface Spec {
 ```
 
 ## spec.tag
-
-```ts
-// spec(spec.tag)
-```
 
 A tag is a reference to a spec, usually in code.
 
@@ -186,10 +166,6 @@ interface Tag {
 Note: The tag name currently used is "spec".
 
 ## spec.validation
-
-```ts
-// spec(spec.validation)
-```
 
 - The module header is required and must only contain alphanumeric characters, hyphens, and underscores.
 - Each subheader must have the format `<module-name>.<spec-name>`.
