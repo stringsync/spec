@@ -6,14 +6,14 @@ import { Selector } from '~/specs/selector';
 import type { Spec } from '~/specs/spec';
 import type { Tag } from '~/specs/tag';
 import { Template } from '~/templates/template';
-import { SCAN_RESULT_TYPE } from '~/templates/args';
+import { SCAN_RESULT } from '~/templates/args';
 import { StringBuilder } from '~/util/string-builder';
 
 export const SHOW_COMMAND_TEMPLATE = Template.dynamic({
   name: 'show',
   description: 'renders the output for the show command',
-  shape: {
-    result: SCAN_RESULT_TYPE,
+  input: {
+    result: SCAN_RESULT,
     ms: z.number(),
   },
   render: (args) => {

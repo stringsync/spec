@@ -1,0 +1,35 @@
+# build
+
+Implement existing TODO tags derived from specs within the given selector’s scope.
+
+## Inputs
+- selector: {{selector}}  
+  (Either a module name like `foo` or a spec name like `foo.bar`.)
+
+## Objective
+Locate `TODO` tags tied to spec names under **{{selector}}** and complete them. Replace placeholder tag content with working code that satisfies the associated spec content.
+
+## Rules
+- Only implement TODOs that reference a valid spec name.
+- Keep changes minimal and focused; avoid broad refactors.
+- Update or remove the TODO tag once completed.
+- If behavior is ambiguous, surface a question rather than guessing.
+
+## Method
+1. Scan for `TODO(spec-name)` tags within {{selector}}.
+2. For each TODO, read the spec content and acceptance criteria.
+3. Implement the missing code to satisfy the spec.
+4. Update the file by removing or resolving the TODO tag.
+
+## Output Format
+Markdown with:
+
+### Worklog
+A chronological list of TODOs addressed and rationale for changes.
+
+### Patches
+Unified diffs for all modifications.
+
+### Results
+- Remaining TODOs, if any.
+- Open questions or clarifications still needed.

@@ -1,0 +1,37 @@
+# plan
+
+Generate implementation scaffolds (no business logic) from specs in the given selector’s scope.
+
+## Inputs
+- selector: {{selector}}  
+  (Either a module name like `foo` or a spec name like `foo.bar`.)
+
+## Objective
+Create skeletal code structures for the selected specs. Add `TODO` tags that include enough tag content for any agent or developer to later implement the required spec content.
+
+## Rules
+- Do not implement business logic; only create signatures, wiring, and placeholders.
+- Each `TODO` tag must reference a valid spec name and include clear acceptance criteria.
+- Place `TODO` tags as close as possible to where the implementation belongs.
+- Keep file/module names consistent with the module and spec names.
+
+## Method
+1. Enumerate all specs within {{selector}}.
+2. For each spec, determine the appropriate file, class, or function to host the implementation.
+3. Create stubs with comments in the format `// spec(<spec-name>): TODO - <details>`.
+4. Ensure each TODO describes what needs to be built so another agent can complete it.
+
+## Output Format
+Markdown with:
+
+### File Plan
+A tree of files and directories that would be created or updated.
+
+### Stubs
+Fenced code blocks showing the scaffolded structures with `TODO` tags.
+
+### Recommendations
+Notes on design decisions or alternative structures.
+
+### Open Questions
+Any clarifications needed before full implementation.

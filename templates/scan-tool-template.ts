@@ -5,15 +5,15 @@ import { Selector } from '~/specs/selector';
 import type { Spec } from '~/specs/spec';
 import type { Tag } from '~/specs/tag';
 import { Template } from '~/templates/template';
-import { SCAN_RESULT_TYPE } from '~/templates/args';
+import { SCAN_RESULT, SELECTORS } from '~/templates/args';
 import { StringBuilder } from '~/util/string-builder';
 
 export const SCAN_TOOL_TEMPLATE = Template.dynamic({
   name: 'scan',
   description: 'renders the output for the scan MCP tool',
-  shape: {
-    result: SCAN_RESULT_TYPE,
-    selectors: z.array(z.instanceof(Selector)),
+  input: {
+    result: SCAN_RESULT,
+    selectors: SELECTORS,
     pathCount: z.number(),
   },
   render: (args) => {

@@ -56,4 +56,8 @@ export class Selector {
     }
     return false;
   }
+
+  toString(): string {
+    return `Selector(${this.specName ?? this.moduleName})`;
+  }
 }

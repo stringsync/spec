@@ -1,0 +1,40 @@
+# sync
+
+Align specs, tags, and implementations within the given selector’s scope.
+
+## Inputs
+- selector: {{selector}}  
+  (Either a module name like `foo` or a spec name like `foo.bar`.)
+
+## Objective
+Check that specs and code are in sync. Ensure each spec name under **{{selector}}** is tagged in code, tags correctly reference spec names, and spec content matches tag content. Identify and report missing tags, dangling tags, mismatches, or drift between specs and implementation.
+
+## Rules
+- Every spec in scope must have at least one matching tag.
+- Every tag must reference a valid spec name.
+- Spec content and tag content must remain consistent.
+- Report duplicates, stale references, or untagged specs.
+- Do not modify code or specs; only report findings.
+
+## Method
+1. Collect all specs under {{selector}}.
+2. Collect all tags in code that reference {{selector}}.
+3. Cross-check mappings: specs ↔ tags ↔ implementation anchors.
+4. Classify findings: `ok`, `missing_tag`, `dangling_tag`, `mismatch`, `stale_name`.
+5. Produce a clear report of alignment status.
+
+## Output Format
+Markdown with:
+
+### Summary
+A count of each finding type.
+
+### Findings
+A table with columns:  
+| type | spec_name | location | detail |
+
+### Recommendations
+Bullet list of suggested fixes to bring specs and code into alignment.
+
+### Open Questions
+Unclear or ambiguous cases requiring human input.

@@ -10,26 +10,39 @@ export class Template<T extends z.ZodRawShape = any> {
   private constructor(
     name: string,
     description: string,
-    shape: T,
+    input: T,
     renderer: (args: z.infer<z.ZodObject<T>>) => string,
   ) {
     this.name = name;
     this.description = description;
-    this.schema = z.object(shape);
+    this.schema = z.object(input);
     this.renderer = renderer;
   }
 
-  static static(options: { name: string; description: string; text: string }): Template<{}> {
+  static static(options: { name: string; description: string; text: string }) {
     return new Template(options.name, options.description, {}, () => options.text);
   }
 
   static dynamic<T extends z.ZodRawShape>(options: {
     name: string;
     description: string;
-    shape: T;
+    input: T;
     render: (args: z.infer<z.ZodObject<T>>) => string;
   }): Template<T> {
-    return new Template(options.name, options.description, options.shape, options.render);
+    return new Template(options.name, options.description, options.input, options.render);
+  }
+
+  static todo<T extends z.ZodRawShape>(options: {
+    name: string;
+    description: string;
+    input?: T;
+    render?: (args: z.infer<z.ZodObject<T>>) => string;
+  }) {
+    return Template.static({
+      name: options.name,
+      description: options.description,
+      text: `The "${options.name}" template is not yet implemented.`,
+    });
   }
 
   static replace(template: string, args: Record<string, any>): string {
