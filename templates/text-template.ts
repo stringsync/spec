@@ -1,7 +1,7 @@
 import z, { ZodObject, type ZodRawShape } from 'zod';
 
-// spec(template.core)
-export class Template<T extends ZodRawShape> {
+// spec(template.txt)
+export class TxtTemplate<T extends ZodRawShape> {
   public readonly schema: ZodObject<T>;
   private template: string;
 
