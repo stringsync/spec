@@ -34,7 +34,7 @@ program
   )
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
   .argument(
-    '[selectors...]',
+    '<selectors...>',
     'fully qualified spec id (e.g. "foo.bar" or "foo")',
     parseSelector,
     [],
