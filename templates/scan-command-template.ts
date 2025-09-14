@@ -25,8 +25,13 @@ export class ScanCommandTemplate {
       builder.newline();
     }
 
-    for (const module of this.result.modules) {
+    for (let index = 0; index < modules.length; index++) {
+      const module = modules[index];
       this.renderModule(module, builder);
+
+      if (index < modules.length - 1) {
+        builder.newline();
+      }
     }
 
     if (orphanedTags.length > 0) {
@@ -76,8 +81,6 @@ export class ScanCommandTemplate {
 
     const specs = this.result.specs.filter((s) => module.matches(s));
     this.renderSpecs(specs, builder);
-
-    builder.newline();
   }
 
   private renderErrors(errors: string[], builder: StringBuilder) {

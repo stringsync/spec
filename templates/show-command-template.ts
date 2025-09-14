@@ -27,7 +27,7 @@ export class ShowCommandTemplate {
   private renderSummary(builder: StringBuilder) {
     builder.spaced(
       chalk.green('success'),
-      this.result.specs.length.toString(),
+      chalk.white.bold(this.result.specs.length.toString()),
       this.result.specs.length === 1 ? 'spec' : 'specs',
       chalk.gray(`in [${this.ms.toFixed(2)}ms]`),
     );
