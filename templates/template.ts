@@ -32,6 +32,14 @@ export class Template<T extends z.ZodRawShape = any> {
     return new Template(options.name, options.description, options.shape, options.render);
   }
 
+  static unimplemented(options: { name: string; description: string }) {
+    return Template.static({
+      name: options.name,
+      description: options.description,
+      text: `The "${options.name}" template is not yet implemented.`,
+    });
+  }
+
   static replace(template: string, args: Record<string, any>): string {
     let result = template;
 
