@@ -80,7 +80,7 @@ describe('parse', () => {
       expect(result.tags).toBeEmpty();
     });
 
-    it('ignores tag text that is not inside comments', () => {
+    it('ignores tag text outside of comments', () => {
       const file = new File(
         'test.ts',
         `
@@ -93,6 +93,25 @@ describe('parse', () => {
       expect(result.modules).toBeEmpty();
       expect(result.specs).toBeEmpty();
       expect(result.tags).toBeEmpty();
+    });
+
+    it('ignores text outside of comments after a tag', () => {
+      const file = new File(
+        'test.ts',
+        `
+        // spec(foo.bar): body
+        function baz() {}
+        `,
+      );
+
+      const result = parse({ file });
+
+      expect(result.modules).toBeEmpty();
+      expect(result.specs).toBeEmpty();
+      expect(result.tags).toHaveLength(1);
+      expect(result.tags[0].getSpecName()).toBe('foo.bar');
+      expect(result.tags[0].getContent()).toBe('body');
+      expect(result.tags[0].getLocation()).toBe('test.ts:2:12');
     });
 
     it('parses tags after non-tags', () => {
