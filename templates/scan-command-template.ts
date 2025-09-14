@@ -4,9 +4,9 @@ import type { Module } from '~/specs/module';
 import type { Selector } from '~/specs/selector';
 import type { Spec } from '~/specs/spec';
 import type { Tag } from '~/specs/tag';
-import { StringBuilder } from '~/util/logs/string-builder';
+import { StringBuilder } from '~/util/string-builder';
 
-export class ScanResultCliTemplate {
+export class ScanCommandTemplate {
   constructor(
     private result: ScanResult,
     private selectors: Selector[],

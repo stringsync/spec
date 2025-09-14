@@ -11,7 +11,8 @@ import { ExtendableLogger } from '~/util/logs/extendable-logger';
 import { scan } from '~/actions/scan';
 import { Selector } from '~/specs/selector';
 import { ExtendableGlobber } from '~/util/globber/extendable-globber';
-import { ScanResultCliTemplate } from '~/templates/scan-result-cli-template';
+import { ScanCommandTemplate } from '~/templates/scan-command-template';
+import { ShowCommandTemplate } from '~/templates/show-command-template';
 
 const log = ExtendableLogger.console();
 
@@ -38,7 +39,7 @@ program
 
 program
   .command('show')
-  .description('show a spec id')
+  .description('show spec details')
   .option('-i, --include [patterns...]', 'glob patterns to include', DEFAULT_PATTERNS)
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
   .argument(
@@ -49,13 +50,17 @@ program
   )
   .action(async (selectors: Selector[], options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
+
     const scope = new Scope({
       includePatterns: options.include,
       excludePatterns: [...MUST_IGNORE_PATTERNS, ...options.exclude],
     });
-    const ms = stopwatch.ms().toFixed(2);
+    const globber = ExtendableGlobber.fs().autoExpandDirs();
+    const result = await scan({ scope, selectors, globber });
+    const ms = stopwatch.ms();
+    const template = new ShowCommandTemplate(result, ms);
 
-    log.spaced.info(chalk.green('success'), chalk.gray(`in [${ms}ms]`));
+    log.info(template.render());
   });
 
 program
@@ -80,7 +85,7 @@ program
     const result = await scan({ scope, selectors, globber });
     const paths = await globber.glob(scope);
     const ms = stopwatch.ms();
-    const template = new ScanResultCliTemplate(result, selectors, paths.length, ms);
+    const template = new ScanCommandTemplate(result, selectors, paths.length, ms);
 
     log.info(template.render());
   });
