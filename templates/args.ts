@@ -10,4 +10,6 @@ export const SCAN_RESULT = z.object({
   specs: z.array(z.instanceof(Spec)),
 });
 
-export const SELECTORS = z.array(z.instanceof(Selector));
+export const SELECTOR = z.instanceof(Selector);
+
+export const SELECTORS = z.array(SELECTOR);

@@ -1,0 +1,101 @@
+I'm using @stringsync/spec to facilitate spec-driven development in my codebase. If needed, you can read the latest public-facing documentation at https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/README.md.
+
+## Commands
+
+If the `spec` MCP server is installed, use the MCP tools it provides.
+
+Alternatively, you can run shell commands with the @stringsync/spec CLI:
+
+```sh
+bunx @stringsync/spec
+```
+
+NOTE: You can use `npx` instead of `bunx`.
+
+When I reference a command in this document, assume the MCP tool equivalent or fallback to the CLI.
+
+<example>
+
+input: run the `spec.show` command
+effect: run the `spec.show` tool or if not available, run
+
+```sh
+bunx @stringsync/spec show --flag1 --flag2 args
+```
+
+</example>
+
+## Anatomy
+
+<example>
+
+_foo.spec.md_
+
+```md
+# foo1
+
+## foo1.bar1
+
+baz1
+```
+
+- "foo.spec.md" is the module
+- "foo" is the module name
+- "foo.bar" is the spec name
+- "baz" is the spec content
+
+</example>
+
+<example>
+
+_foo.ts_
+
+```ts
+// spec(foo.bar): baz
+```
+
+- "spec" is the tag name
+- "foo" is the module name
+- "foo.bar" is the spec name
+- "baz" is the tag content
+
+</example>
+
+## Workflows
+
+### Create a Module
+
+1. Create a file with the format: `<module-name>.spec.md`.
+2. Add a header with the format: `# <module-name>`.
+3. Add subheaders for each requirement with the format: `## <module-name>.<spec-name>`.
+4. Validate the spec by running the `spec.scan` command with the module name. If it returns a failure, address the failure and try again.
+
+### Tag a Spec
+
+1. Find a spec to target. If you don't have one in mind, run the `spec.scan` command, visiting any specs you need.
+2. Find an implementation file and file location to target. Try to be as localized as possible — avoid tagging specs at the top of files.
+3. Add a spec tag as a comment. You can use any style of comment, but the comment text must include `spec(<module-name>.<spec-name>): optional body`.
+3. Run the `spec.scan` command with the spec name to validate that the tag is visible. If not, review the @stringsync/spec README at https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/README.md.
+
+<example>
+
+```ts
+class Foo {
+  // spec(foo.bar): where the foo does the bar
+  bar() {
+    throw new Error('unimplemented');
+  }
+}
+```
+
+</example>
+
+### Tag a TODO
+
+A TODO is creating by tagging a spec and including the content "TODO - <todo-details>". See the "Tagging a Spec" section for details on how to tag a spec. Always verify it shows up using the `spec.scan` command after you add it.
+
+<example>
+
+// spec(foo.bar): TODO - Add a method where foo does the bar.
+
+</example>
