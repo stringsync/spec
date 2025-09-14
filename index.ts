@@ -15,18 +15,6 @@ import { InteractivePrompt } from '~/templates/interactive-prompt';
 
 const log = ExtendableLogger.console();
 
-function parseSelector(value: string, previous: Selector[]): Selector[] {
-  return [...previous, Selector.parse(value)];
-}
-
-function parseArgs(value: string, previous: Record<string, string>): Record<string, string> {
-  const [key, val] = value.split('=');
-  if (!key || !val) {
-    throw new Error(`invalid argument: ${value}`);
-  }
-  return { ...previous, [key]: val };
-}
-
 program.name(name).description(description).version(version);
 
 program
@@ -116,3 +104,15 @@ program
   );
 
 program.parse();
+
+function parseSelector(value: string, previous: Selector[]): Selector[] {
+  return [...previous, Selector.parse(value)];
+}
+
+function parseArgs(value: string, previous: Record<string, string>): Record<string, string> {
+  const [key, val] = value.split('=');
+  if (!key || !val) {
+    throw new Error(`invalid argument: ${value}`);
+  }
+  return { ...previous, [key]: val };
+}
