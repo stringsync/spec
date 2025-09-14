@@ -11,7 +11,7 @@ import { StringBuilder } from '~/util/string-builder';
 export const SCAN_TOOL_TEMPLATE = Template.dynamic({
   name: 'scan',
   description: 'renders the output for the scan MCP tool',
-  shape: {
+  input: {
     result: SCAN_RESULT,
     selectors: SELECTORS,
     pathCount: z.number(),

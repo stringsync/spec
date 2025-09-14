@@ -12,7 +12,7 @@ import { StringBuilder } from '~/util/string-builder';
 export const SHOW_COMMAND_TEMPLATE = Template.dynamic({
   name: 'show',
   description: 'renders the output for the show command',
-  shape: {
+  input: {
     result: SCAN_RESULT,
     ms: z.number(),
   },

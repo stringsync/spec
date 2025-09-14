@@ -11,7 +11,7 @@ import { StringBuilder } from '~/util/string-builder';
 export const SHOW_TOOL_TEMPLATE = Template.dynamic({
   name: 'show',
   description: 'renders the output for the show MCP tool',
-  shape: {
+  input: {
     result: SCAN_RESULT,
     selectors: SELECTORS,
   },

@@ -13,7 +13,7 @@ import { SELECTORS } from '~/templates/args';
 export const SCAN_COMMAND_TEMPLATE = Template.dynamic({
   name: 'scan',
   description: 'renders the output for the scan command',
-  shape: {
+  input: {
     result: SCAN_RESULT,
     selectors: SELECTORS,
     pathCount: z.number(),

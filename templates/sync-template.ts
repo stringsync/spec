@@ -1,6 +1,6 @@
 import { Template } from '~/templates/template';
 
-export const SYNC_TEMPLATE = Template.unimplemented({
+export const SYNC_TEMPLATE = Template.todo({
   name: 'sync',
   description:
     'Instructs the agent to align specs with code. It checks that specs are properly tagged, ' +

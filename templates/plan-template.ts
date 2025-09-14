@@ -1,6 +1,6 @@
 import { Template } from '~/templates/template';
 
-export const PLAN_TEMPLATE = Template.unimplemented({
+export const PLAN_TEMPLATE = Template.todo({
   name: 'plan',
   description:
     'Instructs the agent to generate skeletal code structures from specs. ' +
