@@ -97,9 +97,9 @@ program
   .option('--arg <values...>', 'arguments for the prompt format: [key=value]', parseArgs, {})
   .option('--pipe', 'pipe output to another program', false)
   .action(
-    async (name: string | undefined, options: { args: Record<string, string>; pipe: boolean }) => {
+    async (name: string | undefined, options: { arg: Record<string, string>; pipe: boolean }) => {
       const cli = new InteractivePrompt(log, constants.PROMPT_TEMPLATES);
-      await cli.run(name, options.args, options.pipe);
+      await cli.run(name, options.arg, options.pipe);
     },
   );
 
