@@ -3,7 +3,8 @@
 Review and improve specs in the given selector’s scope.
 
 ## Inputs
-- selector: {{selector}} (Either a module name like `foo` or a spec name like `foo.bar`)
+- selector: {{selector}}
+  (Either a module name like `foo` or a spec name like `foo.bar`)
 
 ## Tools
 - Use the `spec.scan` command to quickly find the spec by selector.

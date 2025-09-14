@@ -1,6 +1,6 @@
 # plan
 
-Instructs the agent to generate implementation scaffolds (no business logic) from specs in the given selector’s scope.
+Generate implementation scaffolds (no business logic) from specs in the given selector’s scope.
 
 ## Inputs
 - selector: {{selector}}  

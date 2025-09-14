@@ -1,6 +1,6 @@
 # sync
 
-Instructs the agent to align specs, tags, and implementations within the given selector’s scope.
+Align specs, tags, and implementations within the given selector’s scope.
 
 ## Inputs
 - selector: {{selector}}  
