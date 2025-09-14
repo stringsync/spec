@@ -11,11 +11,9 @@ import { scan } from '~/actions/scan';
 import { Selector } from '~/specs/selector';
 import { ScanToolTemplate } from '~/templates/scan-tool-template';
 import { ShowToolTemplate } from '~/templates/show-tool-template';
-import { PROMPTS } from '~/prompts/prompts';
+import { constants } from '~/constants';
 
 const log = new StderrLogger();
-
-const MUST_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
 export async function mcp() {
   const server = new McpServer({ name, version });
@@ -53,7 +51,7 @@ function addTools(server: McpServer) {
 }
 
 function addPrompts(server: McpServer) {
-  for (const prompt of PROMPTS) {
+  for (const prompt of constants.PROMPTS) {
     server.prompt(
       `spec.${prompt.name}`,
       prompt.description,
@@ -80,7 +78,7 @@ async function showTool({
 
   const scope = new Scope({
     includePatterns,
-    excludePatterns: [...MUST_IGNORE_PATTERNS, ...excludePatterns],
+    excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...excludePatterns],
   });
   const globber = ExtendableGlobber.fs().freeze();
   const result = await scan({
@@ -107,7 +105,7 @@ async function scanTool(args: {
   const excludePatterns = args.excludePatterns;
   const scope = new Scope({
     includePatterns,
-    excludePatterns: [...MUST_IGNORE_PATTERNS, ...excludePatterns],
+    excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...excludePatterns],
   });
   const globber = ExtendableGlobber.fs().freeze();
   const result = await scan({ scope, selectors, globber });

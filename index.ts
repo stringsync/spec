@@ -11,11 +11,10 @@ import { Selector } from '~/specs/selector';
 import { ExtendableGlobber } from '~/util/globber/extendable-globber';
 import { ScanCommandTemplate } from '~/templates/scan-command-template';
 import { ShowCommandTemplate } from '~/templates/show-command-template';
+import type { Prompt } from '~/prompts/prompt';
+import { constants } from '~/constants';
 
 const log = ExtendableLogger.console();
-
-const DEFAULT_PATTERNS = ['**/*'];
-const MUST_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
 function parseSelector(value: string, previous: Selector[]): Selector[] {
   return [...previous, Selector.parse(value)];
@@ -41,7 +40,11 @@ program
 program
   .command('show')
   .description('show spec details')
-  .option('-i, --include [patterns...]', 'glob patterns to include', DEFAULT_PATTERNS)
+  .option(
+    '-i, --include [patterns...]',
+    'glob patterns to include',
+    constants.DEFAULT_INCLUDE_PATTERNS,
+  )
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
   .argument(
     '[selectors...]',
@@ -54,7 +57,7 @@ program
 
     const scope = new Scope({
       includePatterns: options.include,
-      excludePatterns: [...MUST_IGNORE_PATTERNS, ...options.exclude],
+      excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...options.exclude],
     });
     const globber = ExtendableGlobber.fs().autoExpandDirs().freeze();
     const result = await scan({ scope, selectors, globber });
@@ -67,7 +70,11 @@ program
 program
   .command('scan')
   .description('scan for specs and tags')
-  .option('-i, --include [patterns...]', 'glob patterns to include', DEFAULT_PATTERNS)
+  .option(
+    '-i, --include [patterns...]',
+    'glob patterns to include',
+    constants.DEFAULT_INCLUDE_PATTERNS,
+  )
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
   .argument(
     '[selectors...]',
@@ -80,7 +87,7 @@ program
 
     const scope = new Scope({
       includePatterns: options.include,
-      excludePatterns: [...MUST_IGNORE_PATTERNS, ...options.exclude],
+      excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...options.exclude],
     });
     const globber = ExtendableGlobber.fs().autoExpandDirs().cached().freeze();
     const result = await scan({ scope, selectors, globber });
@@ -99,7 +106,7 @@ program
   .option('--pipe', 'pipe output to another program', false)
   .action(
     async (name: string | undefined, options: { args: Record<string, string>; pipe: boolean }) => {
-      const cli = new PromptCLI(log);
+      const cli = new PromptCLI(log, constants.PROMPTS);
       await cli.run(name, options.args, options.pipe);
     },
   );
