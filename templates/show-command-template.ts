@@ -54,7 +54,7 @@ export class ShowCommandTemplate {
   }
 
   private renderScope(scope: Scope, builder: StringBuilder) {
-    builder.add('*Scope*');
+    builder.add('**Scope**');
     builder.newline();
     builder.add(`Included: ${scope.getIncludePatterns().join(', ')}`);
     builder.add(`Excluded: ${scope.getExcludePatterns().join(', ')}`);
@@ -62,11 +62,11 @@ export class ShowCommandTemplate {
   }
 
   private renderTags(tags: Tag[], builder: StringBuilder) {
-    builder.add('*Tags*');
+    builder.add('**Tags**');
     builder.newline();
 
     if (tags.length === 0) {
-      builder.add('(no tags)');
+      builder.add('_no tags_');
       builder.newline();
     } else {
       for (const tag of tags) {

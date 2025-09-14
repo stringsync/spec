@@ -14,15 +14,20 @@ export class ScanToolTemplate {
 
   render(): string {
     const builder = new StringBuilder();
+    const modules = this.result.modules;
+    const orphanedTags = this.getOrphanedTags();
 
     this.renderSummary(builder);
 
-    for (let index = 0; index < this.result.modules.length; index++) {
-      const module = this.result.modules[index];
+    if (modules.length > 0 || orphanedTags.length > 0) {
+      builder.newline();
+    }
+
+    for (let index = 0; index < modules.length; index++) {
+      const module = modules[index];
       this.renderModule(module, builder);
     }
 
-    const orphanedTags = this.getOrphanedTags();
     if (orphanedTags.length > 0) {
       builder.add('**Orphaned Tags**');
       builder.newline();

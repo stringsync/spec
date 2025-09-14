@@ -1,7 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { name, version } from '~/package.json';
 import { CallToolResultBuilder } from '~/util/mcp/call-tool-result-builder';
-import { NotImplementedError } from '~/util/errors';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
@@ -12,6 +11,7 @@ import { ExtendableGlobber } from '~/util/globber/extendable-globber';
 import { scan } from '~/actions/scan';
 import { Selector } from '~/specs/selector';
 import { ScanToolTemplate } from '~/templates/scan-tool-template';
+import { ShowToolTemplate } from '~/templates/show-tool-template';
 
 const log = new StderrLogger();
 
@@ -89,7 +89,8 @@ async function showTool({
     globber,
   });
 
-  builder.error(new NotImplementedError());
+  const template = new ShowToolTemplate(result);
+  builder.text(template.render());
 
   return builder.build();
 }
