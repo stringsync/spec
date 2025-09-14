@@ -6,16 +6,16 @@ import type { Template } from '~/templates/template';
 export class InteractivePrompt {
   constructor(
     private log: Logger,
-    private prompts: Template[],
+    private templates: Template[],
   ) {}
 
   async run(name: string | undefined, args: Record<string, string>, pipe: boolean) {
     if (pipe) {
       // Non-interactive mode for piping
-      const prompt = this.getPromptOrThrow(name);
-      const allArgs = this.getArgsOrThrow(prompt, args);
-      const parsedArgs = prompt.schema.parse(allArgs);
-      this.log.info(prompt.render(parsedArgs));
+      const template = this.getTemplateOrThrow(name);
+      const allArgs = this.getArgsOrThrow(template, args);
+      const parsedArgs = template.schema.parse(allArgs);
+      this.log.info(template.render(parsedArgs));
       return;
     }
 
@@ -24,44 +24,48 @@ export class InteractivePrompt {
   }
 
   private async runInteractive(name?: string, existingArgs: Record<string, string> = {}) {
-    const prompt = await this.getPromptInteractive(name);
-    const allArgs = await this.getMissingArgsInteractive(prompt, existingArgs);
-    const parsedArgs = prompt.schema.parse(allArgs);
-    this.log.info(prompt.render(parsedArgs));
+    const template = await this.getTemplateInteractive(name);
+    const allArgs = await this.getMissingArgsInteractive(template, existingArgs);
+    const parsedArgs = template.schema.parse(allArgs);
+    this.log.info(template.render(parsedArgs));
   }
 
-  private getPromptOrThrow(name?: string): Template {
+  private getTemplateOrThrow(name?: string): Template {
     if (!name) {
-      throw new Error('Prompt name is required in non-interactive mode.');
+      throw new Error('Template name is required in non-interactive mode.');
     }
-    const prompt = this.prompts.find((p) => p.name === name);
-    if (!prompt) {
-      throw new Error(`Prompt not found: ${name}`);
+    const template = this.templates.find((t) => t.name === name);
+    if (!template) {
+      throw new Error(`Template not found: ${name}`);
     }
-    return prompt;
+    return template;
   }
 
-  private async getPromptInteractive(name?: string): Promise<Template> {
+  private async getTemplateInteractive(name?: string): Promise<Template> {
     if (name) {
-      return this.getPromptOrThrow(name);
+      return this.getTemplateOrThrow(name);
     }
 
     const selectedName = await select({
-      message: 'Select a prompt',
-      choices: this.prompts.map((p) => ({
-        name: p.name,
-        value: p.name,
-        description: p.description,
+      message: 'Select a template',
+      choices: this.templates.map((t) => ({
+        name: t.name,
+        value: t.name,
+        description: t.description,
       })),
     });
 
-    return this.getPromptOrThrow(selectedName);
+    return this.getTemplateOrThrow(selectedName);
   }
 
-  private getArgsOrThrow(prompt: Template, args: Record<string, string>): Record<string, string> {
-    const schema = prompt.schema;
+  private getArgsOrThrow(template: Template, args: Record<string, string>): Record<string, string> {
+    const schema = template.schema;
     const shape = schema.shape as ZodRawShape;
     const requiredKeys = Object.keys(shape);
+
+    if (requiredKeys.length === 0) {
+      return {};
+    }
 
     for (const key of Object.keys(args)) {
       if (!requiredKeys.includes(key)) {
@@ -71,27 +75,29 @@ export class InteractivePrompt {
 
     const missingKeys = requiredKeys.filter((key) => !args[key]);
     if (missingKeys.length > 0) {
-      throw new Error(`Missing arguments for prompt "${prompt.name}": ${missingKeys.join(', ')}`);
+      throw new Error(
+        `Missing arguments for template "${template.name}": ${missingKeys.join(', ')}`,
+      );
     }
 
     return args;
   }
 
   private async getMissingArgsInteractive(
-    prompt: Template,
+    template: Template,
     existingArgs: Record<string, string>,
   ): Promise<Record<string, string>> {
     const allArgs = { ...existingArgs };
-    const schema = prompt.schema;
+    const schema = template.schema;
     const shape = schema.shape as ZodRawShape;
     const requiredKeys = Object.keys(shape);
 
     const missingKeys = requiredKeys.filter((key) => !allArgs[key]);
 
     if (missingKeys.length > 0) {
-      this.log.info(`Prompt: ${prompt.name}`);
-      if (prompt.description) {
-        this.log.info(prompt.description);
+      this.log.info(`Template: ${template.name}`);
+      if (template.description) {
+        this.log.info(template.description);
       }
     }
 
