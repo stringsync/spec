@@ -1,6 +1,6 @@
 import { z, ZodObject, type ZodRawShape } from 'zod';
-import describeTxt from '~/prompts/templates/describe.txt' with { type: 'text' };
-import agentsTxt from '~/prompts/templates/agents.txt' with { type: 'text' };
+import describeTxt from './describe.txt' with { type: 'text' };
+import overviewTxt from './overview.txt' with { type: 'text' };
 
 // spec(prompts.core)
 export class Prompt<T extends ZodRawShape> {
@@ -16,18 +16,18 @@ export class Prompt<T extends ZodRawShape> {
     this.schema = z.object(shape);
   }
 
-  static Agents = new Prompt(
-    'agents',
+  static Overview = new Prompt(
+    'overview',
     'instructs the assistant how to use @stringsync/spec',
-    agentsTxt,
+    overviewTxt,
   );
   static Describe = new Prompt(
     'describe',
-    'instruct the assistant to describe the project using @stringsync/spec',
+    'instructs the assistant how to describe the project using @stringsync/spec',
     describeTxt,
   );
 
-  static all = [this.Agents, this.Describe];
+  static all = [this.Overview, this.Describe];
 
   render(args: z.infer<typeof this.schema>): string {
     this.schema.parse(args);

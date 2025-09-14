@@ -4,7 +4,7 @@ import { name, description, version } from './package.json';
 import { Scope } from '~/specs/scope';
 import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
-import { InternalError } from '~/util/errors';
+import { InternalError, PublicError } from '~/util/errors';
 import { PromptCLI } from '~/prompts/prompt-cli';
 import { mcp } from '~/mcp/mcp';
 import { ExtendableLogger } from '~/util/logs/extendable-logger';
@@ -23,18 +23,21 @@ function parseSelector(value: string, previous: Selector[]): Selector[] {
   return [...previous, Selector.parse(value)];
 }
 
+function parseArgs(value: string, previous: Record<string, string>): Record<string, string> {
+  const [key, val] = value.split('=');
+  if (!key || !val) {
+    throw new Error(`invalid argument: ${value}`);
+  }
+  return { ...previous, [key]: val };
+}
+
 program.name(name).description(description).version(version);
 
 program
   .command('mcp')
   .description('run an model context protocol (MCP) server')
   .action(async () => {
-    try {
-      await mcp();
-    } catch (e) {
-      log.error(chalk.red('Fatal error:'), InternalError.wrap(e).message);
-      process.exit(1);
-    }
+    await mcp();
   });
 
 program
@@ -94,29 +97,13 @@ program
   .command('prompt')
   .description('generate a prompt')
   .argument('[name]', 'name of the prompt')
-  .option('--arg <values...>', 'arguments for the prompt format: [key=value]')
+  .option('--arg <values...>', 'arguments for the prompt format: [key=value]', parseArgs, {})
   .option('--pipe', 'pipe output to another program', false)
-  .action(async (name: string | undefined, options: { arg?: string[]; pipe: boolean }) => {
-    try {
-      const args: Record<string, string> = {};
-      if (options.arg) {
-        for (const arg of options.arg) {
-          const [key, value] = arg.split('=');
-          if (!key || !value) {
-            throw new Error(`invalid argument: ${arg}`);
-          }
-          args[key] = value;
-        }
-      }
-      await new PromptCLI(log).run(name, args, options.pipe);
-    } catch (e) {
-      if (options.pipe) {
-        log.error(InternalError.wrap(e).message);
-      } else {
-        log.error(chalk.red('error:'), InternalError.wrap(e).message);
-      }
-      process.exit(1);
-    }
-  });
+  .action(
+    async (name: string | undefined, options: { args: Record<string, string>; pipe: boolean }) => {
+      const cli = new PromptCLI(log);
+      await cli.run(name, options.args, options.pipe);
+    },
+  );
 
 program.parse();
