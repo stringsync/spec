@@ -3,6 +3,7 @@ import { select, input } from '@inquirer/prompts';
 import type { Logger } from '~/util/logs/logger';
 import type { Template } from '~/templates/template';
 
+// spec(template.cli)
 export class InteractivePrompt {
   constructor(
     private log: Logger,

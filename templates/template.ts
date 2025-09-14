@@ -1,5 +1,6 @@
 import z from 'zod';
 
+// spec(template.core)
 export class Template<T extends z.ZodRawShape = any> {
   public readonly name: string;
   public readonly description: string;

@@ -11,7 +11,7 @@ import { ExtendableGlobber } from '~/util/globber/extendable-globber';
 import { SCAN_COMMAND_TEMPLATE } from '~/templates/scan-command-template';
 import { constants } from '~/constants';
 import { SHOW_COMMAND_TEMPLATE } from '~/templates/show-command-template';
-import { InteractivePrompt } from '~/prompts/interactive-prompt';
+import { InteractivePrompt } from '~/templates/interactive-prompt';
 
 const log = ExtendableLogger.console();
 

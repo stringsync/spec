@@ -1,30 +1,23 @@
 # template
 
-## template.txt
+## template.core
 
-`TxtTemplate` is a lightweight version of the mustache template system.
+Prompts are templates that can optionally accept arguments.
 
-In Bun, you can import .txt files like this so that they are part of the binary:
+It must have a `Prompt` class in a file named `prompt.ts`, which contains a template and allows callers to create prompt strings, given that they provide all the arguments.
+It must throw an error when all the arguments aren't provided.
+It must use a raw zod shape as the input, defaulting to an empty object.
+A `Prompt` instance must expose what arguments it needs to make an interactive CLI prompt possible.
+The `Prompt` class must statically store all prompt instances as static members and privatize the constructor.
 
-```ts
-import fooTxt from '~/foo.txt' with { type: 'text' };
-```
+## template.cli
 
-An example of how `TxtTemplate` is supposed to be used is this:
+The CLI is partially interactive. When applicable, the user can be presented with options or forms they can fill out or choose with the arrow keys. For prompts, this is to progressively get all the data needed to render a prompt.
 
-```ts
-import fooTxt from '~/foo.txt' with { type: 'text' };
+The prompt command can be called several ways:
 
-export const FOO_TXT_TEMPLATE = new TxtTemplate(fooTxt, {
-  foo: z.string();
-});
-```
+- `spec prompt`: The CLI transitions to interactive mode and presents the user with names from `Prompt.all`.
+- `spec prompt [name]`: If the prompt has a non-empty schema, the CLI transitions to interactive mode to help the user fill it out. Otherwise, the CLI renders the prompt.
+- `spec prompt [name] --arg key1=val1 --arg key2=val2`: If the args have an unknown key, the CLI errors out. If the args have all the key-value pairs needed to render the prompt, it does it. If the args don't have all the key-value pairs, the CLI transitions to interactive mode to help the user fill out the missing args.
 
-Then, you can render it anywhere:
-
-```ts
-program.command('foo').action(() => {
-  const foo = FOO_TXT_TEMPLATE.render({ foo: 'foo' });
-  console.log(foo);
-});
-```
+Each command must be able to be optionally piped to another program like `pbcopy`. A command option can toggle this behavior.
