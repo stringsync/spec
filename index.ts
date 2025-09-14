@@ -2,9 +2,7 @@
 import { program } from 'commander';
 import { name, description, version } from './package.json';
 import { Scope } from '~/specs/scope';
-import chalk from 'chalk';
 import { Stopwatch } from '~/util/stopwatch';
-import { InternalError, PublicError } from '~/util/errors';
 import { PromptCLI } from '~/prompts/prompt-cli';
 import { mcp } from '~/mcp/mcp';
 import { ExtendableLogger } from '~/util/logs/extendable-logger';

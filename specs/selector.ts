@@ -26,6 +26,10 @@ export class Selector {
     throw new Error(`Invalid selector format: ${selector}`);
   }
 
+  static parseAll(selectors: string[]): Selector[] {
+    return selectors.map((s) => Selector.parse(s));
+  }
+
   getModuleName(): string {
     return this.moduleName;
   }

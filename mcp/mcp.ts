@@ -1,14 +1,21 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { name, version } from '~/package.json';
 import { CallToolResultBuilder } from '~/util/mcp/call-tool-result-builder';
-import { z } from 'zod';
-import { NotImplementedError, PublicError } from '~/util/errors';
+import { NotImplementedError } from '~/util/errors';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
 import { Prompt } from '~/prompts/prompt';
+import { EXCLUDE_PATTERNS, INCLUDE_PATTERNS, SELECTORS } from '~/mcp/args';
+import { Scope } from '~/specs/scope';
+import { ExtendableGlobber } from '~/util/globber/extendable-globber';
+import { scan } from '~/actions/scan';
+import { Selector } from '~/specs/selector';
+import { ScanToolTemplate } from '~/templates/scan-tool-template';
 
 const log = new StderrLogger();
+
+const MUST_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
 export async function mcp() {
   const server = new McpServer({ name, version });
@@ -26,17 +33,9 @@ function addTools(server: McpServer) {
     'spec.show',
     'show details about specs',
     {
-      selectors: z
-        .array(z.string())
-        .describe('a list of fully qualified spec ids or spec name (e.g. "foo.bar" or "foo")'),
-      includePatterns: z
-        .array(z.string())
-        .describe('absolute glob patterns to scan, prefer to use all files in the project root'),
-      excludePatterns: z
-        .array(z.string())
-        .optional()
-        .default([])
-        .describe('absolute glob patterns to ignore, prefer to leave this blank'),
+      selectors: SELECTORS,
+      includePatterns: INCLUDE_PATTERNS,
+      excludePatterns: EXCLUDE_PATTERNS,
     },
     showTool,
   );
@@ -45,17 +44,9 @@ function addTools(server: McpServer) {
     'spec.scan',
     'show a summary of modules, specs, and tags',
     {
-      selectors: z
-        .array(z.string())
-        .describe('a list of fully qualified spec ids or spec name (e.g. "foo.bar" or "foo")'),
-      includePatterns: z
-        .array(z.string())
-        .describe('absolute glob patterns to scan, prefer to use all files in the project root'),
-      excludePatterns: z
-        .array(z.string())
-        .optional()
-        .default([])
-        .describe('absolute glob patterns to ignore, prefer to leave this blank'),
+      selectors: SELECTORS,
+      includePatterns: INCLUDE_PATTERNS,
+      excludePatterns: EXCLUDE_PATTERNS,
     },
     scanTool,
   );
@@ -87,23 +78,41 @@ async function showTool({
 }) {
   const builder = new CallToolResultBuilder();
 
+  const scope = new Scope({
+    includePatterns,
+    excludePatterns: [...MUST_IGNORE_PATTERNS, ...excludePatterns],
+  });
+  const globber = ExtendableGlobber.fs().freeze();
+  const result = await scan({
+    scope,
+    selectors: Selector.parseAll(selectors),
+    globber,
+  });
+
   builder.error(new NotImplementedError());
 
   return builder.build();
 }
 
-async function scanTool({
-  selectors,
-  includePatterns,
-  excludePatterns,
-}: {
+async function scanTool(args: {
   selectors: string[];
   includePatterns: string[];
   excludePatterns: string[];
 }) {
   const builder = new CallToolResultBuilder();
 
-  builder.error(new NotImplementedError());
+  const selectors = Selector.parseAll(args.selectors);
+  const includePatterns = args.includePatterns;
+  const excludePatterns = args.excludePatterns;
+  const scope = new Scope({
+    includePatterns,
+    excludePatterns: [...MUST_IGNORE_PATTERNS, ...excludePatterns],
+  });
+  const globber = ExtendableGlobber.fs().freeze();
+  const result = await scan({ scope, selectors, globber });
+
+  const template = new ScanToolTemplate(result, selectors, result.modules.length);
+  builder.text(template.render());
 
   return builder.build();
 }
