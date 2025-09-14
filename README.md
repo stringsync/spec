@@ -4,7 +4,12 @@ spec driven development tools
 
 ## Getting Started
 
-To run the commands, you will need an NPM package executor like `npx`. We recommend `bunx`: https://bun.sh/
+To run the commands, you will need an NPM package executor like `npx`. We recommend `bunx`: https://bun.sh/.
+
+This README aliases `bunx @stringsync/spec` with `spec`. I recommend you add the same alias to your shell profile.
+
+> [!CAUTION]
+> Do not alias the command if you plan to do development on the @stringsync/spec repo itself. See the [Dev](#Dev) section.
 
 **Declare**
 
@@ -20,8 +25,6 @@ It adds two numbers.
 
 **Tag**
 
-_calculator.ts_
-
 ```ts
 class Calculator {
   // spec(calculator.add): Optional tag body.
@@ -34,7 +37,7 @@ class Calculator {
 **Scan**
 
 ```sh
-bunx @stringsync/spec scan
+spec scan
 ```
 
 ## Prompts
@@ -44,13 +47,13 @@ You can generate prompts for various workflows using the @stringsync/spec CLI. I
 To see an interactive list of available prompts, run:
 
 ```sh
-bunx @stringsync/spec prompt
+spec prompt
 ```
 
 You can also run a specific prompt:
 
 ```sh
-bunx @stringsync/spec prompt <name>
+spec prompt <name>
 ```
 
 If the prompt has arguments, the CLI will ask you for them.
@@ -58,27 +61,27 @@ If the prompt has arguments, the CLI will ask you for them.
 To provide arguments directly, use the `--arg` flag:
 
 ```sh
-bunx @stringsync/spec prompt <name> --arg key1=val1 --arg key2=val2
+spec prompt <name> --arg key1=val1 --arg key2=val2
 ```
 
 To pipe the output to another program, use the `--pipe` flag:
 
 ```sh
-bunx @stringsync/spec prompt <name> --pipe | pbcopy
+spec prompt <name> --pipe | pbcopy
 ```
 
-To help your agent understand @stringsync/spec, give it the following prompt:
+To help your agent understand @stringsync/spec, paste the output:
 
 ```sh
-bunx @stringsync/spec prompt agents --pipe | pbcopy
+spec prompt agents --pipe | pbcopy
 ```
 
 ## MCP
 
-To run the @stringsync/spec MCP server, the command is:
+To run the @stringsync/spec MCP server, run:
 
 ```sh
-bunx @stringsync/spec mcp
+spec mcp
 ```
 
 Read your agent's documentation to run the MCP server. For example, Cline's configuration will look like this:
@@ -86,7 +89,7 @@ Read your agent's documentation to run the MCP server. For example, Cline's conf
 ```json
 {
   "mcpServers": {
-    "@stringsync/spec": {
+    "spec": {
       "type": "stdio",
       "command": "bunx",
       "args": ["-y", "@stringsync/spec", "mcp"]
@@ -108,6 +111,14 @@ bunx @modelcontextprotocol/inspector bunx @stringsync/spec mcp
 ```
 
 ## Dev
+
+To verify that `spec` is not installed, run:
+
+```sh
+spec
+```
+
+> command not found: spec
 
 To install the project dependencies, run:
 
@@ -148,6 +159,3 @@ To bump the version and release it, run:
 ```sh
 bun run release [alpha|beta|rc|patch|minor|major]
 ```
-
-> [!IMPORTANT]  
-> Some partial failures are not reversible.
