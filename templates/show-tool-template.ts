@@ -5,7 +5,7 @@ import { Selector } from '~/specs/selector';
 import type { Spec } from '~/specs/spec';
 import type { Tag } from '~/specs/tag';
 import { Template } from '~/templates/template';
-import { SCAN_RESULT_TYPE } from '~/templates/types';
+import { SCAN_RESULT_TYPE } from '~/templates/args';
 import { StringBuilder } from '~/util/string-builder';
 
 export const SHOW_TOOL_TEMPLATE = Template.dynamic({
