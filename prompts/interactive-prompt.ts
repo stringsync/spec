@@ -1,12 +1,12 @@
-import { type Prompt } from '~/prompts/prompt';
 import { type ZodRawShape } from 'zod';
 import { select, input } from '@inquirer/prompts';
 import type { Logger } from '~/util/logs/logger';
+import type { Template } from '~/templates/template';
 
-export class PromptCLI {
+export class InteractivePrompt {
   constructor(
     private log: Logger,
-    private prompts: Prompt<any>[],
+    private prompts: Template[],
   ) {}
 
   async run(name: string | undefined, args: Record<string, string>, pipe: boolean) {
@@ -30,7 +30,7 @@ export class PromptCLI {
     this.log.info(prompt.render(parsedArgs));
   }
 
-  private getPromptOrThrow(name?: string): Prompt<any> {
+  private getPromptOrThrow(name?: string): Template {
     if (!name) {
       throw new Error('Prompt name is required in non-interactive mode.');
     }
@@ -41,7 +41,7 @@ export class PromptCLI {
     return prompt;
   }
 
-  private async getPromptInteractive(name?: string): Promise<Prompt<any>> {
+  private async getPromptInteractive(name?: string): Promise<Template> {
     if (name) {
       return this.getPromptOrThrow(name);
     }
@@ -58,10 +58,7 @@ export class PromptCLI {
     return this.getPromptOrThrow(selectedName);
   }
 
-  private getArgsOrThrow(
-    prompt: Prompt<any>,
-    args: Record<string, string>,
-  ): Record<string, string> {
+  private getArgsOrThrow(prompt: Template, args: Record<string, string>): Record<string, string> {
     const schema = prompt.schema;
     const shape = schema.shape as ZodRawShape;
     const requiredKeys = Object.keys(shape);
@@ -81,7 +78,7 @@ export class PromptCLI {
   }
 
   private async getMissingArgsInteractive(
-    prompt: Prompt<any>,
+    prompt: Template,
     existingArgs: Record<string, string>,
   ): Promise<Record<string, string>> {
     const allArgs = { ...existingArgs };

@@ -1,13 +1,13 @@
-import { DescribePrompt } from '~/prompts/describe-prompt';
-import { OverviewPrompt } from '~/prompts/overview-prompt';
-import type { Prompt } from '~/prompts/prompt';
+import { DESCRIBE_TEMPLATE } from '~/templates/describe-template';
+import { OVERVIEW_TEMPLATE } from '~/templates/overview-template';
+import type { Template } from '~/templates/template';
 
 const DEFAULT_INCLUDE_PATTERNS = ['**/*'];
 const MUST_EXCLUDE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
-const PROMPTS: Prompt<any>[] = [new OverviewPrompt(), new DescribePrompt()];
+const PROMPT_TEMPLATES: Template[] = [OVERVIEW_TEMPLATE, DESCRIBE_TEMPLATE];
 
 export const constants = {
   DEFAULT_INCLUDE_PATTERNS,
   MUST_EXCLUDE_PATTERNS,
-  PROMPTS,
+  PROMPT_TEMPLATES,
 };

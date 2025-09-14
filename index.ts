@@ -3,16 +3,15 @@ import { program } from 'commander';
 import { name, description, version } from './package.json';
 import { Scope } from '~/specs/scope';
 import { Stopwatch } from '~/util/stopwatch';
-import { PromptCLI } from '~/prompts/prompt-cli';
 import { mcp } from '~/mcp/mcp';
 import { ExtendableLogger } from '~/util/logs/extendable-logger';
 import { scan } from '~/actions/scan';
 import { Selector } from '~/specs/selector';
 import { ExtendableGlobber } from '~/util/globber/extendable-globber';
-import { ScanCommandTemplate } from '~/templates/scan-command-template';
-import { ShowCommandTemplate } from '~/templates/show-command-template';
-import type { Prompt } from '~/prompts/prompt';
+import { SCAN_COMMAND_TEMPLATE } from '~/templates/scan-command-template';
 import { constants } from '~/constants';
+import { SHOW_COMMAND_TEMPLATE } from '~/templates/show-command-template';
+import { InteractivePrompt } from '~/prompts/interactive-prompt';
 
 const log = ExtendableLogger.console();
 
@@ -62,9 +61,8 @@ program
     const globber = ExtendableGlobber.fs().autoExpandDirs().freeze();
     const result = await scan({ scope, selectors, globber });
     const ms = stopwatch.ms();
-    const template = new ShowCommandTemplate(result, ms);
 
-    log.info(template.render());
+    log.info(SHOW_COMMAND_TEMPLATE.render({ result, ms }));
   });
 
 program
@@ -93,9 +91,15 @@ program
     const result = await scan({ scope, selectors, globber });
     const paths = await globber.glob(scope);
     const ms = stopwatch.ms();
-    const template = new ScanCommandTemplate(result, selectors, paths.length, ms);
 
-    log.info(template.render());
+    log.info(
+      SCAN_COMMAND_TEMPLATE.render({
+        result,
+        selectors,
+        pathCount: paths.length,
+        ms,
+      }),
+    );
   });
 
 program
@@ -106,7 +110,7 @@ program
   .option('--pipe', 'pipe output to another program', false)
   .action(
     async (name: string | undefined, options: { args: Record<string, string>; pipe: boolean }) => {
-      const cli = new PromptCLI(log, constants.PROMPTS);
+      const cli = new InteractivePrompt(log, constants.PROMPT_TEMPLATES);
       await cli.run(name, options.args, options.pipe);
     },
   );

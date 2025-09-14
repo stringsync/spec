@@ -9,9 +9,9 @@ import { Scope } from '~/specs/scope';
 import { ExtendableGlobber } from '~/util/globber/extendable-globber';
 import { scan } from '~/actions/scan';
 import { Selector } from '~/specs/selector';
-import { ScanToolTemplate } from '~/templates/scan-tool-template';
-import { ShowToolTemplate } from '~/templates/show-tool-template';
 import { constants } from '~/constants';
+import { SHOW_TOOL_TEMPLATE } from '~/templates/show-tool-template';
+import { SCAN_TOOL_TEMPLATE } from '~/templates/scan-tool-template';
 
 const log = new StderrLogger();
 
@@ -51,7 +51,7 @@ function addTools(server: McpServer) {
 }
 
 function addPrompts(server: McpServer) {
-  for (const prompt of constants.PROMPTS) {
+  for (const prompt of constants.PROMPT_TEMPLATES) {
     server.prompt(
       `spec.${prompt.name}`,
       prompt.description,
@@ -65,15 +65,15 @@ function addPrompts(server: McpServer) {
   }
 }
 
-async function showTool({
-  selectors,
-  includePatterns,
-  excludePatterns,
-}: {
+async function showTool(args: {
   selectors: string[];
   includePatterns: string[];
   excludePatterns: string[];
 }) {
+  const selectors = Selector.parseAll(args.selectors);
+  const includePatterns = args.includePatterns;
+  const excludePatterns = args.excludePatterns;
+
   const builder = new CallToolResultBuilder();
 
   const scope = new Scope({
@@ -81,14 +81,9 @@ async function showTool({
     excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...excludePatterns],
   });
   const globber = ExtendableGlobber.fs().freeze();
-  const result = await scan({
-    scope,
-    selectors: Selector.parseAll(selectors),
-    globber,
-  });
+  const result = await scan({ scope, selectors, globber });
 
-  const template = new ShowToolTemplate(result);
-  builder.text(template.render());
+  builder.text(SHOW_TOOL_TEMPLATE.render({ result, selectors }));
 
   return builder.build();
 }
@@ -98,20 +93,21 @@ async function scanTool(args: {
   includePatterns: string[];
   excludePatterns: string[];
 }) {
-  const builder = new CallToolResultBuilder();
-
   const selectors = Selector.parseAll(args.selectors);
   const includePatterns = args.includePatterns;
   const excludePatterns = args.excludePatterns;
+
+  const builder = new CallToolResultBuilder();
+
   const scope = new Scope({
     includePatterns,
     excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...excludePatterns],
   });
-  const globber = ExtendableGlobber.fs().freeze();
+  const globber = ExtendableGlobber.fs().cached().freeze();
   const result = await scan({ scope, selectors, globber });
+  const paths = await globber.glob(scope);
 
-  const template = new ScanToolTemplate(result, selectors, result.modules.length);
-  builder.text(template.render());
+  builder.text(SCAN_TOOL_TEMPLATE.render({ result, selectors, pathCount: paths.length }));
 
   return builder.build();
 }

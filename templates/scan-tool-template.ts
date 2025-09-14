@@ -1,23 +1,27 @@
+import z from 'zod';
 import type { ScanResult } from '~/actions/scan';
 import type { Module } from '~/specs/module';
-import type { Selector } from '~/specs/selector';
+import { Selector } from '~/specs/selector';
 import type { Spec } from '~/specs/spec';
 import type { Tag } from '~/specs/tag';
+import { Template } from '~/templates/template';
+import { SCAN_RESULT_TYPE } from '~/templates/types';
 import { StringBuilder } from '~/util/string-builder';
 
-export class ScanToolTemplate {
-  constructor(
-    private result: ScanResult,
-    private selectors: Selector[],
-    private pathCount: number,
-  ) {}
-
-  render(): string {
+export const SCAN_TOOL_TEMPLATE = Template.dynamic({
+  name: 'scan',
+  description: 'renders the output for the scan MCP tool',
+  shape: {
+    result: SCAN_RESULT_TYPE,
+    selectors: z.array(z.instanceof(Selector)),
+    pathCount: z.number(),
+  },
+  render: (args) => {
     const builder = new StringBuilder();
-    const modules = this.result.modules;
-    const orphanedTags = this.getOrphanedTags();
+    const modules = args.result.modules;
+    const orphanedTags = getOrphanedTags(args.result, args.selectors);
 
-    this.renderSummary(builder);
+    renderSummary(args.pathCount, args.result, builder);
 
     if (modules.length > 0 || orphanedTags.length > 0) {
       builder.newline();
@@ -25,7 +29,7 @@ export class ScanToolTemplate {
 
     for (let index = 0; index < modules.length; index++) {
       const module = modules[index];
-      this.renderModule(module, builder);
+      renderModule(module, args.result, builder);
     }
 
     if (orphanedTags.length > 0) {
@@ -33,65 +37,65 @@ export class ScanToolTemplate {
       builder.newline();
       builder.add('The following tags do not have a corresponding spec:');
       builder.newline();
-      this.renderTags(orphanedTags, builder);
+      renderTags(orphanedTags, builder);
     }
 
     return builder.toString();
+  },
+});
+
+function getOrphanedTags(result: ScanResult, selectors: Selector[]): Tag[] {
+  const specNames = new Set(result.specs.map((s) => s.getName()));
+
+  return result.tags
+    .filter((t) => !specNames.has(t.getSpecName()))
+    .filter((t) => selectors.length === 0 || selectors.some((s) => s.matches(t)));
+}
+
+function renderSummary(pathCount: number, result: ScanResult, builder: StringBuilder) {
+  builder.spaced(
+    'scanned',
+    pathCount.toString(),
+    pathCount === 1 ? 'path,' : 'paths,',
+    result.modules.length.toString(),
+    result.modules.length === 1 ? 'module,' : 'modules,',
+    result.specs.length.toString(),
+    result.specs.length === 1 ? 'spec, and' : 'specs, and',
+    result.tags.length.toString(),
+    result.tags.length === 1 ? 'tag' : 'tags',
+  );
+}
+
+function renderModule(module: Module, result: ScanResult, builder: StringBuilder) {
+  builder.indent();
+
+  builder.spaced('module', module.getName(), module.getPath());
+
+  const specs = result.specs.filter((s) => module.matches(s));
+  renderSpecs(specs, result, builder);
+
+  builder.outdent();
+}
+
+function renderSpecs(specs: Spec[], result: ScanResult, builder: StringBuilder) {
+  builder.indent();
+
+  for (const spec of specs) {
+    builder.spaced('spec', spec.getName(), spec.getLocation());
+
+    const tags = result.tags.filter((t) => spec.matches(t));
+    renderTags(tags, builder);
   }
 
-  private renderSummary(builder: StringBuilder) {
-    builder.spaced(
-      'scanned',
-      this.pathCount.toString(),
-      this.pathCount === 1 ? 'path,' : 'paths,',
-      this.result.modules.length.toString(),
-      this.result.modules.length === 1 ? 'module,' : 'modules,',
-      this.result.specs.length.toString(),
-      this.result.specs.length === 1 ? 'spec, and' : 'specs, and',
-      this.result.tags.length.toString(),
-      this.result.tags.length === 1 ? 'tag' : 'tags',
-    );
+  builder.outdent();
+}
+
+function renderTags(tags: Tag[], builder: StringBuilder) {
+  builder.indent();
+
+  for (const tag of tags) {
+    builder.spaced('tag', tag.getSpecName(), tag.getLocation());
   }
 
-  private renderModule(module: Module, builder: StringBuilder) {
-    builder.indent();
-
-    builder.spaced('module', module.getName(), module.getPath());
-
-    const specs = this.result.specs.filter((s) => module.matches(s));
-    this.renderSpecs(specs, builder);
-
-    builder.outdent();
-  }
-
-  private renderSpecs(specs: Spec[], builder: StringBuilder) {
-    builder.indent();
-
-    for (const spec of specs) {
-      builder.spaced('spec', spec.getName(), spec.getLocation());
-
-      const tags = this.result.tags.filter((t) => spec.matches(t));
-      this.renderTags(tags, builder);
-    }
-
-    builder.outdent();
-  }
-
-  private renderTags(tags: Tag[], builder: StringBuilder) {
-    builder.indent();
-
-    for (const tag of tags) {
-      builder.spaced('tag', tag.getSpecName(), tag.getLocation());
-    }
-
-    builder.outdent();
-  }
-
-  private getOrphanedTags(): Tag[] {
-    const specNames = new Set(this.result.specs.map((s) => s.getName()));
-
-    return this.result.tags
-      .filter((t) => !specNames.has(t.getSpecName()))
-      .filter((t) => this.selectors.length === 0 || this.selectors.some((s) => s.matches(t)));
-  }
+  builder.outdent();
 }
