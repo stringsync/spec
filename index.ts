@@ -1,19 +1,19 @@
 #!/usr/bin/env bun
 import { program } from 'commander';
 import { name, description, version } from './package.json';
-import { check } from '~/actions/check';
-import { DEFAULT_IGNORE_PATTERNS, DEFAULT_PATTERNS, scan } from '~/actions/scan';
-import chalk from 'chalk';
+import { Scope } from '~/specs/scope';
 import { Stopwatch } from '~/util/stopwatch';
-import { mcp } from '~/actions/mcp';
-import { InternalError } from '~/util/errors';
-import { ConsoleLogger } from '~/util/logs/console-logger';
-import { SpacedLogger } from '~/util/logs/spaced-logger';
-import { PromptCLI } from '~/prompts/prompt-cli';
-import { Markdown } from '~/util/markdown';
-import { show } from '~/actions/show';
+import { mcp } from '~/mcp/mcp';
+import { ExtendableLogger } from '~/util/logs/extendable-logger';
+import { scan } from '~/actions/scan';
+import { Selector } from '~/specs/selector';
+import { ExtendableGlobber } from '~/util/globber/extendable-globber';
+import { SCAN_COMMAND_TEMPLATE } from '~/templates/scan-command-template';
+import { constants } from '~/constants';
+import { SHOW_COMMAND_TEMPLATE } from '~/templates/show-command-template';
+import { InteractivePrompt } from '~/templates/interactive-prompt';
 
-const log = new SpacedLogger(new ConsoleLogger());
+const log = ExtendableLogger.console();
 
 program.name(name).description(description).version(version);
 
@@ -21,131 +21,98 @@ program
   .command('mcp')
   .description('run an model context protocol (MCP) server')
   .action(async () => {
-    try {
-      await mcp();
-    } catch (e) {
-      log.error(chalk.red('Fatal error:'), InternalError.wrap(e).message);
-      process.exit(1);
-    }
+    await mcp();
   });
 
 program
   .command('show')
-  .description('show a spec id')
-  .option('-p, --pattern [patterns...]', 'glob patterns to scan', DEFAULT_PATTERNS)
-  .option('-i, --ignore [patterns...]', 'glob patterns to ignore', [])
-  .argument('[selectors...]', 'fully qualified spec id (e.g. "foo.bar")')
-  .action(async (selectors: string[], options: { pattern: string[]; ignore: string[] }) => {
+  .description('show spec details')
+  .option(
+    '-i, --include [patterns...]',
+    'glob patterns to include',
+    constants.DEFAULT_INCLUDE_PATTERNS,
+  )
+  .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
+  .argument(
+    '[selectors...]',
+    'fully qualified spec id (e.g. "foo.bar" or "foo")',
+    parseSelector,
+    [],
+  )
+  .action(async (selectors: Selector[], options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
-    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
 
-    const { specs, tags } = await scan({ patterns: options.pattern, ignore });
-    const results = show({ selectors, specs, tags });
-    const ms = stopwatch.ms().toFixed(2);
+    const scope = new Scope({
+      includePatterns: options.include,
+      excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...options.exclude],
+    });
+    const globber = ExtendableGlobber.fs().autoExpandDirs().freeze();
+    const result = await scan({ scope, selectors, globber });
+    const ms = stopwatch.ms();
 
-    switch (results.type) {
-      case 'success':
-        log.info(chalk.green('success'), chalk.gray(`in [${ms}ms]`));
-        log.info(results.content);
-        break;
-      case 'error':
-        log.error(chalk.red('failed'), chalk.gray(`in [${ms}ms]`));
-        log.error(`${results.errors.join('\n')}`);
-        break;
-    }
+    log.info(SHOW_COMMAND_TEMPLATE.render({ result, ms }));
   });
 
 program
   .command('scan')
   .description('scan for specs and tags')
-  .option('-p, --pattern [patterns...]', 'glob patterns to scan', DEFAULT_PATTERNS)
-  .option('-i, --ignore [patterns...]', 'glob patterns to ignore', [])
-  .action(async (options: { pattern: string[]; ignore: string[] }) => {
+  .option(
+    '-i, --include [patterns...]',
+    'glob patterns to include',
+    constants.DEFAULT_INCLUDE_PATTERNS,
+  )
+  .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
+  .argument(
+    '[selectors...]',
+    'fully qualified spec id (e.g. "foo.bar" or "foo")',
+    parseSelector,
+    [],
+  )
+  .action(async (selectors: Selector[], options: { include: string[]; exclude: string[] }) => {
     const stopwatch = Stopwatch.start();
-    const ignore = [...DEFAULT_IGNORE_PATTERNS, ...(options.ignore ?? [])];
-    const results = await scan({ patterns: options.pattern, ignore });
-    const ms = stopwatch.ms().toFixed(2);
-    const length = results.specs.length + results.tags.length;
+
+    const scope = new Scope({
+      includePatterns: options.include,
+      excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...options.exclude],
+    });
+    const globber = ExtendableGlobber.fs().autoExpandDirs().cached().freeze();
+    const result = await scan({ scope, selectors, globber });
+    const paths = await globber.glob(scope);
+    const ms = stopwatch.ms();
 
     log.info(
-      chalk.blue('scanned'),
-      chalk.white.bold(length.toString()),
-      length === 1 ? 'item' : 'items',
-      chalk.gray(`in [${ms}ms]`),
+      SCAN_COMMAND_TEMPLATE.render({
+        result,
+        selectors,
+        pathCount: paths.length,
+        ms,
+      }),
     );
-
-    for (const spec of results.specs) {
-      log.info(
-        chalk.yellow('spec'),
-        chalk.white.bold(spec.name),
-        chalk.gray(`[${spec.ids.length} ids]`),
-        chalk.cyan(spec.path),
-      );
-    }
-
-    for (const tag of results.tags) {
-      // Show a better preview: first line, trimmed, or up to 80 chars
-      const preview = tag.body
-        .split('\n')[0] // first line
-        .trim();
-
-      log.info(
-        chalk.magenta('tag'),
-        chalk.white.bold(tag.id),
-        chalk.gray(preview),
-        chalk.cyan(tag.location),
-      );
-    }
-  });
-
-program
-  .command('check')
-  .description('validates a spec file')
-  .argument('<path>', 'path to spec file')
-  .action(async (path: string) => {
-    const stopwatch = Stopwatch.start();
-    const result = await check({ path });
-    const ms = stopwatch.ms().toFixed(2);
-
-    switch (result.type) {
-      case 'success':
-        log.info(chalk.green('success'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
-        break;
-      case 'error':
-        log.error(chalk.red('failed'), chalk.white.bold(path), chalk.gray(`in [${ms}ms]`));
-        log.error(`${result.errors.join('\n')}`);
-        break;
-    }
   });
 
 program
   .command('prompt')
   .description('generate a prompt')
   .argument('[name]', 'name of the prompt')
-  .option('--arg <values...>', 'arguments for the prompt format: [key=value]')
+  .option('--arg <values...>', 'arguments for the prompt format: [key=value]', parseArgs, {})
   .option('--pipe', 'pipe output to another program', false)
-  .action(async (name: string | undefined, options: { arg?: string[]; pipe: boolean }) => {
-    try {
-      const args: Record<string, string> = {};
-      if (options.arg) {
-        for (const arg of options.arg) {
-          const [key, value] = arg.split('=');
-          if (!key || !value) {
-            throw new Error(`invalid argument: ${arg}`);
-          }
-          args[key] = value;
-        }
-      }
-      const log = new ConsoleLogger();
-      await new PromptCLI(log).run(name, args, options.pipe);
-    } catch (e) {
-      if (options.pipe) {
-        log.error(InternalError.wrap(e).message);
-      } else {
-        log.error(chalk.red('error:'), InternalError.wrap(e).message);
-      }
-      process.exit(1);
-    }
-  });
+  .action(
+    async (name: string | undefined, options: { args: Record<string, string>; pipe: boolean }) => {
+      const cli = new InteractivePrompt(log, constants.PROMPT_TEMPLATES);
+      await cli.run(name, options.args, options.pipe);
+    },
+  );
 
 program.parse();
+
+function parseSelector(value: string, previous: Selector[]): Selector[] {
+  return [...previous, Selector.parse(value)];
+}
+
+function parseArgs(value: string, previous: Record<string, string>): Record<string, string> {
+  const [key, val] = value.split('=');
+  if (!key || !val) {
+    throw new Error(`invalid argument: ${value}`);
+  }
+  return { ...previous, [key]: val };
+}

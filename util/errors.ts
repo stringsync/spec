@@ -19,3 +19,7 @@ export class InternalError extends Error {
 export class PublicError extends InternalError {
   public readonly isPublic = true;
 }
+
+export class NotImplementedError extends InternalError {
+  message = 'Not implemented';
+}

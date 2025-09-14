@@ -1,17 +1,82 @@
-import { Style } from '~/tags/style';
-import type { Tag, Comment } from '~/tags/types';
-import type { File } from '~/util/file';
+import { CommentStyle } from '~/util/comment-style';
+import { Module } from '~/specs/module';
+import { Scope } from '~/specs/scope';
+import { Spec } from '~/specs/spec';
+import { Tag } from '~/specs/tag';
+import { File } from '~/util/file';
+import { Markdown } from '~/util/markdown';
 
-/**
- * Parse all tags with the given tag name from the file.
- */
-export function parse(tagName: string, file: File, styles?: Style[]): Tag[] {
-  styles ??= Style.for(file);
+export interface ParseResult {
+  modules: Module[];
+  specs: Spec[];
+  tags: Tag[];
+}
+
+interface TagData {
+  moduleName: string;
+  specName: string;
+  content: string;
+  location: string;
+  startIndex: number;
+  endIndex: number;
+}
+
+interface CommentData {
+  text: string;
+  startIndex: number;
+  endIndex: number;
+}
+
+export function parse({
+  file,
+  scope,
+  styles,
+}: {
+  file: File;
+  scope?: Scope;
+  styles?: CommentStyle[];
+}): ParseResult {
+  scope ??= Scope.all();
+  styles ??= CommentStyle.for(file);
+
+  if (file.path.endsWith('spec.md')) {
+    const [module, specs] = parseModule(file, scope);
+    return { modules: [module], specs, tags: [] };
+  } else {
+    const tags = parseTags('spec', file, styles);
+    return { modules: [], specs: [], tags };
+  }
+}
+
+function parseModule(file: File, scope: Scope): [Module, Spec[]] {
+  const markdown = new Markdown(file.text);
+  const module = new Module(file.path, markdown, scope);
+  const text = markdown.getContent();
+
+  const specs = new Array<Spec>();
+
+  for (const subheader of markdown.getSubheaders()) {
+    const index = text.indexOf(`## ${subheader}`);
+    const spec = new Spec({
+      scope,
+      name: subheader,
+      content: markdown.getSubheaderContent(subheader),
+      moduleName: module.getName(),
+      path: module.getPath(),
+      location: file.getLocation(index),
+    });
+    specs.push(spec);
+  }
+
+  return [module, specs];
+}
+
+function parseTags(tagName: string, file: File, styles: CommentStyle[]): Tag[] {
   if (styles.length === 0) {
     return [];
   }
 
-  const tags = new Array<Tag>();
+  const tags = new Array<TagData>();
 
   // Track processed positions to avoid duplicate tags
   const processedPositions = new Set<number>();
@@ -43,10 +108,10 @@ export function parse(tagName: string, file: File, styles?: Style[]): Tag[] {
 
       // Handle multi-line bodies for each tag
       for (const tag of commentTags) {
-        if (tag.body !== '') {
+        if (tag.content !== '') {
           if (style.type === 'single') {
             // Handle multi-line body for single-line comments
-            const bodyLines = [tag.body];
+            const bodyLines = [tag.content];
             let nextIndex = comment.endIndex;
 
             // Continue reading subsequent comment lines
@@ -82,11 +147,11 @@ export function parse(tagName: string, file: File, styles?: Style[]): Tag[] {
 
             // Join body lines if we found additional lines
             if (bodyLines.length > 1) {
-              tag.body = bodyLines.join('\n');
+              tag.content = bodyLines.join('\n');
             }
           } else {
             // Handle multi-line body for block comments
-            const bodyLines = [tag.body];
+            const bodyLines = [tag.content];
             const commentLines = comment.text.split('\n');
 
             // Find which line contains this specific tag
@@ -97,7 +162,7 @@ export function parse(tagName: string, file: File, styles?: Style[]): Tag[] {
                 line = line.substring((style.middle || '').length).trim();
               }
               const lineTag = parseTagInLine(tagName, line, 0, file);
-              if (lineTag && lineTag.id === tag.id) {
+              if (lineTag && lineTag.specName === tag.specName) {
                 tagLineIndex = i;
                 break;
               }
@@ -125,7 +190,7 @@ export function parse(tagName: string, file: File, styles?: Style[]): Tag[] {
 
               // Join body lines if we found additional lines
               if (bodyLines.length > 1) {
-                tag.body = bodyLines.join('\n');
+                tag.content = bodyLines.join('\n');
               }
             }
           }
@@ -138,10 +203,21 @@ export function parse(tagName: string, file: File, styles?: Style[]): Tag[] {
     }
   }
 
-  return tags.sort((a, b) => a.startIndex - b.startIndex);
+  return tags
+    .sort((a, b) => a.startIndex - b.startIndex)
+    .map(
+      (t) =>
+        new Tag({
+          specName: t.specName,
+          moduleName: t.moduleName,
+          content: t.content,
+          path: file.path,
+          location: t.location,
+        }),
+    );
 }
 
-function parseComment(startIndex: number, file: File, style: Style): Comment {
+function parseComment(startIndex: number, file: File, style: CommentStyle): CommentData {
   let endIndex: number;
   let text: string;
   if (style.type === 'single') {
@@ -168,9 +244,9 @@ function parseAllTags(
   comment: string,
   startIndex: number,
   file: File,
-  style: Style,
-): Tag[] {
-  const tags: Tag[] = [];
+  style: CommentStyle,
+): TagData[] {
+  const tags: TagData[] = [];
 
   // For block comments, we need to handle multiple lines and middle characters
   if (style.type === 'block') {
@@ -217,8 +293,13 @@ function parseAllTags(
   return tags;
 }
 
-function parseAllTagsInLine(tagName: string, text: string, startIndex: number, file: File): Tag[] {
-  const tags = new Array<Tag>();
+function parseAllTagsInLine(
+  tagName: string,
+  text: string,
+  startIndex: number,
+  file: File,
+): TagData[] {
+  const tags = new Array<TagData>();
   let index = 0;
 
   // Look for all occurrences of the tag in the line
@@ -263,11 +344,11 @@ function parseAllTagsInLine(tagName: string, text: string, startIndex: number, f
       continue;
     }
 
-    const id = text.substring(idStartIndex, afterTagIndex);
+    const specName = text.substring(idStartIndex, afterTagIndex);
     afterTagIndex++; // Skip closing parenthesis
 
     // Body is optional
-    let body = '';
+    let content = '';
     if (afterTagIndex < text.length && text[afterTagIndex] === ':') {
       afterTagIndex++;
 
@@ -275,17 +356,18 @@ function parseAllTagsInLine(tagName: string, text: string, startIndex: number, f
       while (afterTagIndex < text.length && text[afterTagIndex] === ' ') {
         afterTagIndex++;
       }
-      body = text.substring(afterTagIndex).trimEnd();
+      content = text.substring(afterTagIndex).trimEnd();
     }
 
+    const moduleName = specName.split('.')[0];
     const tagStartIndex = startIndex + tagIndex;
     const tagEndIndex = startIndex + afterTagIndex;
     const location = file.getLocation(tagStartIndex);
 
     tags.push({
-      name: tagName,
-      id,
-      body,
+      specName,
+      moduleName,
+      content,
       location,
       startIndex: tagStartIndex,
       endIndex: tagEndIndex,
@@ -298,7 +380,12 @@ function parseAllTagsInLine(tagName: string, text: string, startIndex: number, f
   return tags;
 }
 
-function parseTagInLine(tagName: string, text: string, startIndex: number, file: File): Tag | null {
+function parseTagInLine(
+  tagName: string,
+  text: string,
+  startIndex: number,
+  file: File,
+): TagData | null {
   let index = 0;
 
   // Look for the tag anywhere in the line
@@ -343,11 +430,11 @@ function parseTagInLine(tagName: string, text: string, startIndex: number, file:
       continue;
     }
 
-    const id = text.substring(idStartIndex, afterTagIndex);
+    const specName = text.substring(idStartIndex, afterTagIndex);
     afterTagIndex++; // Skip closing parenthesis
 
     // Body is optional
-    let body = '';
+    let content = '';
     if (afterTagIndex < text.length && text[afterTagIndex] === ':') {
       afterTagIndex++;
 
@@ -355,17 +442,18 @@ function parseTagInLine(tagName: string, text: string, startIndex: number, file:
       while (afterTagIndex < text.length && text[afterTagIndex] === ' ') {
         afterTagIndex++;
       }
-      body = text.substring(afterTagIndex).trimEnd();
+      content = text.substring(afterTagIndex).trimEnd();
     }
 
+    const moduleName = specName.split('.')[0];
     const tagStartIndex = startIndex + tagIndex;
     const tagEndIndex = startIndex + afterTagIndex;
     const location = file.getLocation(tagStartIndex);
 
     return {
-      name: tagName,
-      id,
-      body,
+      moduleName,
+      specName,
+      content,
       location,
       startIndex: tagStartIndex,
       endIndex: tagEndIndex,

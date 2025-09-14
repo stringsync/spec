@@ -8,6 +8,10 @@ export class Markdown {
     return new Markdown(content);
   }
 
+  getContent(): string {
+    return this.content;
+  }
+
   getHeader() {
     const match = this.content.match(/^# (.+)$/m);
     return match ? match[1] : '';

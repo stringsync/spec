@@ -1,83 +1,38 @@
-import * as glob from 'glob';
-import { parse } from '~/tags/parse';
+import { Module } from '~/specs/module';
+import { Spec } from '~/specs/spec';
+import { Tag } from '~/specs/tag';
+import type { Globber } from '~/util/globber/globber';
+import type { Scope } from '~/specs/scope';
+import type { Selector } from '~/specs/selector';
+import { parse } from '~/actions/parse';
 import { File } from '~/util/file';
-import { Markdown } from '~/util/markdown';
-import fs from 'fs';
 
-export type ScanResult = {
-  specs: SpecResult[];
-  tags: TagResult[];
-};
-
-export interface SpecResult {
-  type: 'spec';
-  name: string;
-  path: string;
-  ids: string[];
-  markdown: Markdown;
+export interface ScanResult {
+  modules: Module[];
+  specs: Spec[];
+  tags: Tag[];
 }
 
-export interface TagResult {
-  type: 'tag';
-  id: string;
-  body: string;
-  location: string;
-}
+export async function scan({
+  scope,
+  selectors,
+  globber,
+}: {
+  scope: Scope;
+  selectors: Selector[];
+  globber: Globber;
+}) {
+  const paths = await globber.glob(scope);
+  const files = await Promise.all(paths.map((path) => File.load(path)));
+  const results = await Promise.all(files.map((file) => parse({ file, scope })));
 
-export const DEFAULT_PATTERNS = ['**/*'];
-export const DEFAULT_IGNORE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
-
-export async function scan(input: { patterns: string[]; ignore?: string[] }): Promise<ScanResult> {
-  const patterns = await Promise.all(input.patterns.map(maybeExpandToRecursiveGlob));
-
-  const paths = await glob.glob(patterns, {
-    absolute: true,
-    ignore: input.ignore,
-    nodir: true,
-  });
-
-  const results = await Promise.all(
-    paths.map((path) => {
-      if (path.endsWith('spec.md')) {
-        return getSpecResult(path);
-      } else {
-        return getTagResults(path);
-      }
-    }),
-  );
-
-  const specs = results.flat().filter((r): r is SpecResult => r.type === 'spec');
-  const tags = results.flat().filter((r): r is TagResult => r.type === 'tag');
-
-  return { specs, tags };
-}
-
-async function maybeExpandToRecursiveGlob(pattern: string): Promise<string> {
-  if (glob.hasMagic(pattern)) {
-    return pattern;
+  function matches(target: Module | Spec | Tag): boolean {
+    return selectors.length === 0 || selectors.some((s) => s.matches(target));
   }
 
-  const stat = await fs.promises.stat(pattern);
-  if (stat.isDirectory()) {
-    return `${pattern}/**/*`;
-  }
+  const modules = results.flatMap((r) => r.modules).filter(matches);
+  const specs = results.flatMap((r) => r.specs).filter(matches);
+  const tags = results.flatMap((r) => r.tags).filter(matches);
 
-  return pattern;
-}
-
-async function getSpecResult(path: string): Promise<SpecResult> {
-  const markdown = await Markdown.load(path);
-  const name = markdown.getHeader();
-  const ids = markdown.getSubheaders();
-  return { type: 'spec', name, path, ids, markdown };
-}
-
-async function getTagResults(path: string): Promise<TagResult[]> {
-  const file = await File.load(path);
-  return parse('spec', file).map(({ id, body, location }) => ({
-    type: 'tag',
-    id,
-    body,
-    location,
-  }));
+  return { modules, specs, tags };
 }

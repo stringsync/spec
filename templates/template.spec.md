@@ -1,8 +1,6 @@
-# prompts
+# template
 
-@stringsync/spec has prompts that can be dynamically generated. They're mainly used to standardized workflows, especially ones that involve tools. A workflow example is to implement a spec.
-
-## prompts.core
+## template.core
 
 Prompts are templates that can optionally accept arguments.
 
@@ -12,7 +10,7 @@ It must use a raw zod shape as the input, defaulting to an empty object.
 A `Prompt` instance must expose what arguments it needs to make an interactive CLI prompt possible.
 The `Prompt` class must statically store all prompt instances as static members and privatize the constructor.
 
-## prompts.cli
+## template.cli
 
 The CLI is partially interactive. When applicable, the user can be presented with options or forms they can fill out or choose with the arrow keys. For prompts, this is to progressively get all the data needed to render a prompt.
 
