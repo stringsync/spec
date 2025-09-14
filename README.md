@@ -73,7 +73,7 @@ spec prompt <name> --pipe | pbcopy
 To help your agent understand @stringsync/spec, paste the output:
 
 ```sh
-spec prompt agents --pipe | pbcopy
+spec prompt overview --pipe | pbcopy
 ```
 
 ## MCP
