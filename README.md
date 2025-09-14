@@ -70,12 +70,6 @@ To pipe the output to another program, use the `--pipe` flag:
 spec prompt <name> --pipe | pbcopy
 ```
 
-To help your agent understand @stringsync/spec, paste the output:
-
-```sh
-spec prompt overview --pipe | pbcopy
-```
-
 ## MCP
 
 To run the @stringsync/spec MCP server, run:
