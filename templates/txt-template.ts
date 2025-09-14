@@ -5,7 +5,7 @@ export class TxtTemplate<T extends ZodRawShape> {
   public readonly schema: ZodObject<T>;
   private template: string;
 
-  private constructor(template: string, shape: T = {} as T) {
+  constructor(template: string, shape: T) {
     this.template = template;
     this.schema = z.object(shape);
   }

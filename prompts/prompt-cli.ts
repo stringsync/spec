@@ -1,7 +1,8 @@
-import { Prompt } from '~/prompts/prompt';
+import { type Prompt } from '~/prompts/prompt';
 import { type ZodRawShape } from 'zod';
 import { select, input } from '@inquirer/prompts';
 import type { Logger } from '~/util/logs/logger';
+import { PROMPTS } from '~/prompts/prompts';
 
 export class PromptCLI {
   constructor(private log: Logger) {}
@@ -31,7 +32,7 @@ export class PromptCLI {
     if (!name) {
       throw new Error('Prompt name is required in non-interactive mode.');
     }
-    const prompt = Prompt.all.find((p) => p.name === name);
+    const prompt = PROMPTS.find((p) => p.name === name);
     if (!prompt) {
       throw new Error(`Prompt not found: ${name}`);
     }
@@ -45,7 +46,7 @@ export class PromptCLI {
 
     const selectedName = await select({
       message: 'Select a prompt',
-      choices: Prompt.all.map((p) => ({
+      choices: PROMPTS.map((p) => ({
         name: p.name,
         value: p.name,
         description: p.description,

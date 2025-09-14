@@ -4,7 +4,6 @@ import { CallToolResultBuilder } from '~/util/mcp/call-tool-result-builder';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
-import { Prompt } from '~/prompts/prompt';
 import { EXCLUDE_PATTERNS, INCLUDE_PATTERNS, SELECTORS } from '~/mcp/args';
 import { Scope } from '~/specs/scope';
 import { ExtendableGlobber } from '~/util/globber/extendable-globber';
@@ -12,6 +11,7 @@ import { scan } from '~/actions/scan';
 import { Selector } from '~/specs/selector';
 import { ScanToolTemplate } from '~/templates/scan-tool-template';
 import { ShowToolTemplate } from '~/templates/show-tool-template';
+import { PROMPTS } from '~/prompts/prompts';
 
 const log = new StderrLogger();
 
@@ -53,7 +53,7 @@ function addTools(server: McpServer) {
 }
 
 function addPrompts(server: McpServer) {
-  for (const prompt of Prompt.all) {
+  for (const prompt of PROMPTS) {
     server.prompt(
       `spec.${prompt.name}`,
       prompt.description,
