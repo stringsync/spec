@@ -1,14 +1,14 @@
 import { BUILD_TEMPLATE } from '~/templates/build-template';
 import { PLAN_TEMPLATE } from '~/templates/plan-template';
 import { REFINE_TEMPLATE } from '~/templates/refine-template';
-import { SYNC_TEMPLATE } from '~/templates/sync-template';
+import { LINT_TEMPLATE } from '~/templates/lint-template';
 import type { Template } from '~/templates/template';
 
 const DEFAULT_INCLUDE_PATTERNS = ['**/*'];
 const MUST_EXCLUDE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 const PROMPT_TEMPLATES: Template[] = [
   REFINE_TEMPLATE,
-  SYNC_TEMPLATE,
+  LINT_TEMPLATE,
   PLAN_TEMPLATE,
   BUILD_TEMPLATE,
 ];

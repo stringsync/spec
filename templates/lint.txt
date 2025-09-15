@@ -1,6 +1,6 @@
-# sync
+# Lint
 
-Align specs, tags, and implementations within the given selector’s scope.
+Report on drift between specs, tags, and implementations within the given selector’s scope. Do not make any code changes.
 
 ## Inputs
 - selector: {{selector}}  
