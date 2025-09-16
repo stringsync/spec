@@ -94,7 +94,7 @@ function renderTags(tags: Tag[], builder: StringBuilder) {
   builder.indent();
 
   for (const tag of tags) {
-    builder.spaced('tag', tag.getSpecName(), tag.getLocation());
+    builder.spaced('tag', tag.getSpecName(), tag.getLocation(), tag.getContent());
   }
 
   builder.outdent();
