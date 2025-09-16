@@ -10,13 +10,11 @@ export const REFINE_TEMPLATE = Template.dynamic({
     'It may split, merge, rename, or edit specs to ensure they are precise, consistent, and actionable.',
   input: {
     selector: z.string(),
-    dryRun: z.coerce.boolean().default(false),
   },
   render: (args) => {
     return PREAMBLE_TEMPLATE.render({
       request: Template.replace(refineTxt, {
         selector: args.selector,
-        dryRun: args.dryRun,
       }),
     });
   },
