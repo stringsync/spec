@@ -4,7 +4,7 @@ import { Template } from '~/templates/template';
 import lintTxt from './lint.txt' with { type: 'raw' };
 
 export const LINT_TEMPLATE = Template.dynamic({
-  name: 'line',
+  name: 'lint',
   description:
     'Instructs the agent to report alignment between specs and code. It checks that specs are properly tagged, ' +
     'highlights missing or mismatched references, and reports drift between specs and implementation.',
