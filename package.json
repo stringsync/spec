@@ -1,7 +1,7 @@
 {
   "name": "@stringsync/spec",
   "description": "spec driven development tools",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
