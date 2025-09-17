@@ -17,7 +17,7 @@ Conduct a thorough audit that both identifies alignment issues between specs and
 - Preserve intent of each spec; don't change behavior unless removing ambiguity.
 - Keep spec names stable when possible; if renaming, provide a deterministic mapping.
 - Prefer small, composable specs over monoliths.
-- Use imperative, verifiable language (e.g. "It must …").
+- Use imperative, verifiable language. Use key words such as MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD, SHOULD NOT, RECOMMENDED, OPTIONAL, and MAY from https://www.rfc-editor.org/rfc/rfc2119.
 - Keep each spec self-contained; avoid hidden dependencies.
 - Do not modify code or specs during audit; only report findings and recommendations.
 
