@@ -1,5 +1,3 @@
-# audit
-
 Perform a comprehensive audit of specs within the given selector's scope, combining drift detection and spec improvement.
 
 ## Inputs
