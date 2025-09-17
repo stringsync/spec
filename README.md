@@ -77,22 +77,21 @@ You can combine the prompts in any order, but here are some recommendations.
 **Create a Module**
 
 1. create foo.spec.md
-2. `spec prompt refine --arg selector=foo`
+2. `spec prompt audit --arg selector=foo`
 3. `spec prompt plan --arg selector=foo`
 4. `spec prompt build --arg selector=foo`
 
 **Update a Spec**
 
 1. update foo.spec.md (or a tagged implementation)
-2. `spec prompt refine --arg selector=foo.bar`
-3. `spec prompt lint --arg selector=foo.bar`
-4. `spec prompt plan --arg selector=foo.bar`
-5. `spec prompt build --arg selector=foo.bar`
+2. `spec prompt audit --arg selector=foo.bar`
+3. `spec prompt plan --arg selector=foo.bar`
+4. `spec prompt build --arg selector=foo.bar`
 
 **Delete a Module**
 
 1. delete foo.spec.md
-2. `spec prompt lint --arg selector=foo`
+2. `spec prompt audit --arg selector=foo`
 
 ## MCP
 

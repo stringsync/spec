@@ -1,5 +1,3 @@
-# plan
-
 Generate implementation scaffolds (no business logic) from specs in the given selector’s scope.
 
 ## Inputs

@@ -1,5 +1,3 @@
-# build
-
 Implement existing TODO tags derived from specs within the given selector’s scope.
 
 ## Inputs
