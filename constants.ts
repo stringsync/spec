@@ -1,3 +1,4 @@
+import { AUDIT_TEMPLATE } from '~/templates/audit-template';
 import { BUILD_TEMPLATE } from '~/templates/build-template';
 import { PLAN_TEMPLATE } from '~/templates/plan-template';
 import { REFINE_TEMPLATE } from '~/templates/refine-template';
@@ -7,6 +8,7 @@ import type { Template } from '~/templates/template';
 const DEFAULT_INCLUDE_PATTERNS = ['**/*'];
 const MUST_EXCLUDE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 const PROMPT_TEMPLATES: Template[] = [
+  AUDIT_TEMPLATE,
   REFINE_TEMPLATE,
   LINT_TEMPLATE,
   PLAN_TEMPLATE,
