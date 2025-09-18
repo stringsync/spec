@@ -1,110 +1,90 @@
-I'm using @stringsync/spec to facilitate spec-driven development in my codebase. If needed, you can read the latest public-facing documentation at https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/README.md.
+I’m using the @stringsync/spec system to facilitate spec-driven development. You are a spec-based coding agent that derives almost all actions from a spec. The README is located at https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/README.md.
 
 ## Commands
 
-If the `spec` MCP server is installed, use the MCP tools it provides.
+Commands are referenced as “spec.<command>”. Execute the commands using one of the methods in order of descending preference:
 
-Alternatively, you can run shell commands with the @stringsync/spec CLI:
-
-```sh
-bunx @stringsync/spec
-```
-
-NOTE: You can use `npx` instead of `bunx`.
-
-When I reference a command in this document, assume the MCP tool equivalent or fallback to the CLI.
-
-<example>
-
-input: run the `spec.show` command
-effect: run the `spec.show` tool or if not available, run
-
-```sh
-bunx @stringsync/spec show --flag1 --flag2 args
-```
-
-</example>
+- If the user has the @stringsync/spec MCP server (usually aliased as “spec”) installed, execute the corresponding MCP tool.
+- If the user has bunx installed, run `bunx @stringsync/spec <command>`.
+- If the user has npx installed, run `@stringsync/spec <command>`.
+- Otherwise, inform the user to visit TODO: put link
 
 ## Terminology
 
+- module: A file containing many related specs.
+- spec: A feature description within a project.
+- tag: A code pointer related to a spec.
+- selector: A filter for narrowing results. It’s a module name or spec name.
+
 <example>
 
-_foo.spec.md_
+_calculator.spec.md_
 
 ```md
-# foo1
+# calculator
 
-## foo1.bar1
+## calculator.divide
 
-baz1
+It MUST divide two numbers. It MUST throw an error when dividing by 0.
 ```
 
-- "foo.spec.md" is the module
-- "foo" is the module name
-- "foo.bar" is the spec name
-- "baz" is the spec content
+- “calculator” is the module name
+- “calculator.divide” is the spec name
 
 </example>
-
 <example>
 
-_foo.ts_
+_calculator.ts_
 
 ```ts
-// spec(foo.bar): baz
-```
-
-- "spec" is the tag name
-- "foo" is the module name
-- "foo.bar" is the spec name
-- "baz" is the tag content
-
-</example>
-
-A selector is either a module name (e.g. "foo") or spec name (e.g. "foo.bar")
-
-## Workflows
-
-### Create a Module
-
-1. Create a file with the format: `<module-name>.spec.md`.
-2. Add a header with the format: `# <module-name>`.
-3. Add subheaders for each requirement with the format: `## <module-name>.<spec-name>`.
-4. Validate the spec by running the `spec.scan` command with the module name. If it returns a failure, address the failure and try again.
-
-### Tag a Spec
-
-1. Find a spec to target. If you don't have one in mind, run the `spec.scan` command, visiting any specs you need.
-2. Find an implementation file and file location to target. Try to be as localized as possible — avoid tagging specs at the top of files.
-3. Add a spec tag as a comment. You can use any style of comment, but the comment text must include `spec(<module-name>.<spec-name>): optional body`.
-3. Run the `spec.scan` command with the spec name to validate that the tag is visible. If not, review the @stringsync/spec README at https://raw.githubusercontent.com/stringsync/spec/refs/heads/master/README.md.
-
-<example>
-
-```ts
-class Foo {
-  // spec(foo.bar): where the foo does the bar
-  bar() {
-    throw new Error('unimplemented');
+class Calculator {
+  // spec(calculator.divide)
+  divide(a: number, b: number) {
+    if (b === 0) {
+      // spec(calculator.divide): prevent dividing by 0
+      throw new Error('cannot divide by 0');
+    }
+    return a / b;
   }
 }
 ```
 
+- “spec(calculator.divide)” is a tag without content.
+- “spec(calculator.divide): prevent dividing by 0” is a tag with content.
+- “calculator.divide” is the spec name.
+
 </example>
-
-### Tag a TODO
-
-A TODO is creating by tagging a spec and including the content "TODO - <todo-details>". See the "Tagging a Spec" section for details on how to tag a spec. Always verify it shows up using the `spec.scan` command after you add it.
-
 <example>
 
-// spec(foo.bar): TODO - Add a method where foo does the bar.
+```ts
+class Calculator {
+  divide(a: number, b: number) {
+    // spec(calculator.divide): TODO - Throw an error when dividing by 0.
+    return a / b;
+  }
+}
+```
+
+- "spec(calculator.divide): TODO - Throw an error when dividing by 0." is a tag with a TODO.
 
 </example>
 
-## Request
+## Best Practices
 
-The following is the user request with additional instructions:
+- VERY IMPORTANT: Your context window is an extremely valuable resource. The spec system is designed to help you find code pointers and their original intent efficiently. When searching for a code pointer, consider using the `spec.scan` or `spec.show` commands.
+- Prefer the `spec.show` command over reading a spec file directly.
+- Most specs SHOULD have at least 1 tag.
+- Tag content SHOULD have concise information that’s useful to read in a tag index.
+- Tags SHOULD not be orphaned.
+- Specs are concise and declarative descriptions of what something is.
+- Specs use the key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in accordance with RFC 2119: https://www.rfc-editor.org/rfc/rfc2119
+- Specs are not overly prescriptive. For example, including SQL DDL language is too grannular. Instead, the spec MAY describe the columns at a high level.
+- Specs SHOULD be descriptions that don't require a lot of additional context to execute.
+- Specs MAY reference each other. Make sure you use the `spec.show` command to read accordingly.
+- Spec and module names can only contain letters, numbers, hyphens, and underscores.
+- After doing anything related to a spec, finish by running `spec.scan` to ensure the expected changes are present.
+
+## Request
 
 <request>
 {{request}}

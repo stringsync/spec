@@ -1,77 +1,38 @@
-Perform a comprehensive audit of specs within the given selector's scope, combining drift detection and spec improvement.
+Perform a spec audit. This workflow is designed to ensure that specs are scoped appropriately, don't conflict, and are tagged adequately.
 
-## Inputs
-- selector: {{selector}}  
-  (Either a module name like `foo` or a spec name like `foo.bar`.)
+Follow these steps to complete the audit workflow:
 
-## Tools
-- Use the `spec.scan` command to quickly find specs by selector.
+1. Run spec scan
+   - Use `spec.scan` to understand what specs are defined in the project.
 
-## Objective
-Conduct a thorough audit that both identifies alignment issues between specs and code (drift detection) and evaluates specs for potential improvements (refinement). This combines the capabilities of lint and refine operations to provide a complete assessment of spec quality and implementation alignment.
+2. Handle orphaned tags
+   - If there are any orphaned tags, ask the user how to resolve them:
+     - Find an existing relevant spec.
+     - Delete the tags.
+     - Create a new spec.
+   - Offer the user to skip this step.
 
-## Rules
-- Every spec in scope must have at least one matching tag.
-- Every tag must reference a valid spec name.
-- Spec content and tag content must remain consistent.
-- Preserve intent of each spec; don't change behavior unless removing ambiguity.
-- Keep spec names stable when possible; if renaming, provide a deterministic mapping.
-- Prefer small, composable specs over monoliths.
-- Use imperative, verifiable language. Use key words such as MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD, SHOULD NOT, RECOMMENDED, OPTIONAL, and MAY from https://www.rfc-editor.org/rfc/rfc2119.
-- Keep each spec self-contained; avoid hidden dependencies.
-- Do not modify code or specs during audit; only report findings and recommendations.
+3. Show specs in scope
+   - Run `spec.show` for the selector `{{selector}}` to get the details about the specs in scope.
 
-## Method
-1. **Inventory** all specs within {{selector}} and show a quick outline.
-2. **Drift Detection**: 
-   - Collect all specs under {{selector}}.
-   - Collect all tags in code that reference {{selector}}.
-   - Cross-check mappings: specs ↔ tags ↔ implementation anchors.
-   - Classify findings: `ok`, `missing_tag`, `dangling_tag`, `mismatch`, `stale_name`.
-3. **Quality Assessment**:
-   - Diagnose spec issues: ambiguity, dual concerns, duplicates, naming drift, unverifiable language.
-   - Evaluate clarity, scope, and consistency of each spec.
-   - Identify opportunities for splits, merges, renames, and content improvements.
-4. **Validation**: Ensure each spec is atomic, testable, and uniquely named.
-5. **Recommendations**: Provide actionable guidance for both alignment and quality improvements.
+4. Identify conflicts
+   - If there are any conflicting specs (especially within the same module), describe the conflicts in an ordered list.
+   - Ask clarifying questions to resolve conflicts.
+   - When enough context is gathered, edit the spec with the information.
+   - Offer the user to skip this step.
 
-## Output Format
-Markdown with:
+5. Check clarity and actionability
+   - Are the specs declarative and actionable without extra context?
+   - If ambiguous, ask clarifying questions.
+   - Offer the user to skip this step.
 
-### Outline
-A tree of specs under {{selector}}.
+6. Ensure RFC 2119 language
+   - Verify that specs use RFC 2119 key words.
+   - If not, reword any offending specs.
 
-### Drift Analysis
-#### Summary
-A count of each drift finding type.
+7. Validate scope
+   - Check that specs are scoped appropriately.
+   - If not, split any offending specs while honoring spec naming rules.
 
-#### Findings
-A table with columns:  
-| type | spec_name | location | detail |
-
-### Quality Assessment
-#### Issues Identified
-- Ambiguity concerns
-- Overly broad specs
-- Duplicate or overlapping specs
-- Naming inconsistencies
-- Unverifiable language
-
-#### Improvement Opportunities
-- Suggested splits for overly broad specs
-- Potential merges for duplicates
-- Recommended renames for clarity
-- Content edits for precision
-
-### Recommendations
-#### Alignment Fixes
-Bullet list of suggested fixes to bring specs and code into alignment.
-
-#### Quality Improvements
-Bullet list of suggested spec refinements to improve clarity and testability.
-
-#### Migration Plan
-For any recommended spec name changes, provide a deterministic mapping.
-
-### Open Questions
-Unclear or ambiguous cases requiring human input for both alignment and quality concerns.
+8. Summarize
+   - Output a simple ordered list summarizing what you did.

@@ -1,33 +1,45 @@
-Implement existing TODO tags derived from specs within the given selector’s scope.
+Implement TODOs derived from specs within the given selector’s scope.
 
-## Inputs
-- selector: {{selector}}  
-  (Either a module name like `foo` or a spec name like `foo.bar`.)
+Follow these steps to complete the build workflow:
 
-## Objective
-Locate `TODO` tags tied to spec names under **{{selector}}** and complete them. Replace placeholder tag content with working code that satisfies the associated spec content.
+1. Resolve scope
+   - Interpret **selector** (e.g., module `foo` or spec `foo.bar`) and list all matching spec names.
+   - Limit work to files that contain TODOs referencing one of these spec names.
 
-## Rules
-- Only implement TODOs that reference a valid spec name.
-- Keep changes minimal and focused; avoid broad refactors.
-- Update or remove the TODO tag once completed.
-- If behavior is ambiguous, surface a question rather than guessing.
+2. Find actionable TODOs
+   - Scan code for TODO tags that reference spec names. Accept any of these forms placed near the target code:
+     - `// spec(<spec-name>): TODO - <details>`
+     - `// TODO(<spec-name>): <details>`
+     - `/* spec(<spec-name>): TODO - <details> */`
+   - If a TODO does not reference a valid spec name in scope, **do not implement it**; record it under “Results → Remaining TODOs”.
 
-## Method
-1. Scan for `TODO(spec-name)` tags within {{selector}}.
-2. For each TODO, read the spec content and acceptance criteria.
-3. Implement the missing code to satisfy the spec.
-4. Update the file by removing or resolving the TODO tag.
+3. Read the spec and define acceptance
+   - Open the referenced spec and extract concrete acceptance criteria.
+   - If criteria are missing or ambiguous, create a minimal clarification question; **do not guess**. Record it under “Results → Open questions”.
 
-## Output Format
-Markdown with:
+4. Implement minimal, targeted changes
+   - Make the smallest change that satisfies the spec and acceptance criteria.
+   - Avoid broad refactors; leave structure as-is unless required to satisfy the spec.
+   - Do not introduce unrelated features or alter external behavior beyond the spec.
 
-### Worklog
-A chronological list of TODOs addressed and rationale for changes.
+5. Keep scaffolds minimal
+   - Prefer focused functions, small conditionals, or wiring to existing components.
+   - Do not add extra abstractions, utilities, or dead code.
 
-### Patches
-Unified diffs for all modifications.
+6. Update the TODO tag
+   - When the spec requirement is satisfied, remove the TODO tag or replace it with a succinct reference comment showing the implemented spec name, e.g.:
+     - `// spec(<spec-name>): done`
+   - If partially complete, keep the TODO with a short note of what remains.
 
-### Results
-- Remaining TODOs, if any.
-- Open questions or clarifications still needed.
+7. Validate locally
+   - Run existing tests or quick checks if available.
+   - If no tests exist, add **only** the smallest sanity checks needed to demonstrate the change when appropriate (e.g., a minimal assertion or example).
+
+8. Prepare output artifacts
+   - Produce **Markdown** with three sections:
+     - ### Worklog — chronological list of TODOs addressed, spec names, and short rationale.
+     - ### Patches — unified diffs for each modified file.
+     - ### Results — remaining TODOs (with locations/specs) and any open questions.
+
+9. Repeat
+   - Iterate over all actionable TODOs in scope until none remain or only blocked/ambiguous items are left.

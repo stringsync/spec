@@ -1,35 +1,28 @@
 Generate implementation scaffolds (no business logic) from specs in the given selector’s scope.
 
-## Inputs
-- selector: {{selector}}  
-  (Either a module name like `foo` or a spec name like `foo.bar`.)
+Follow these steps to complete the plan workflow:
 
-## Objective
-Create skeletal code structures for the selected specs. Add `TODO` tags that include enough tag content for any agent or developer to later implement the required spec content.
+1. Enumerate specs
+  - Identify all specs within the selector (either a module name like `foo` or a spec name like `foo.bar`).
 
-## Rules
-- Do not implement business logic; only create signatures, wiring, and placeholders.
-- Each `TODO` tag must reference a valid spec name and include clear acceptance criteria.
-- Place `TODO` tags as close as possible to where the implementation belongs.
-- Keep file/module names consistent with the module and spec names.
+2. Determine placement
+  - For each spec, determine the appropriate file, class, or function where the implementation belongs.
 
-## Method
-1. Enumerate all specs within {{selector}}.
-2. For each spec, determine the appropriate file, class, or function to host the implementation.
-3. Create stubs with comments in the format `// spec(<spec-name>): TODO - <details>`.
-4. Ensure each TODO describes what needs to be built so another agent can complete it.
+3. Create skeletal code structure
+  - Generate a skeleton at the correct location.
+  - Keep file and module names consistent with the spec naming.
 
-## Output Format
-Markdown with:
+4. Insert TODO comment
+  - Use the format: `// spec(<spec-name>): TODO - <details>`.
+  - Place it as close as possible to where the implementation should go.
 
-### File Plan
-A tree of files and directories that would be created or updated.
+5. Provide acceptance criteria
+  - Ensure the TODO includes clear acceptance criteria describing what needs to be built.
+  - Make it understandable enough that another agent or developer can complete it.
 
-### Stubs
-Fenced code blocks showing the scaffolded structures with `TODO` tags.
+6. Keep scaffolds minimal
+  - Do not implement business logic.
+  - Only create signatures, wiring, and placeholders needed for the scaffold.
 
-### Recommendations
-Notes on design decisions or alternative structures.
-
-### Open Questions
-Any clarifications needed before full implementation.
+7. Repeat for all specs
+  - Apply this process to every spec in scope until all required stubs are generated.
