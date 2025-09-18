@@ -2,6 +2,7 @@ import z from 'zod';
 import { PREAMBLE_TEMPLATE } from '~/templates/preamble-template';
 import { Template } from '~/templates/template';
 import buildTxt from './build.txt' with { type: 'raw' };
+import { STRING_SELECTOR } from '~/templates/args';
 
 export const BUILD_TEMPLATE = Template.dynamic({
   name: 'build',
@@ -9,7 +10,7 @@ export const BUILD_TEMPLATE = Template.dynamic({
     'Instructs the agent to complete existing TODOs, especially those created by the plan prompt. ' +
     'It turns placeholders into working implementations that follow the specs.',
   input: {
-    selector: z.string(),
+    selector: STRING_SELECTOR,
   },
   render: (args) => {
     return PREAMBLE_TEMPLATE.render({

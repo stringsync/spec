@@ -2,6 +2,7 @@ import z from 'zod';
 import { PREAMBLE_TEMPLATE } from '~/templates/preamble-template';
 import { Template } from '~/templates/template';
 import planTxt from './plan.txt' with { type: 'raw' };
+import { STRING_SELECTOR } from '~/templates/args';
 
 export const PLAN_TEMPLATE = Template.dynamic({
   name: 'plan',
@@ -9,7 +10,7 @@ export const PLAN_TEMPLATE = Template.dynamic({
     'Instructs the agent to generate skeletal code structures from specs. ' +
     'It creates files, classes, or functions with detailed TODO placeholders that guide later implementation.',
   input: {
-    selector: z.string(),
+    selector: STRING_SELECTOR,
   },
   render: (args) => {
     return PREAMBLE_TEMPLATE.render({

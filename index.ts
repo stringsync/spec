@@ -11,7 +11,7 @@ import { ExtendableGlobber } from '~/util/globber/extendable-globber';
 import { SCAN_COMMAND_TEMPLATE } from '~/templates/scan-command-template';
 import { constants } from '~/constants';
 import { SHOW_COMMAND_TEMPLATE } from '~/templates/show-command-template';
-import { InteractivePrompt } from '~/templates/interactive-prompt';
+import type { ZodRawShape } from 'zod';
 
 const log = ExtendableLogger.console();
 
@@ -90,29 +90,38 @@ program
     );
   });
 
-program
-  .command('prompt')
-  .description('generate a prompt')
-  .argument('[name]', 'name of the prompt')
-  .option('--arg <values...>', 'arguments for the prompt format: [key=value]', parseArgs, {})
-  .option('--pipe', 'pipe output to another program', false)
-  .action(
-    async (name: string | undefined, options: { arg: Record<string, string>; pipe: boolean }) => {
-      const cli = new InteractivePrompt(log, constants.PROMPT_TEMPLATES);
-      await cli.run(name, options.arg, options.pipe);
-    },
-  );
+// Create the main prompt command
+const promptCommand = program.command('prompt').description('generate prompts');
+
+// Dynamically generate subcommands for each prompt template
+for (const template of constants.PROMPT_TEMPLATES) {
+  const command = promptCommand.command(template.name).description(template.description);
+
+  // Add options based on the template's schema
+  const schemaShape = template.schema.shape as ZodRawShape;
+  for (const [key, type] of Object.entries(schemaShape)) {
+    command.option(`--${key} <value>`, type.description ?? `${key} parameter`);
+  }
+
+  command.action(async (options: Record<string, any>) => {
+    try {
+      // Parse and validate the options using the template's schema
+      const parsedArgs = template.schema.parse(options);
+      const result = template.render(parsedArgs);
+      log.info(result);
+    } catch (error) {
+      if (error instanceof Error) {
+        log.error(`Error: ${error.message}`);
+      } else {
+        log.error('An unknown error occurred');
+      }
+      process.exit(1);
+    }
+  });
+}
 
 program.parse();
 
 function parseSelector(value: string, previous: Selector[]): Selector[] {
   return [...previous, Selector.parse(value)];
-}
-
-function parseArgs(value: string, previous: Record<string, string>): Record<string, string> {
-  const [key, val] = value.split('=');
-  if (!key || !val) {
-    throw new Error(`invalid argument: ${value}`);
-  }
-  return { ...previous, [key]: val };
 }
