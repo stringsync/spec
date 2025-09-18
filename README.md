@@ -50,24 +50,16 @@ To see an interactive list of available prompts, run:
 spec prompt
 ```
 
-You can also run a specific prompt:
+To see what flags are required, run:
 
 ```sh
-spec prompt <name>
+spec prompt <name> -h
 ```
 
-If the prompt has arguments, the CLI will ask you for them.
-
-To provide arguments directly, use the `--arg` flag:
+To copy the output to the clipboard, pipe the output to `pbcopy`:
 
 ```sh
-spec prompt <name> --arg key1=val1 --arg key2=val2
-```
-
-To pipe the output to another program, use the `--pipe` flag:
-
-```sh
-spec prompt <name> --pipe | pbcopy
+spec prompt <name> | pbcopy
 ```
 
 ### Workflows
@@ -77,21 +69,21 @@ You can combine the prompts in any order, but here are some recommendations.
 **Create a Module**
 
 1. create foo.spec.md
-2. `spec prompt audit --arg selector=foo`
-3. `spec prompt plan --arg selector=foo`
-4. `spec prompt build --arg selector=foo`
+2. `spec prompt audit --selector foo`
+3. `spec prompt plan --selector foo`
+4. `spec prompt build --selector foo`
 
 **Update a Spec**
 
 1. update foo.spec.md (or a tagged implementation)
-2. `spec prompt audit --arg selector=foo.bar`
-3. `spec prompt plan --arg selector=foo.bar`
-4. `spec prompt build --arg selector=foo.bar`
+2. `spec prompt audit --selector foo.bar`
+3. `spec prompt plan --selector foo.bar`
+4. `spec prompt build --selector foo.bar`
 
 **Delete a Module**
 
 1. delete foo.spec.md
-2. `spec prompt audit --arg selector=foo`
+2. `spec prompt audit --selector foo`
 
 ## MCP
 
