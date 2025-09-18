@@ -1,9 +1,9 @@
-Generate implementation scaffolds (no business logic) from specs in the given selector’s scope.
+Generate implementation scaffolds (no business logic) from specs for the selector `{{selector}}`.
 
 Follow these steps to complete the plan workflow:
 
 1. Enumerate specs
-  - Identify all specs within the selector (either a module name like `foo` or a spec name like `foo.bar`).
+  - Identify all specs within the selector `{{selector}}`.
 
 2. Determine placement
   - For each spec, determine the appropriate file, class, or function where the implementation belongs.

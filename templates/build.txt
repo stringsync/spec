@@ -1,9 +1,9 @@
-Implement TODOs derived from specs within the given selector’s scope.
+Implement TODOs derived from specs within the given selector’s scope for selector `{{selector}}`.
 
 Follow these steps to complete the build workflow:
 
 1. Resolve scope
-   - Interpret **selector** (e.g., module `foo` or spec `foo.bar`) and list all matching spec names.
+   - Interpret selector `{{selector}}` and list all matching spec names.
    - Limit work to files that contain TODOs referencing one of these spec names.
 
 2. Find actionable TODOs
