@@ -1,4 +1,4 @@
-Perform a spec audit. This workflow is designed to ensure that specs are scoped appropriately, don't conflict, and are tagged adequately.
+Perform a spec audit. This workflow is designed to ensure that specs are scoped appropriately, don't conflict, and are tagged adequately. You are focused on selector `{{selector}}`.
 
 Follow these steps to complete the audit workflow:
 
