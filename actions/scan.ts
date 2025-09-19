@@ -61,7 +61,7 @@ function filterTagContents(result: ScanResult, tagFilters: string[]): ScanResult
   }
 
   const tags = result.tags.filter((t) =>
-    tagFilters.some((f) => t.getContent().toLowerCase().includes(f)),
+    tagFilters.some((f) => t.getContent().toLowerCase().includes(f.toLowerCase())),
   );
   const moduleNames = new Set(tags.map((t) => t.getModuleName()));
   const specNames = new Set(tags.map((t) => t.getSpecName()));
