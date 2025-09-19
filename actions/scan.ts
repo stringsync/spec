@@ -28,27 +28,47 @@ export async function scan({
   const files = await Promise.all(paths.map((path) => File.load(path)));
   const results = await Promise.all(files.map((file) => parse({ file, scope })));
 
-  function selectorsMatch(target: Module | Spec | Tag): boolean {
-    return selectors.length === 0 || selectors.some((s) => s.matches(target));
+  const modules = results.flatMap((r) => r.modules);
+  const specs = results.flatMap((r) => r.specs);
+  const tags = results.flatMap((r) => r.tags);
+
+  let result: ScanResult = { modules, specs, tags };
+  result = filterSelectors(result, selectors);
+  result = filterTagContents(result, tagFilters);
+
+  return result;
+}
+
+function filterSelectors(result: ScanResult, selectors: Selector[]): ScanResult {
+  if (selectors.length === 0) {
+    return result;
   }
 
-  function tagFiltersMatch(target: Module | Spec | Tag): boolean {
-    if (tagFilters.length === 0) {
-      return true;
-    }
-    if (target instanceof Tag) {
-      return tagFilters.some((f) => target.getContent().includes(f));
-    }
-    return true;
+  function matchesSelectors(target: Module | Spec | Tag): boolean {
+    return selectors.some((s) => s.matches(target));
   }
 
-  function matches(target: Module | Spec | Tag): boolean {
-    return selectorsMatch(target) && tagFiltersMatch(target);
+  result.modules = result.modules.filter(matchesSelectors);
+  result.specs = result.specs.filter(matchesSelectors);
+  result.tags = result.tags.filter(matchesSelectors);
+
+  return result;
+}
+
+function filterTagContents(result: ScanResult, tagFilters: string[]): ScanResult {
+  if (tagFilters.length === 0) {
+    return result;
   }
 
-  const modules = results.flatMap((r) => r.modules).filter(matches);
-  const specs = results.flatMap((r) => r.specs).filter(matches);
-  const tags = results.flatMap((r) => r.tags).filter(matches);
+  const tags = result.tags.filter((t) =>
+    tagFilters.some((f) => t.getContent().toLowerCase().includes(f)),
+  );
+  const moduleNames = new Set(tags.map((t) => t.getModuleName()));
+  const specNames = new Set(tags.map((t) => t.getSpecName()));
 
-  return { modules, specs, tags };
+  result.modules = result.modules.filter((m) => moduleNames.has(m.getName()));
+  result.specs = result.specs.filter((s) => specNames.has(s.getName()));
+  result.tags = tags;
+
+  return result;
 }
