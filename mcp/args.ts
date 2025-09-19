@@ -25,4 +25,4 @@ export const TAG_FILTERS = z
   .array(z.string())
   .optional()
   .default([])
-  .describe('A list of substrings to filter tag content by. It is an OR filter.');
+  .describe('A list of case-insensitive substrings to filter tag content by. It is an OR filter.');
