@@ -33,25 +33,31 @@ program
     constants.DEFAULT_INCLUDE_PATTERNS,
   )
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
+  .option('-f, --filter [strings...]', 'tag content substrings to filter by', [])
   .argument(
     '<selectors...>',
     'fully qualified spec id (e.g. "foo.bar" or "foo")',
     parseSelector,
     [],
   )
-  .action(async (selectors: Selector[], options: { include: string[]; exclude: string[] }) => {
-    const stopwatch = Stopwatch.start();
+  .action(
+    async (
+      selectors: Selector[],
+      options: { include: string[]; exclude: string[]; filter: string[] },
+    ) => {
+      const stopwatch = Stopwatch.start();
 
-    const scope = new Scope({
-      includePatterns: options.include,
-      excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...options.exclude],
-    });
-    const globber = ExtendableGlobber.fs().autoExpandDirs().freeze();
-    const result = await scan({ scope, selectors, globber });
-    const ms = stopwatch.ms();
+      const scope = new Scope({
+        includePatterns: options.include,
+        excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...options.exclude],
+      });
+      const globber = ExtendableGlobber.fs().autoExpandDirs().freeze();
+      const result = await scan({ scope, selectors, globber, tagFilters: options.filter });
+      const ms = stopwatch.ms();
 
-    log.info(SHOW_COMMAND_TEMPLATE.render({ result, ms }));
-  });
+      log.info(SHOW_COMMAND_TEMPLATE.render({ result, ms }));
+    },
+  );
 
 program
   .command('scan')
@@ -62,33 +68,39 @@ program
     constants.DEFAULT_INCLUDE_PATTERNS,
   )
   .option('-e, --exclude [patterns...]', 'glob patterns to exclude', [])
+  .option('-f, --filter [strings...]', 'tag content substrings to filter by', [])
   .argument(
     '[selectors...]',
     'fully qualified spec id (e.g. "foo.bar" or "foo")',
     parseSelector,
     [],
   )
-  .action(async (selectors: Selector[], options: { include: string[]; exclude: string[] }) => {
-    const stopwatch = Stopwatch.start();
+  .action(
+    async (
+      selectors: Selector[],
+      options: { include: string[]; exclude: string[]; filter: string[] },
+    ) => {
+      const stopwatch = Stopwatch.start();
 
-    const scope = new Scope({
-      includePatterns: options.include,
-      excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...options.exclude],
-    });
-    const globber = ExtendableGlobber.fs().autoExpandDirs().cached().freeze();
-    const result = await scan({ scope, selectors, globber });
-    const paths = await globber.glob(scope);
-    const ms = stopwatch.ms();
+      const scope = new Scope({
+        includePatterns: options.include,
+        excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...options.exclude],
+      });
+      const globber = ExtendableGlobber.fs().autoExpandDirs().cached().freeze();
+      const result = await scan({ scope, selectors, globber, tagFilters: options.filter });
+      const paths = await globber.glob(scope);
+      const ms = stopwatch.ms();
 
-    log.info(
-      SCAN_COMMAND_TEMPLATE.render({
-        result,
-        selectors,
-        pathCount: paths.length,
-        ms,
-      }),
-    );
-  });
+      log.info(
+        SCAN_COMMAND_TEMPLATE.render({
+          result,
+          selectors,
+          pathCount: paths.length,
+          ms,
+        }),
+      );
+    },
+  );
 
 // Create the main prompt command
 const promptCommand = program.command('prompt').description('generate prompts');

@@ -4,7 +4,7 @@ import { CallToolResultBuilder } from '~/util/mcp/call-tool-result-builder';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StderrLogger } from '~/util/logs/stderr-logger';
 import { GetPromptResultBuilder } from '~/util/mcp/get-prompt-result-builder';
-import { EXCLUDE_PATTERNS, INCLUDE_PATTERNS, SELECTORS } from '~/mcp/args';
+import { EXCLUDE_PATTERNS, INCLUDE_PATTERNS, SELECTORS, TAG_FILTERS } from '~/mcp/args';
 import { Scope } from '~/specs/scope';
 import { ExtendableGlobber } from '~/util/globber/extendable-globber';
 import { scan } from '~/actions/scan';
@@ -34,6 +34,7 @@ function addTools(server: McpServer) {
       selectors: SELECTORS,
       includePatterns: INCLUDE_PATTERNS,
       excludePatterns: EXCLUDE_PATTERNS,
+      tagFilters: TAG_FILTERS,
     },
     showTool,
   );
@@ -45,6 +46,7 @@ function addTools(server: McpServer) {
       selectors: SELECTORS,
       includePatterns: INCLUDE_PATTERNS,
       excludePatterns: EXCLUDE_PATTERNS,
+      tagFilters: TAG_FILTERS,
     },
     scanTool,
   );
@@ -69,10 +71,12 @@ async function showTool(args: {
   selectors: string[];
   includePatterns: string[];
   excludePatterns: string[];
+  tagFilters: string[];
 }) {
   const selectors = Selector.parseAll(args.selectors);
   const includePatterns = args.includePatterns;
   const excludePatterns = args.excludePatterns;
+  const tagFilters = args.tagFilters;
 
   const builder = new CallToolResultBuilder();
 
@@ -81,7 +85,7 @@ async function showTool(args: {
     excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...excludePatterns],
   });
   const globber = ExtendableGlobber.fs().freeze();
-  const result = await scan({ scope, selectors, globber });
+  const result = await scan({ scope, selectors, globber, tagFilters });
 
   builder.text(SHOW_TOOL_TEMPLATE.render({ result, selectors }));
 
@@ -92,10 +96,12 @@ async function scanTool(args: {
   selectors: string[];
   includePatterns: string[];
   excludePatterns: string[];
+  tagFilters: string[];
 }) {
   const selectors = Selector.parseAll(args.selectors);
   const includePatterns = args.includePatterns;
   const excludePatterns = args.excludePatterns;
+  const tagFilters = args.tagFilters;
 
   const builder = new CallToolResultBuilder();
 
@@ -104,7 +110,7 @@ async function scanTool(args: {
     excludePatterns: [...constants.MUST_EXCLUDE_PATTERNS, ...excludePatterns],
   });
   const globber = ExtendableGlobber.fs().cached().freeze();
-  const result = await scan({ scope, selectors, globber });
+  const result = await scan({ scope, selectors, globber, tagFilters });
   const paths = await globber.glob(scope);
 
   builder.text(SCAN_TOOL_TEMPLATE.render({ result, selectors, pathCount: paths.length }));

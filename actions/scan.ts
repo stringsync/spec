@@ -17,17 +17,33 @@ export async function scan({
   scope,
   selectors,
   globber,
+  tagFilters,
 }: {
   scope: Scope;
   selectors: Selector[];
   globber: Globber;
+  tagFilters: string[];
 }) {
   const paths = await globber.glob(scope);
   const files = await Promise.all(paths.map((path) => File.load(path)));
   const results = await Promise.all(files.map((file) => parse({ file, scope })));
 
-  function matches(target: Module | Spec | Tag): boolean {
+  function selectorsMatch(target: Module | Spec | Tag): boolean {
     return selectors.length === 0 || selectors.some((s) => s.matches(target));
+  }
+
+  function tagFiltersMatch(target: Module | Spec | Tag): boolean {
+    if (tagFilters.length === 0) {
+      return true;
+    }
+    if (target instanceof Tag) {
+      return tagFilters.some((f) => target.getContent().includes(f));
+    }
+    return true;
+  }
+
+  function matches(target: Module | Spec | Tag): boolean {
+    return selectorsMatch(target) && tagFiltersMatch(target);
   }
 
   const modules = results.flatMap((r) => r.modules).filter(matches);
