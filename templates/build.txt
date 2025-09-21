@@ -3,7 +3,7 @@ Implement TODOs derived from specs within the given selector’s scope for selec
 Follow these steps to complete the build workflow:
 
 1. Resolve scope
-   - Use the `spec.show` command to examine the selector {{selector}}.
+   - Use the `spec.show` command to examine the selector `{{selector}}`.
    - Limit work to files that contain TODOs referencing one of these spec names.
 
 2. Find actionable TODOs

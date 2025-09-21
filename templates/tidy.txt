@@ -3,7 +3,7 @@ Find duplicate or redundant spec tags and consolidate or remove them safely for 
 Follow these steps to complete the tidy workflow:
 
 1. Resolve scope
-   - Use the `spec.show` command to examine the selector {{selector}}.
+   - Use the `spec.show` command to examine the selector `{{selector}}`.
 
 2. Detect duplicates and redundancies
    - Treat multiple nearby tags that reference the same spec and the same code location as duplicates.

@@ -1,7 +1,7 @@
 Evaluate implementation progress for each spec in the selector scope `{{selector}}` and report a concise status.
 
 1. Resolve scope
-   - Use the `spec.show` command to examine the selector {{selector}}.
+   - Use the `spec.show` command to examine the selector `{{selector}}`.
 
 2. Gather evidence
    - Locate related files and TODOs for each spec from the `spec.show` output.
