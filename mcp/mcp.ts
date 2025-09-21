@@ -43,7 +43,7 @@ function addTools(server: McpServer) {
     'spec.scan',
     'show a summary of modules, specs, and tags',
     {
-      selectors: SELECTORS,
+      selectors: SELECTORS.optional().default([]),
       includePatterns: INCLUDE_PATTERNS,
       excludePatterns: EXCLUDE_PATTERNS,
       tagFilters: TAG_FILTERS,

@@ -7,8 +7,8 @@ import { STRING_SELECTOR } from '~/templates/args';
 export const BUILD_TEMPLATE = Template.dynamic({
   name: 'build',
   description:
-    'Instructs the agent to complete existing TODOs, especially those created by the plan prompt. ' +
-    'It turns placeholders into working implementations that follow the specs.',
+    'Instructs the agent to complete existing TODOs, ' +
+    'turning placeholders into working implementations that follow the specs.',
   input: {
     selector: STRING_SELECTOR,
   },

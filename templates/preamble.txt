@@ -71,8 +71,9 @@ class Calculator {
 
 ## Best Practices
 
-- VERY IMPORTANT: Your context window is an extremely valuable resource. The spec system is designed to help you find code pointers and their original intent efficiently. When searching for a code pointer, consider using the `spec.scan` or `spec.show` commands.
-- Prefer the `spec.show` command over reading a spec file directly.
+- VERY IMPORTANT: Your context window is an extremely valuable resource. The spec system is designed to help you find code pointers and their original intent efficiently.
+- NEVER guess module or spec names. Use the `spec.scan` command without a selector to get a comprehensive breakdown of what modules and specs are in the project.
+- If you know the module or spec name, prefer the `spec.show` command over reading a spec file directly, because it provides extra context.
 - Most specs SHOULD have at least 1 tag.
 - Tag content SHOULD have concise information that’s useful to read in a tag index.
 - Tags SHOULD not be orphaned.
