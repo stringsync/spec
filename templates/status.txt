@@ -1,6 +1,4 @@
-Evaluate implementation progress for each spec in the selector scope "{{selector}}" and report a concise status.
-
-Follow these steps to complete the status workflow:
+Evaluate implementation progress for each spec in the selector scope `{{selector}}` and report a concise status.
 
 1. Resolve scope
    - Use the `spec.show` command to examine the selector {{selector}}.

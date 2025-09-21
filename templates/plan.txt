@@ -3,7 +3,7 @@ Generate implementation scaffolds (no business logic) from specs for the selecto
 Follow these steps to complete the plan workflow:
 
 1. Enumerate specs
-  - Identify all specs within the selector `{{selector}}`.
+  - Use the `spec.show` command to examine the selector {{selector}}.
   - Compare the current codebase to the specs and identify which features are missing or incomplete.
   - Explicitly list the gaps between existing implementation and the requirements in the spec and use that to inform the scaffold.
 

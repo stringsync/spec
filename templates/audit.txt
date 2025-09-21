@@ -3,7 +3,7 @@ Perform a spec audit. This workflow is designed to ensure that specs are scoped 
 Follow these steps to complete the audit workflow:
 
 1. Run spec scan
-   - Use `spec.scan` to understand what specs are defined in the project.
+   - Use `spec.scan` without any selectors to understand what specs are defined in the project.
 
 2. Handle orphaned tags
    - If there are any orphaned tags, ask the user how to resolve them:
