@@ -6,10 +6,7 @@ spec driven development tools
 
 To run the commands, you will need an NPM package executor like `npx`. We recommend `bunx`: https://bun.sh/.
 
-This README aliases `bunx @stringsync/spec` with `spec`. I recommend you add the same alias to your shell profile.
-
-> [!CAUTION]
-> Do not alias the command if you plan to do development on the @stringsync/spec repo itself. See the [Dev](#Dev) section.
+This README aliases `bunx @stringsync/spec` with `spec`. I recommend you add the same alias to your shell profile, unless you plan to work on the @stringsync/spec repo itself (see the [Dev](#Dev) section).
 
 **Declare**
 
@@ -60,6 +57,16 @@ To copy the output to the clipboard, pipe the output to `pbcopy`:
 
 ```sh
 spec prompt <name> | pbcopy
+```
+
+...or pipe it directly to a coding agent!
+
+```sh
+spec prompt <name> | gemini -p
+```
+
+```sh
+spec prompt <name> | claude -p
 ```
 
 ### Workflows
