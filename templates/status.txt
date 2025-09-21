@@ -1,0 +1,21 @@
+Evaluate implementation progress for each spec in the selector scope `{{selector}}` and report a concise status.
+
+1. Resolve scope
+   - Use the `spec.show` command to examine the selector {{selector}}.
+
+2. Gather evidence
+   - Locate related files and TODOs for each spec from the `spec.show` output.
+   - Skim implementation sites for obvious stubs, partial logic, or completed code.
+   - Consider presence/absence of minimal tests or checks (if available).
+
+3. Rate each spec
+   - Use the following rubric:
+     - 🔴 red — no scaffold or TODO present; TODO exists but no meaningful implementation started; or the spec ambiguously conflicts with another
+     - 🟡 yellow — scaffold or partial implementation exists but acceptance criteria are only partially met (work remains).
+     - 🟢 green — implementation appears to meet the spec acceptance criteria, with no obvious gaps.
+   - If ambiguous, prefer 🟡 **yellow** and add a brief comment.
+
+4. Output results
+   - Produce a newline-separated list using this format:
+     - `<spec-name> [red|yellow|green]: <optional comment>`
+   - Keep comments short (up to two sentences). Include code location pointers like `file:line` when helpful. You can reuse the locations from the `spec.show` command.

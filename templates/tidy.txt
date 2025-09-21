@@ -1,0 +1,27 @@
+Find duplicate or redundant spec tags and consolidate or remove them safely for selector `{{selector}}`.
+
+Follow these steps to complete the tidy workflow:
+
+1. Resolve scope
+   - Use the `spec.show` command to examine the selector {{selector}}.
+
+2. Detect duplicates and redundancies
+   - Treat multiple nearby tags that reference the same spec and the same code location as duplicates.
+   - Identify stale tags that point to non-existent specs.
+   - Flag tags that conflict in intent (e.g., two TODOs for the same spec with mutually exclusive notes).
+
+3. Choose an action per finding
+   - **Clobber (consolidate)** identical or near-identical duplicates into a single canonical tag placed closest to the implementation site.
+   - **Delete** stale tags referencing missing specs (record them in results).
+   - **Merge** conflicting notes into one TODO with the clearest acceptance criteria; keep the rest as context in the comment.
+
+4. Apply minimal edits
+   - Preserve surrounding code and formatting.
+   - Use the canonical tag format: `// spec(<spec-name>): TODO - <details>`.
+   - If an item is already complete, replace with `// spec(<spec-name>): done` or remove the tag.
+
+5. Output results
+   - Produce **Markdown** with:
+     - ### Changes — list of consolidated/deleted tags with file:line pointers.
+     - ### Patches — unified diffs for edited files.
+     - ### Remaining issues — unresolved conflicts or questions.
