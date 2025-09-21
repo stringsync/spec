@@ -112,7 +112,11 @@ for (const template of constants.PROMPT_TEMPLATES) {
   // Add options based on the template's schema
   const schemaShape = template.schema.shape as ZodRawShape;
   for (const [key, type] of Object.entries(schemaShape)) {
-    command.option(`--${key} <value>`, type.description ?? `${key} parameter`);
+    let value = `<${key}>`;
+    if (type.isOptional()) {
+      value = `[${key}]`;
+    }
+    command.option(`--${key} ${value}`, type.description ?? `${key} parameter`);
   }
 
   command.action(async (options: Record<string, any>) => {
