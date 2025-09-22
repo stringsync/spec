@@ -84,6 +84,7 @@ class Calculator {
 - Specs MAY reference each other. Make sure you use the `spec.show` command to read accordingly.
 - Spec and module names can only contain letters, numbers, hyphens, and underscores.
 - After doing anything related to a spec, finish by running `spec.scan` to ensure the expected changes are present.
+- If you see a spec(?), use the `spec.scan` command to find something appropriate for it. When in doubt, ask the user.
 
 ## Request
 
