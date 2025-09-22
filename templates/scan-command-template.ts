@@ -40,6 +40,7 @@ export const SCAN_COMMAND_TEMPLATE = Template.dynamic({
     }
 
     if (orphanedTags.length > 0) {
+      builder.newline();
       builder.add(chalk.red('orphaned'));
       renderTagsWithSpecNames(orphanedTags, builder);
     }
