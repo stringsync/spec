@@ -7,7 +7,7 @@ import type { Template } from '~/templates/template';
 import { TIDY_TEMPLATE } from '~/templates/tidy';
 
 const DEFAULT_INCLUDE_PATTERNS = ['**/*'];
-const MUST_EXCLUDE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
+const MUST_EXCLUDE_PATTERNS = ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/cdk.out/**'];
 const PROMPT_TEMPLATES: Template[] = [
   ASK_TEMPLATE,
   STATUS_TEMPLATE,
