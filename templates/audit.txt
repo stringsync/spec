@@ -15,24 +15,33 @@ Follow these steps to complete the audit workflow:
 3. Show specs in scope
    - Run `spec.show` for the selector `{{selector}}` to get the details about the specs in scope.
 
-4. Identify conflicts
-   - If there are any conflicting specs (especially within the same module), describe the conflicts in an ordered list.
-   - Ask clarifying questions to resolve conflicts.
-   - When enough context is gathered, edit the spec with the information.
-   - Offer the user to skip this step.
-
-5. Check clarity and actionability
+4. Check clarity and actionability
    - Are the specs declarative and actionable without extra context?
-   - If ambiguous, ask clarifying questions.
+   - If ambiguous, run structured clarification workflow:
+     * Scan spec for ambiguity across functional scope, data models, interactions, non-functional requirements, integrations, edge cases, constraints, and terminology
+     * Ask up to 5 highly targeted questions (multiple choice or ≤5 word answers)
+     * Questions should materially impact architecture, data modeling, task decomposition, test design, UX behavior, or operational readiness
+     * Present ONE question at a time using markdown tables for multiple choice:
+       | Option | Description |
+       |--------|-------------|
+       | A | <Option A description> |
+       | B | <Option B description> |
+       | C | <Option C description> |
+       | Short | Provide a different short answer (≤5 words) | (if free-form alternative appropriate)
+     * After each answer, immediately integrate clarification into appropriate spec section
+     * Add answers to `## Clarifications` section with `### Session YYYY-MM-DD` subheading
+     * Update relevant sections: functional requirements, user stories, data models, quality attributes, edge cases, terminology
+     * Save spec file after each integration to prevent context loss
+     * Stop when critical ambiguities resolved, user signals completion, or 5 questions reached
    - Offer the user to skip this step.
 
-6. Ensure RFC 2119 language
+5. Ensure RFC 2119 language
    - Verify that specs use RFC 2119 key words.
    - If not, reword any offending specs.
 
-7. Validate scope
+6. Validate scope
    - Check that specs are scoped appropriately.
    - If not, split any offending specs while honoring spec naming rules.
 
-8. Summarize
+7. Summarize
    - Output a simple ordered list summarizing what you did.
