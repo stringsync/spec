@@ -29,8 +29,6 @@ Follow these steps to complete the audit workflow:
        | C | <Option C description> |
        | Short | Provide a different short answer (≤5 words) | (if free-form alternative appropriate)
      * After each answer, immediately integrate clarification into appropriate spec section
-     * Add answers to `## Clarifications` section with `### Session YYYY-MM-DD` subheading
-     * Update relevant sections: functional requirements, user stories, data models, quality attributes, edge cases, terminology
      * Save spec file after each integration to prevent context loss
      * Stop when critical ambiguities resolved, user signals completion, or 5 questions reached
    - Offer the user to skip this step.
