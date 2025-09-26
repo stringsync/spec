@@ -28,7 +28,7 @@ export async function mcp() {
 
 function addTools(server: McpServer) {
   server.tool(
-    'spec.show',
+    'show',
     'show details about specs',
     {
       selectors: SELECTORS,
@@ -40,7 +40,7 @@ function addTools(server: McpServer) {
   );
 
   server.tool(
-    'spec.scan',
+    'scan',
     'show a summary of modules, specs, and tags',
     {
       selectors: SELECTORS.optional().default([]),
@@ -54,16 +54,11 @@ function addTools(server: McpServer) {
 
 function addPrompts(server: McpServer) {
   for (const prompt of constants.PROMPT_TEMPLATES) {
-    server.prompt(
-      `spec.${prompt.name}`,
-      prompt.description,
-      prompt.schema.shape,
-      async (args: any) => {
-        const builder = new GetPromptResultBuilder();
-        builder.user.text(prompt.render(args));
-        return builder.build();
-      },
-    );
+    server.prompt(prompt.name, prompt.description, prompt.schema.shape, async (args: any) => {
+      const builder = new GetPromptResultBuilder();
+      builder.user.text(prompt.render(args));
+      return builder.build();
+    });
   }
 }
 
