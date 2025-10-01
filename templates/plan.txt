@@ -28,3 +28,5 @@ Follow these steps to complete the plan workflow:
 
 7. Repeat for all specs
   - Apply this process to every spec in scope until all required stubs are generated.
+
+{{additionalContext}}

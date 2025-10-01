@@ -17,3 +17,9 @@ export const STRING_SELECTOR = z
 export const SELECTOR = z.instanceof(Selector);
 
 export const SELECTORS = z.array(SELECTOR);
+
+export const CONTEXT = z
+  .string()
+  .optional()
+  .default('')
+  .describe('additional free form text to add to the prompt');

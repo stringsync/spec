@@ -2,7 +2,7 @@ import z from 'zod';
 import { PREAMBLE_TEMPLATE } from '~/templates/preamble-template';
 import { Template } from '~/templates/template';
 import auditTxt from './audit.txt' with { type: 'raw' };
-import { STRING_SELECTOR } from '~/templates/args';
+import { CONTEXT, STRING_SELECTOR } from '~/templates/args';
 
 export const AUDIT_TEMPLATE = Template.dynamic({
   name: 'audit',
@@ -11,11 +11,13 @@ export const AUDIT_TEMPLATE = Template.dynamic({
     'It checks alignment between specs and code while also evaluating specs for clarity, scope, and consistency.',
   input: {
     selector: STRING_SELECTOR,
+    context: CONTEXT,
   },
   render: (args) => {
     return PREAMBLE_TEMPLATE.render({
       request: Template.replace(auditTxt, {
         selector: args.selector,
+        context: args.context,
       }),
     });
   },
